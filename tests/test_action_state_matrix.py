@@ -46,7 +46,7 @@ def test_state_rule_inventory_has_no_orphans():
     registered_keys = {config.key for config in configs}
 
     assert set(RESTRICTED_ACTION_STATES) <= registered_keys
-    assert sum(bool(config.allowed_states) for config in configs) == 238
+    assert sum(bool(config.allowed_states) for config in configs) == 221
     assert sum(config.detail and not config.allowed_states for config in configs) == 14
     assert all(not config.allowed_states for config in configs if not config.detail)
 
@@ -91,11 +91,6 @@ def test_state_rule_inventory_has_no_orphans():
             ('in_progress',),
         ),
         (
-            ('pharmacovigilance', 'cases', 'close'),
-            'status',
-            ('investigation', 'pending_actions'),
-        ),
-        (
             ('procurement', 'receipts', 'post_stock'),
             'quality_status',
             ('approved',),
@@ -115,11 +110,6 @@ def test_state_rule_inventory_has_no_orphans():
             ('recalls', 'complaints', 'close'),
             'status',
             ('investigation', 'pending_regulatory_communication'),
-        ),
-        (
-            ('regulatory', 'dossiers', 'close'),
-            'status',
-            ('submitted', 'under_review', 'approved'),
         ),
         (('reports', 'executions', 'run'), 'status', ('pending', 'running')),
         (('risks', 'records', 'start_monitoring'), 'status', ('in_treatment',)),

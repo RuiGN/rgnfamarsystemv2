@@ -18,11 +18,6 @@ urlpatterns = [
         name='operations_workspace',
     ),
     path('workspaces/quality/', views.QualityWorkspaceView.as_view(), name='quality_workspace'),
-    path(
-        'workspaces/regulatory/',
-        views.RegulatoryWorkspaceView.as_view(),
-        name='regulatory_workspace',
-    ),
     path('workspaces/workflow/', views.WorkflowWorkspaceView.as_view(), name='workflow_workspace'),
     # Explicit operational maps must precede the generic resource detail route.
     path(

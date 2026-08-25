@@ -45,11 +45,6 @@ requirements:
     framework: GAMP5
     control: Perfis, execuções, sugestões e auditoria operam em escopo global autenticado
     evidence: tests/test_ai_agents.py
-  - id: SI-007
-    title: Conhecimento RAG single-instance
-    framework: GAMP5
-    control: Ingestão, recuperação, chat e citações operam em escopo global autenticado
-    evidence: tests/test_knowledge.py
   - id: SI-008
     title: Arquivos protegidos
     framework: ALCOA+

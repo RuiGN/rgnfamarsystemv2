@@ -22,7 +22,7 @@ def test_generate_code_returns_prefix_sequence():
 def test_auto_code_on_save_when_blank():
     from masters.models import Product
 
-    p = Product.objects.create(name='Produto Teste', description='T', item_type=Product.ItemType.RAW_MATERIAL, unit=_unit())
+    p = Product.objects.create(description='Produto Teste', item_type=Product.ItemType.RAW_MATERIAL, unit=_unit())
     assert p.code.startswith('PRD-')
     assert p.code != ''
 

@@ -44,7 +44,6 @@ class ProtectedFileAdmin(admin.ModelAdmin):
         'controlled_document',
         'fiscal_document',
         'quality_document',
-        'regulatory_dossier',
         'financial_title',
         'responsible',
         'uploaded_by',

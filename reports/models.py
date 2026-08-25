@@ -157,14 +157,11 @@ class ReportDefinition(AutoCodeMixin, SingleInstanceModel):
         CAPA = 'capa', 'CAPA'
         DEVIATIONS = 'deviations', 'Desvios'
         RISKS = 'risks', 'Riscos'
-        REGULATORY = 'regulatory', 'Regulatório'
-        PHARMACOVIGILANCE = 'pharmacovigilance', 'Farmacovigilância'
 
     class Category(models.TextChoices):
         OPERATIONAL = 'operational', 'Operacional'
         MANAGEMENT = 'management', 'Gerencial'
         INDICATOR = 'indicator', 'Indicador'
-        REGULATORY = 'regulatory', 'Regulatório'
         AUDIT = 'audit', 'Auditoria'
 
     code = models.CharField('código', max_length=80, blank=True)

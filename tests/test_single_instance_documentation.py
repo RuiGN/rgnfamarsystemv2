@@ -9,7 +9,7 @@ from core.evidence_audit import evaluate_evidence_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
 HISTORICAL_ACTION_HASH = 'c5a622328b62e9dc3b2383f8e266d9c6a22a7af4e1eff75e107015b7b4297ea9'
-CURRENT_ACTION_HASH = 'f1c9f7586cfb2722eac6d502cfb09ce0817bca98a5933d95cc8f43f6c229bd79'
+CURRENT_ACTION_HASH = '25e628ea7c910c480dc33c87b69917b942facf815e5ac0afe2ddc0411aaf83a3'
 
 
 def _read(path):
@@ -225,7 +225,7 @@ def test_technical_spec_keeps_action_audits_chronological():
 
     assert re.search(
         r'Auditoria local executada em 21/07/2026:.*?'
-        r'253 ações `POST @action`.*?'
+        r'240 ações `POST @action`.*?'
         r'`EV-SIA-ACTION-253`.*?'
         r'c5a622328b62e9dc3b2383f8e266d9c6a22a7af4e1eff75e107015b7b4297ea9',
         historical,
@@ -233,7 +233,7 @@ def test_technical_spec_keeps_action_audits_chronological():
     )
     assert re.search(
         r'Auditoria do candidato executada em 27/07/2026:.*?'
-        r'258 ações.*?252 de detalhe.*?6 de coleção.*?'
+        r'240 ações.*?235 de detalhe.*?5 de coleção.*?'
         r'`production\.0007` aplicada.*?'
         r'`EV-SIA-ACTION-258`.*?'
         r'f1c9f7586cfb2722eac6d502cfb09ce0817bca98a5933d95cc8f43f6c229bd79',

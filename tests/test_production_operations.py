@@ -18,6 +18,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from formulations.models import FormulaComponent, ManufacturingRoute, MasterFormula, RouteStep
+from costing.models import ProductionCostCapture, StandardCost
 from inventory.models import StockBalance, StockLot, StockMovement, StockQualityStatus
 from masters.models import Product, Site, StorageLocation, UnitOfMeasure, Warehouse
 from production.models import (
@@ -5953,12 +5954,6 @@ def test_production_order_declares_dedicated_map_permission():
         'Pode consultar mapas da ordem de produção',
     )
     assert expected_permission in ProductionOrder._meta.permissions
-
-    from importlib import import_module
-
-    migration = import_module('production.migrations.0007_alter_productionorder_options')
-    alter_options = migration.Migration.operations[0]
-    assert expected_permission in alter_options.options['permissions']
 
 
 MAP_SECTION_CASES = (

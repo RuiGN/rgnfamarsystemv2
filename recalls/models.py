@@ -58,7 +58,6 @@ class MarketComplaint(SingleInstanceModel):
         DISTRIBUTOR = 'distributor', 'Distribuidor'
         AUTHORITY = 'authority', 'Autoridade sanitária'
         INTERNAL = 'internal', 'Interna'
-        PHARMACOVIGILANCE = 'pharmacovigilance', 'Farmacovigilância'
         OTHER = 'other', 'Outra'
 
     class Criticality(models.TextChoices):
@@ -148,14 +147,6 @@ class MarketComplaint(SingleInstanceModel):
         null=True,
         blank=True,
         verbose_name='CAPA',
-    )
-    pharmacovigilance_case = models.ForeignKey(
-        'pharmacovigilance.PharmacovigilanceCase',
-        on_delete=models.PROTECT,
-        related_name='market_complaints',
-        null=True,
-        blank=True,
-        verbose_name='caso de farmacovigilância',
     )
     document = models.ForeignKey(
         'documents.ControlledDocument',
@@ -405,7 +396,6 @@ class MarketComplaint(SingleInstanceModel):
             'quality_sample',
             'deviation_event',
             'capa',
-            'pharmacovigilance_case',
             'document',
         ):
             pass
@@ -429,14 +419,6 @@ class MarketComplaint(SingleInstanceModel):
             errors['customer_complaint'] = 'A reclamação CRM deve pertencer ao cliente informado.'
         if self.quality_sample and self.quality_sample.product_id != self.product_id:
             errors['quality_sample'] = 'A amostra deve pertencer ao produto informado.'
-        if (
-            self.pharmacovigilance_case
-            and self.pharmacovigilance_case.product_id
-            and self.pharmacovigilance_case.product_id != self.product_id
-        ):
-            errors['pharmacovigilance_case'] = (
-                'O caso de farmacovigilância deve pertencer ao produto informado.'
-            )
         if self.status == self.Status.CLOSED and (
             not self.closure_summary or not self.closed_by_id or not self.closed_at
         ):
@@ -734,7 +716,6 @@ class RecallCampaign(SingleInstanceModel):
     class Trigger(models.TextChoices):
         TECHNICAL_COMPLAINT = 'technical_complaint', 'Queixa técnica'
         DEVIATION = 'deviation', 'Desvio'
-        PHARMACOVIGILANCE = 'pharmacovigilance', 'Farmacovigilância'
         AUTHORITY = 'authority', 'Autoridade sanitária'
         INTERNAL = 'internal', 'Interna'
 
@@ -792,14 +773,6 @@ class RecallCampaign(SingleInstanceModel):
         null=True,
         blank=True,
         verbose_name='CAPA',
-    )
-    pharmacovigilance_case = models.ForeignKey(
-        'pharmacovigilance.PharmacovigilanceCase',
-        on_delete=models.PROTECT,
-        related_name='recall_campaigns',
-        null=True,
-        blank=True,
-        verbose_name='caso de farmacovigilância',
     )
     criticality = models.CharField('criticidade', max_length=24, choices=Criticality.choices)
     criticality_ref = models.ForeignKey(
@@ -950,7 +923,6 @@ class RecallCampaign(SingleInstanceModel):
             'complaint',
             'deviation_event',
             'capa',
-            'pharmacovigilance_case',
         ):
             pass
         for field in ('responsible', 'approved_by', 'started_by', 'closed_by'):

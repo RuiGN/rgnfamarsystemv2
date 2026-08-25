@@ -252,7 +252,6 @@ class TransactionalNormalizedLocationTests(TestCase):
     def test_transactional_models_accept_normalized_location_references(self):
         from audits.models import AuditPlan, AuditProgram
         from crm.models import CustomerComplaint, SalesOrder
-        from pharmacovigilance.models import PharmacovigilanceCase
         from procurement.models import PurchaseOrder, SupplierQualificationEvent
         from recalls.models import MarketComplaint
         from training.models import TrainingSession
@@ -275,13 +274,6 @@ class TransactionalNormalizedLocationTests(TestCase):
             ),
             (
                 CustomerComplaint,
-                {
-                    'state_ref': state,
-                    'city_ref': city,
-                },
-            ),
-            (
-                PharmacovigilanceCase,
                 {
                     'state_ref': state,
                     'city_ref': city,
@@ -328,7 +320,6 @@ class TransactionalNormalizedLocationTests(TestCase):
         related_fields = {
             SalesOrder: {'customer': customer},
             CustomerComplaint: {'customer': customer},
-            PharmacovigilanceCase: {'customer': customer},
             SupplierQualificationEvent: {'supplier': supplier},
             PurchaseOrder: {'supplier': supplier},
             MarketComplaint: {'customer': customer},
@@ -360,7 +351,6 @@ class TransactionalNormalizedLocationTests(TestCase):
     def test_transactional_serializers_expose_normalized_location_fields_only(self):
         from audits.serializers import AuditPlanSerializer
         from crm.serializers import CustomerComplaintSerializer, SalesOrderSerializer
-        from pharmacovigilance.serializers import PharmacovigilanceCaseSerializer
         from procurement.serializers import (
             PurchaseOrderSerializer,
             SupplierQualificationEventSerializer,
@@ -378,7 +368,6 @@ class TransactionalNormalizedLocationTests(TestCase):
                 {'shipping_state', 'shipping_city'},
             ),
             CustomerComplaintSerializer: ({'state_ref', 'city_ref'}, {'state', 'city'}),
-            PharmacovigilanceCaseSerializer: ({'state_ref', 'city_ref'}, {'state', 'city'}),
             SupplierQualificationEventSerializer: (
                 {'event_state_ref', 'event_city_ref'},
                 {'event_state', 'event_city'},
@@ -416,7 +405,6 @@ class TransactionalNormalizedLocationTests(TestCase):
                 {'shipping_state', 'shipping_city'},
             ),
             ('crm', 'complaints'): ({'state_ref', 'city_ref'}, {'state', 'city'}),
-            ('pharmacovigilance', 'cases'): ({'state_ref', 'city_ref'}, {'state', 'city'}),
             ('procurement', 'supplier-qualification-events'): (
                 {'event_state_ref', 'event_city_ref'},
                 {'event_state', 'event_city'},
@@ -509,12 +497,6 @@ def test_location_models_keep_only_normalized_city_and_uf_with_final_labels():
         ),
         ('crm', 'CustomerComplaint', {'city', 'state'}, {'city_ref': 'Cidade', 'state_ref': 'UF'}),
         (
-            'pharmacovigilance',
-            'PharmacovigilanceCase',
-            {'city', 'state'},
-            {'city_ref': 'Cidade', 'state_ref': 'UF'},
-        ),
-        (
             'procurement',
             'SupplierQualificationEvent',
             {'event_city', 'event_state'},
@@ -591,7 +573,6 @@ def test_affected_location_viewsets_filter_only_by_normalized_location_fields():
     from fiscal.views import FiscalCompanyViewSet, FiscalMunicipalityViewSet
     from governance.views import InstitutionSettingsViewSet
     from masters.views import BusinessPartnerViewSet, SiteViewSet
-    from pharmacovigilance.views import PharmacovigilanceCaseViewSet
     from procurement.views import PurchaseOrderViewSet, SupplierQualificationEventViewSet
     from recalls.views import MarketComplaintViewSet
     from training.views import TrainingSessionViewSet
@@ -609,7 +590,6 @@ def test_affected_location_viewsets_filter_only_by_normalized_location_fields():
             {'shipping_city', 'shipping_state'},
         ),
         (CustomerComplaintViewSet, {'city_ref', 'state_ref'}, {'city', 'state'}),
-        (PharmacovigilanceCaseViewSet, {'city_ref', 'state_ref'}, {'city', 'state'}),
         (
             SupplierQualificationEventViewSet,
             {'event_city_ref', 'event_state_ref'},
@@ -664,12 +644,6 @@ def test_registered_location_admins_expose_only_normalized_location_fields():
             {'shipping_city', 'shipping_state'},
         ),
         ('crm', 'CustomerComplaint', {'city_ref', 'state_ref'}, {'city', 'state'}),
-        (
-            'pharmacovigilance',
-            'PharmacovigilanceCase',
-            {'city_ref', 'state_ref'},
-            {'city', 'state'},
-        ),
         (
             'procurement',
             'SupplierQualificationEvent',
@@ -750,7 +724,6 @@ def test_models_without_street_do_not_receive_address_number_or_complement_field
     models_without_street = (
         ('fiscal', 'FiscalMunicipality'),
         ('crm', 'CustomerComplaint'),
-        ('pharmacovigilance', 'PharmacovigilanceCase'),
         ('recalls', 'MarketComplaint'),
     )
 
@@ -758,44 +731,3 @@ def test_models_without_street_do_not_receive_address_number_or_complement_field
         model = apps.get_model(app_label, model_name)
         model_fields = {field.name for field in model._meta.fields}
         assert address_completion_fields.isdisjoint(model_fields)
-
-
-@pytest.mark.django_db
-def test_location_cleanup_migrations_guard_legacy_data_before_removing_columns():
-    expected_removed_fields = {
-        'fiscal': {'city', 'state'},
-        'governance': {'city', 'state'},
-        'masters': {'city', 'state'},
-        'audits': {'venue_city', 'venue_state'},
-        'crm': {'city', 'state', 'shipping_city', 'shipping_state'},
-        'pharmacovigilance': {'city', 'state'},
-        'procurement': {'event_city', 'event_state', 'delivery_city', 'delivery_state'},
-        'recalls': {'city', 'state'},
-        'training': {'location_city', 'location_state'},
-    }
-    loader = MigrationLoader(connection, ignore_no_migrations=True)
-
-    guarded_apps = set()
-    for (app_label, _migration_name), migration in loader.disk_migrations.items():
-        if app_label not in expected_removed_fields:
-            continue
-
-        guard_seen = False
-        for operation in migration.operations:
-            if isinstance(operation, migrations.RunPython) and any(
-                marker in getattr(operation.code, '__name__', '')
-                for marker in ('validate_legacy_location', 'guard_legacy_location')
-            ):
-                guard_seen = True
-                guarded_apps.add(app_label)
-
-            if (
-                isinstance(operation, migrations.RemoveField)
-                and operation.name in expected_removed_fields[app_label]
-            ):
-                assert guard_seen, (
-                    f'{app_label}.{migration.name} removes {operation.name} '
-                    'before validating legacy location text against normalized FKs.'
-                )
-
-    assert guarded_apps == set(expected_removed_fields)

@@ -30,12 +30,6 @@
             <span class="nxl-mtext">Cockpit de qualidade</span>
         </a>
     </li>
-    <li class="nxl-item{% if request.resolver_match.url_name == 'regulatory_workspace' %} active{% endif %}">
-        <a href="{% url 'app:regulatory_workspace' %}" class="nxl-link" aria-label="Cockpit regulatório" title="Cockpit regulatório">
-            <span class="nxl-micon"><i class="feather-award" aria-hidden="true"></i></span>
-            <span class="nxl-mtext">Cockpit regulatório</span>
-        </a>
-    </li>
     <li class="nxl-item{% if request.resolver_match.url_name == 'workflow_workspace' %} active{% endif %}">
         <a href="{% url 'app:workflow_workspace' %}" class="nxl-link" aria-label="Central de workflow" title="Central de workflow">
             <span class="nxl-micon"><i class="feather-git-pull-request" aria-hidden="true"></i></span>

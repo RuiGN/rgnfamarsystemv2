@@ -73,7 +73,6 @@ class AuxiliaryCatalogTests(TestCase):
         )
         from maintenance.models import EquipmentAsset
         from masters.models import BusinessPartner
-        from pharmacovigilance.models import PharmacovigilanceCase
         from procurement.models import PurchaseOrder, SupplierQualificationEvent, SupplierQuotation
         from recalls.models import MarketComplaint, RecallCampaign
         from reports.models import DashboardWidget, DashboardWorkspace, ReportDefinition
@@ -89,7 +88,6 @@ class AuxiliaryCatalogTests(TestCase):
             CriticalActivityRule as QACriticalActivityRule,
             TrainingRequirement as QATrainingRequirement,
         )
-        from regulatory.models import RegulatoryAlert
         from workflow.models import (
             ApprovalQueue,
             ApprovalTask,
@@ -116,7 +114,6 @@ class AuxiliaryCatalogTests(TestCase):
             BusinessPartner: ['state_ref', 'city_ref'],
             FiscalCompany: ['state_ref', 'city_ref'],
             FiscalMunicipality: ['state_ref', 'city_ref'],
-            PharmacovigilanceCase: ['country_ref', 'severity_ref'],
             SupplierQuotation: ['currency_ref', 'payment_term_ref', 'delivery_term_ref'],
             PurchaseOrder: ['currency_ref', 'payment_term_ref', 'delivery_term_ref'],
             ProtectedFile: ['source_module_ref', 'source_model_ref', 'criticality_ref'],
@@ -143,7 +140,6 @@ class AuxiliaryCatalogTests(TestCase):
             CustomerContact: ['role_ref'],
             CustomerComplaint: ['severity_ref'],
             RiskAlert: ['severity_ref'],
-            RegulatoryAlert: ['severity_ref'],
             MarketComplaint: ['criticality_ref'],
             RecallCampaign: ['criticality_ref'],
         }

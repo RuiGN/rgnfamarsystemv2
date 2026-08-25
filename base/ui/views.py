@@ -37,7 +37,6 @@ from production.models import (
     ProductionOutput,
 )
 from quality.models import LaboratoryInvestigation, QualityAnalysis, QualitySample
-from regulatory.models import RegulatoryAlert, RegulatoryCommitment, RegulatoryDossier
 from finance.models import FinancialTitle
 from reports.forms import (
     InvalidReportFilterSchema,
@@ -334,7 +333,6 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
         'operations': {'title': 'Operação e PCP', 'module': 'production'},
         'inventory': {'title': 'Estoque', 'module': 'inventory'},
         'quality': {'title': 'Qualidade', 'module': 'quality'},
-        'regulatory': {'title': 'Regulatório e GxP', 'module': 'regulatory'},
         'finance': {'title': 'Financeiro', 'module': 'finance'},
     }
 
@@ -375,9 +373,6 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
         samples = QualitySample.objects.all()
         analyses = QualityAnalysis.objects.all()
         investigations = LaboratoryInvestigation.objects.all()
-        dossiers = RegulatoryDossier.objects.all()
-        commitments = RegulatoryCommitment.objects.all()
-        alerts = RegulatoryAlert.objects.all()
         titles = FinancialTitle.objects.all()
         active_orders = orders.exclude(
             status__in=(
@@ -490,38 +485,6 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             data['table'] = list(
                 samples.order_by('-created_at').values('sample_number', 'sample_type', 'status')[:8]
             )
-        elif slug == 'regulatory':
-            data['kpis'] = [
-                {
-                    'label': 'Dossiês em revisão',
-                    'value': dossiers.filter(status=RegulatoryDossier.Status.UNDER_REVIEW).count(),
-                    'icon': 'feather-file-text',
-                    'tone': 'primary',
-                },
-                {
-                    'label': 'Compromissos abertos',
-                    'value': commitments.filter(status=RegulatoryCommitment.Status.OPEN).count(),
-                    'icon': 'feather-calendar',
-                    'tone': 'warning',
-                },
-                {
-                    'label': 'Alertas abertos',
-                    'value': alerts.filter(status=RegulatoryAlert.Status.OPEN).count(),
-                    'icon': 'feather-bell',
-                    'tone': 'danger',
-                },
-            ]
-            data['chart'] = {
-                'labels': ['Baixa', 'Média', 'Alta', 'Crítica'],
-                'series': [
-                    alerts.filter(severity=s).count() for s in ('low', 'medium', 'high', 'critical')
-                ],
-            }
-            data['table'] = list(
-                alerts.order_by('due_date').values('alert_type', 'severity', 'status', 'due_date')[
-                    :8
-                ]
-            )
         elif slug == 'finance':
             data['kpis'] = [
                 {
@@ -585,19 +548,24 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                     'tone': 'warning',
                 },
                 {
-                    'label': 'Alertas regulatórios',
-                    'value': alerts.filter(status=RegulatoryAlert.Status.OPEN).count(),
+                    'label': 'Investigações abertas',
+                    'value': investigations.exclude(
+                        status__in=(
+                            LaboratoryInvestigation.Status.CONCLUDED,
+                            LaboratoryInvestigation.Status.CANCELLED,
+                        )
+                    ).count(),
                     'icon': 'feather-award',
                     'tone': 'danger',
                 },
             ]
             data['chart'] = {
-                'labels': ['Produção', 'Estoque', 'Qualidade', 'Regulatório'],
+                'labels': ['Produção', 'Estoque', 'Qualidade', 'Investigações'],
                 'series': [
                     active_orders.count(),
                     lots.count(),
                     pending_quality,
-                    alerts.filter(status=RegulatoryAlert.Status.OPEN).count(),
+                    investigations.count(),
                 ],
             }
             data['table'] = [
@@ -659,25 +627,6 @@ class QualityWorkspaceView(LoginRequiredMixin, ModuleWorkspaceMixin, TemplateVie
                     LaboratoryInvestigation.Status.CANCELLED,
                 )
             ).count(),
-        }
-        return context
-
-
-class RegulatoryWorkspaceView(LoginRequiredMixin, ModuleWorkspaceMixin, TemplateView):
-    module_slug = 'regulatory'
-    template_name = 'workspaces/regulatory.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        dossiers = RegulatoryDossier.objects.all()
-        commitments = RegulatoryCommitment.objects.all()
-        alerts = RegulatoryAlert.objects.all()
-        context['metrics'] = {
-            'dossiers_under_review': dossiers.filter(
-                status=RegulatoryDossier.Status.UNDER_REVIEW
-            ).count(),
-            'open_commitments': commitments.filter(status=RegulatoryCommitment.Status.OPEN).count(),
-            'open_alerts': alerts.filter(status=RegulatoryAlert.Status.OPEN).count(),
         }
         return context
 

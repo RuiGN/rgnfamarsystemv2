@@ -12,10 +12,10 @@ from production.models import ProductionOrder
 def test_discovers_each_post_action_once_without_format_suffix_duplicates():
     actions = discover_post_actions()
 
-    assert len(actions) == 258
-    assert len({action.key for action in actions}) == 258
-    assert sum(action.detail for action in actions) == 252
-    assert sum(not action.detail for action in actions) == 6
+    assert len(actions) == 240
+    assert len({action.key for action in actions}) == 240
+    assert sum(action.detail for action in actions) == 235
+    assert sum(not action.detail for action in actions) == 5
 
     production = next(
         item
@@ -76,6 +76,6 @@ def test_action_config_is_immutable_reverses_route_and_checks_availability():
     collection_config = replace(
         config,
         detail=False,
-        route_name='v1_regulatory:alert-generate',
+        route_name='v1_risks:alert-generate',
     )
-    assert collection_config.api_url() == '/api/v1/regulatory/alerts/generate/'
+    assert collection_config.api_url() == '/api/v1/risks/alerts/generate/'

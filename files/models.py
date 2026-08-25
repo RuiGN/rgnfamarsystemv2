@@ -123,14 +123,6 @@ class ProtectedFile(SingleInstanceModel):
         blank=True,
         verbose_name='documento de qualidade',
     )
-    regulatory_dossier = models.ForeignKey(
-        'regulatory.RegulatoryDossier',
-        on_delete=models.PROTECT,
-        related_name='protected_files',
-        null=True,
-        blank=True,
-        verbose_name='dossiê regulatório',
-    )
     financial_title = models.ForeignKey(
         'finance.FinancialTitle',
         on_delete=models.PROTECT,
@@ -529,7 +521,6 @@ class ProtectedFile(SingleInstanceModel):
             controlled_document=self.controlled_document,
             fiscal_document=self.fiscal_document,
             quality_document=self.quality_document,
-            regulatory_dossier=self.regulatory_dossier,
             financial_title=self.financial_title,
             file_type=self.file_type,
             origin=self.Origin.UPLOAD,
@@ -598,7 +589,6 @@ class ProtectedFile(SingleInstanceModel):
             'controlled_document',
             'fiscal_document',
             'quality_document',
-            'regulatory_dossier',
             'financial_title',
             'supersedes',
             'replaced_by',

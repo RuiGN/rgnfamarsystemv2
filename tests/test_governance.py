@@ -477,17 +477,14 @@ class GovernanceCommandTests(TestCase):
         from formulations.models import MasterFormula
         from governance.models import DemoScenarioLoad
         from inventory.models import StockLot
-        from knowledge.models import KnowledgeChunk
         from maintenance.models import EquipmentAsset
         from masters.models import BusinessPartner, Product
-        from pharmacovigilance.models import PharmacovigilanceCase
         from planning.models import MRPSuggestion
         from procurement.models import PurchaseOrder
         from production.models import ProductionOrder
         from qa.models import QAReview
         from quality.models import QualitySample
         from recalls.models import RecallCampaign
-        from regulatory.models import RegulatoryDossier
         from reports.models import ReportDefinition
         from risks.models import RiskRecord
         from training.models import TrainingSession
@@ -520,15 +517,12 @@ class GovernanceCommandTests(TestCase):
             CapaRecord,
             RiskRecord,
             AuditProgram,
-            RegulatoryDossier,
-            PharmacovigilanceCase,
             RecallCampaign,
             EquipmentAsset,
             TrainingSession,
             ApprovalTask,
             ReportDefinition,
             AIAgentProfile,
-            KnowledgeChunk,
         ]
         first_counts = {model: model.objects.count() for model in expected_models}
 
@@ -537,7 +531,6 @@ class GovernanceCommandTests(TestCase):
             status=DemoScenarioLoad.Status.SUCCEEDED,
         ).exists()
         assert Product.objects.filter(code__startswith='DEMO-').count() >= 6
-        assert KnowledgeChunk.objects.filter(title__startswith='DEMO-').count() >= 5
         assert FiscalEmailDelivery.objects.filter(
             recipient_email='cliente.demo@example.com'
         ).exists()

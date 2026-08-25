@@ -72,7 +72,6 @@ class MarketComplaintSerializer(SingleInstanceRecallsSerializerMixin, serializer
             'quality_sample',
             'deviation_event',
             'capa',
-            'pharmacovigilance_case',
             'document',
         ):
             pass
@@ -165,7 +164,6 @@ class RecallCampaignSerializer(SingleInstanceRecallsSerializerMixin, serializers
             'complaint',
             'deviation_event',
             'capa',
-            'pharmacovigilance_case',
         ):
             pass
         for field_name in ('responsible', 'approved_by', 'started_by', 'closed_by'):

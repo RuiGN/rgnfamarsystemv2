@@ -31,8 +31,6 @@ nav:
       - Gestão de Mudanças: architecture/changes.md
       - Auditorias: architecture/audits.md
       - Gestão de Riscos: architecture/risks.md
-      - Assuntos Regulatórios: architecture/regulatory.md
-      - Farmacovigilância: architecture/pharmacovigilance.md
       - Recall e Recolhimento: architecture/recalls.md
       - Equipamentos e Manutenção: architecture/maintenance.md
       - Treinamentos e Qualificação: architecture/training.md
@@ -41,7 +39,6 @@ nav:
       - Notificações e Workflow: architecture/workflow.md
       - APIs REST e Integrações: architecture/integrations.md
       - Agentes de IA e Automações: architecture/ai-agents.md
-      - Conhecimento RAG: architecture/knowledge.md
       - Cadastros Auxiliares: architecture/auxiliary.md
       - Administração e Governança: architecture/governance.md
       - Conformidade Transversal: architecture/compliance.md

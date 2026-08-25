@@ -200,7 +200,7 @@ Este é um snapshot histórico, preservado sem atualização retroativa.
 - 226/226 models com permissões Django criadas no banco.
 - 242 ViewSets locais auditados.
 - 242/242 ViewSets usando `SingleInstanceDjangoModelPermissions`.
-- 253 ações `POST @action` cobertas por permissão padrão ou mapa explícito.
+- 240 ações `POST @action` cobertas por permissão padrão ou mapa explícito.
 - `manage.py check`: sem issues.
 - 49 testes focados em permissões/admin/ações: aprovados.
 - `check_security_audit`: aprovado.
@@ -211,7 +211,7 @@ Este é um snapshot histórico, preservado sem atualização retroativa.
 Auditoria do candidato executada em 27/07/2026:
 
 - código auditado no SHA `2fa9472`;
-- 258 ações `POST @action`: 252 de detalhe e 6 de coleção;
+- 240 ações `POST @action`: 235 de detalhe e 5 de coleção;
 - matriz com 238 ações de detalhe com estado, 14 sem estado e 6 de coleção;
 - migration `production.0007` aplicada;
 - 273 testes operacionais, 14 testes de produção/UI e 62 testes de

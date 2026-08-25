@@ -36,8 +36,6 @@ class WorkflowNotification(SingleInstanceModel):
         CAPA = 'capa', 'CAPA'
         DEVIATIONS = 'deviations', 'Desvios'
         RISKS = 'risks', 'Riscos'
-        REGULATORY = 'regulatory', 'Regulatório'
-        PHARMACOVIGILANCE = 'pharmacovigilance', 'Farmacovigilância'
         ADMINISTRATIVE = 'administrative', 'Administrativo'
 
     class Category(models.TextChoices):

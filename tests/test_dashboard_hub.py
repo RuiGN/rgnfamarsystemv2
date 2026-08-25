@@ -19,7 +19,7 @@ def grant_module_view(user, module_slug):
 
 class DashboardHubContractTests(SimpleTestCase):
     def test_all_dashboard_routes_are_named_and_have_module_mapping(self):
-        expected = {'executive', 'operations', 'inventory', 'quality', 'regulatory', 'finance'}
+        expected = {'executive', 'operations', 'inventory', 'quality', 'finance'}
         self.assertEqual(set(DashboardHubView.dashboards), expected)
         for slug in expected:
             self.assertEqual(
@@ -30,7 +30,7 @@ class DashboardHubContractTests(SimpleTestCase):
     def test_dashboard_configuration_uses_existing_modules(self):
         modules = {config['module'] for config in DashboardHubView.dashboards.values()}
         self.assertTrue(
-            {'production', 'inventory', 'quality', 'regulatory', 'finance'}.issubset(modules)
+            {'production', 'inventory', 'quality', 'finance'}.issubset(modules)
         )
 
 

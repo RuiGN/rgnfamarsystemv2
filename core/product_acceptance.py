@@ -194,8 +194,6 @@ def _api_v1_modules_check(api_v1_urls):
         'changes',
         'audits',
         'risks',
-        'regulatory',
-        'pharmacovigilance',
         'recalls',
         'maintenance',
         'training',

@@ -14,9 +14,9 @@ class FoundationSettingsTests(TestCase):
         assert settings.AUTH_USER_MODEL == 'accounts.User'
         assert 'rest_framework' in settings.INSTALLED_APPS
         assert 'base' in settings.INSTALLED_APPS
-        assert 'tenants' in settings.INSTALLED_APPS
         assert 'accounts' in settings.INSTALLED_APPS
-        assert 'control_plane' in settings.INSTALLED_APPS
+        assert 'tenants' not in settings.INSTALLED_APPS
+        assert 'control_plane' not in settings.INSTALLED_APPS
 
 
 class HealthCheckTests(TestCase):

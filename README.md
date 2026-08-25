@@ -88,7 +88,7 @@ APIs iniciais:
 - `GET|POST /api/inventory/balances/` mantém saldos por produto, lote, almoxarifado, localização e status de qualidade.
 - `GET|POST /api/inventory/movements/` mantém entradas, saídas, transferências, ajustes, inventários, reservas, devoluções, perdas, segregações, descartes e expedições.
 - `GET|POST /api/inventory/genealogy/` mantém genealogia entre lotes consumidos e lotes gerados; a migration da chave única interrompe com chave e IDs acionáveis se detectar duplicatas históricas, sem apagar evidências.
-- `GET|POST /api/costing/cost-centers/` e `/api/costing/cost-elements/` mantêm centros e elementos de custo.
+- `GET|POST /api/costing/cost-elements/` mantém elementos de custo.
 - `GET|POST /api/costing/standard-costs/` mantém custo padrão; `POST /api/costing/standard-costs/{id}/approve/` executa `draft -> approved` com recálculo e auditoria, e `POST /api/costing/standard-costs/{id}/obsolete/` executa `approved -> obsolete` preservando a evidência de aprovação. Um trigger PostgreSQL bloqueia inserções fora de rascunho, transições inválidas e adulteração de `approved_by`/`approved_at`.
 - `GET|POST /api/costing/simulations/` cria simulações e `POST /api/costing/simulations/{id}/calculate/` calcula custo total e unitário.
 - `GET|POST /api/costing/production-captures/` mantém custo real por ordem e `POST /api/costing/production-captures/{id}/calculate/` calcula total e variação.
@@ -146,13 +146,6 @@ APIs iniciais:
 - `GET|POST /api/risks/assessments/`, `/api/risks/controls/`, `/api/risks/actions/`, `/api/risks/links/` e `/api/risks/reviews/` controlam matriz/FMEA, controles existentes, ações de mitigação, vínculos e revisões.
 - `POST /api/risks/records/{id}/start_treatment/`, `/start_monitoring/`, `/close/`, `/cancel/` e `/generate_alerts/` executam workflow e geração de alertas.
 - `POST /api/risks/actions/{id}/complete/`, `/api/risks/reviews/{id}/complete/` e `/api/risks/alerts/{id}/acknowledge/` registram conclusão de ações, revisões e reconhecimento de alertas.
-- `GET|POST /api/regulatory/products/`, `/dossiers/`, `/registrations/`, `/petitions/`, `/requirements/`, `/commitments/`, `/evidences/`, `/links/`, `/reports/` e `/alerts/` mantêm produtos regulatórios, dossiês, registros, petições, exigências, compromissos, evidências, vínculos, relatórios e alertas.
-- `POST /api/regulatory/dossiers/{id}/submit/`, `/close/` e `/cancel/` executam o workflow do dossiê regulatório.
-- `POST /api/regulatory/petitions/{id}/submit/`, `/api/regulatory/requirements/{id}/answer/`, `/api/regulatory/commitments/{id}/complete/` e `/api/regulatory/reports/{id}/generate/` registram protocolo, resposta de exigência, conclusão de compromisso e dossiê consolidado.
-- `POST /api/regulatory/alerts/generate/` gera alertas de vencimento, renovação, compromisso, exigência e prazo de resposta.
-- `GET|POST /api/pharmacovigilance/cases/`, `/classifications/`, `/causality-assessments/`, `/investigations/`, `/actions/`, `/links/` e `/reports/` mantêm casos de farmacovigilância, classificações, causalidade, investigações, ações, vínculos e relatórios de segurança.
-- `POST /api/pharmacovigilance/cases/{id}/start_triage/`, `/start_investigation/`, `/close/` e `/cancel/` executam triagem, investigação, encerramento e cancelamento do caso.
-- `POST /api/pharmacovigilance/investigations/{id}/complete/`, `/api/pharmacovigilance/actions/{id}/complete/` e `/api/pharmacovigilance/reports/{id}/generate/` registram investigação concluída, ação concluída com evidência/hash e relatório de segurança gerado.
 - `GET|POST /api/recalls/complaints/`, `/returns/`, `/campaigns/`, `/impacted-customers/`, `/communications/` e `/reports/` mantêm reclamações pós-mercado, devoluções, campanhas de recall/recolhimento, clientes impactados, comunicações e relatórios.
 - `POST /api/recalls/complaints/{id}/start_triage/`, `/start_investigation/`, `/record_regulatory_communication/`, `/close/` e `/cancel/` controlam triagem, investigação, comunicação regulatória e encerramento de reclamações.
 - `POST /api/recalls/returns/{id}/authorize/`, `/receive/`, `/inspect/` e `/close/` controlam autorização, recebimento, inspeção e encerramento de devoluções.
@@ -176,8 +169,6 @@ APIs iniciais:
 - `POST /api/ai-agents/profiles/{id}/run/` cria execução síncrona ou assíncrona; execuções assíncronas usam metadados de task Celery.
 - `GET /api/ai-agents/runs/`, `/api/ai-agents/suggestions/` e `/api/ai-agents/audit-logs/` acompanham execução LangGraph, sugestões revisáveis e auditoria de prompt/modelo/entrada/saída.
 - `POST /api/ai-agents/suggestions/{id}/approve/`, `/reject/` e `/apply/` registram revisão humana obrigatória para sugestões de IA.
-- `GET /api/knowledge/sources/`, `/documents/`, `/chunks/`, `/sessions/`, `/messages/` e `/ingestion-logs/` consultam o banco RAG regulatório em escopo global.
-- `POST /api/knowledge/chat/` responde perguntas com contexto recuperado, citações e auditoria de mensagens.
 - `GET|POST /api/governance/parameters/` mantém parâmetros de retenção, prazos, alertas, alçadas, bloqueios, lotes, estoque e workflows.
 - `GET|POST /api/governance/catalog-items/` mantém tipos de documento, tipos de desvio, categorias de CAPA, status, criticidades e fluxos.
 - `GET /api/governance/audit-logs/` consulta logs técnicos e funcionais com contexto seguro em escopo global.
@@ -197,21 +188,9 @@ Carga demo por comando Django:
 
 O cenário `full_demo` cria uma massa ampla e idempotente com prefixo `DEMO-*`
 para cadastros, produção, MRP, compras, estoque, custos, financeiro, fiscal,
-CRM, qualidade, QA, documentos, desvios, CAPA, riscos, auditorias, regulatório,
-farmacovigilância, recalls, manutenção, treinamentos, workflow, relatórios,
-integrações, IA e RAG. Usuários demo usam a senha local `Demo@12345`.
-
-Ingestão inicial do corpus RAG regulatório:
-
-```bash
-.venv/bin/python manage.py ingest_rag_sources
-```
-
-O catálogo inicial inclui Anvisa/DOU, ICH, PIC/S, WHO, FDA/eCFR e a
-Farmacopeia Brasileira 8ª edição. Referências comerciais protegidas, como GAMP
-5, são registradas apenas como metadados sem ingestão integral de conteúdo.
-Para OpenCode Go, use `OPENCODE_BASE_URL=https://opencode.ai/zen/go`,
-`OPENCODE_MODEL=opencode-go/qwen3.7-max` e `OPENCODE_TIMEOUT_SECONDS=120`.
+CRM, qualidade, QA, documentos, desvios, CAPA, riscos, auditorias,
+recalls, manutenção, treinamentos, workflow, relatórios, integrações e IA.
+Usuários demo usam a senha local `Demo@12345`.
 
 Criptografia AES-256-GCM para arquivos protegidos:
 

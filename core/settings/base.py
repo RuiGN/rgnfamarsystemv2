@@ -75,9 +75,6 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'base',
     'auxiliary',
-    # DEPRECATED: tenants is maintained temporarily to preserve the multi-tenant removal
-    # migration history. Existing tests assert its presence. Do not remove yet.
-    'tenants',
     'accounts',
     'masters',
     'formulations',
@@ -97,8 +94,6 @@ LOCAL_APPS = [
     'changes',
     'audits',
     'risks',
-    'regulatory',
-    'pharmacovigilance',
     'recalls',
     'maintenance',
     'training',
@@ -107,12 +102,8 @@ LOCAL_APPS = [
     'workflow',
     'integrations',
     'ai_agents',
-    'knowledge',
     'governance',
     'compliance',
-    # DEPRECATED: control_plane is maintained temporarily to preserve the multi-tenant removal
-    # migration history. Existing tests assert its presence. Do not remove yet.
-    'control_plane',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -228,8 +219,10 @@ SPECTACULAR_SETTINGS = {
         'InvestigationStatusEnum': 'quality.models.LaboratoryInvestigation.Status',
         'MaintenancePlanTypeEnum': 'maintenance.models.MaintenancePlan.PlanType',
         'PlanningSourceEnum': 'planning.models.PlanningPolicy.Source',
-        'GeneratedReportStatusEnum': 'regulatory.models.RegulatoryReport.Status',
         'ReportModuleEnum': 'reports.models.ReportDefinition.Module',
+        'ReportExecutionStatusEnum': 'reports.models.ReportExecution.Status',
+        'ReportNotificationStatusEnum': 'reports.models.ReportNotification.Status',
+        'RecallEffectivenessStatusEnum': 'recalls.models.RecallEffectivenessReport.Status',
         'NotificationChannelEnum': 'reports.models.ReportNotification.Channel',
         'RiskLevelEnum': 'risks.models.RiskRecord.RiskLevel',
         'AlertStatusEnum': 'risks.models.RiskAlert.Status',
@@ -344,7 +337,6 @@ OPENCODE_API_KEY = env('OPENCODE_API_KEY', default='')
 OPENCODE_BASE_URL = env('OPENCODE_BASE_URL', default='https://opencode.ai/zen/go')
 OPENCODE_MODEL = env('OPENCODE_MODEL', default='opencode-go/qwen3.7-max')
 OPENCODE_TIMEOUT_SECONDS = env.int('OPENCODE_TIMEOUT_SECONDS', default=120)
-RAG_CHAT_LOCAL_ONLY = env.bool('RAG_CHAT_LOCAL_ONLY', default=True)
 DATA_ENCRYPTION_KEY_ID = env('DATA_ENCRYPTION_KEY_ID', default='primary')
 DATA_ENCRYPTION_KEYS = env('DATA_ENCRYPTION_KEYS', default='')
 DATA_ENCRYPTION_KEY = env('DATA_ENCRYPTION_KEY', default='')

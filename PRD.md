@@ -71,8 +71,6 @@ ANVISA quando aplicáveis.
 | RF-17 | Mudanças | Avaliações de impacto, ações, aprovações, estoque afetado e implantação. |
 | RF-18 | Auditorias | Programas, planos, checklist, achados, evidências, ações e relatórios. |
 | RF-19 | Riscos | Avaliações, controles, mitigação, revisões, alertas e risco residual. |
-| RF-20 | Regulatório | Produtos, dossiês, registros, petições, exigências, evidências e compromissos. |
-| RF-21 | Farmacovigilância | Casos, classificação, causalidade, investigação, ações e relatos de segurança. |
 | RF-22 | Recall | Reclamações, devoluções, campanhas, clientes, comunicações e efetividade. |
 | RF-23 | Manutenção | Ativos, planos, ordens, indisponibilidade, qualificação e calibração. |
 | RF-24 | Treinamentos | Cargos, competências, matriz, turmas, avaliações e autorização de atividades críticas. |
@@ -80,7 +78,7 @@ ANVISA quando aplicáveis.
 | RF-26 | Relatórios e BI | Dashboards, definições, execuções, agendas, exportações e notificações. |
 | RF-27 | Workflow | Filas, tarefas, delegações, comentários, anexos, notificações e jobs. |
 | RF-28 | Integrações | Conectores, clientes de API, rotação de segredo, eventos e logs. |
-| RF-29 | IA e RAG | Agentes, revisão humana, auditoria de prompts, ingestão, recuperação e citações. |
+| RF-29 | IA | Agentes, revisão humana e auditoria de prompts. |
 | RF-30 | Governança | Parâmetros, catálogos, logs, cenários de demonstração e administração interna. |
 | RF-31 | Compliance transversal | Permissão, auditoria, status, transação, mensagens, documentação, menu, testes e API. |
 
@@ -91,7 +89,7 @@ ANVISA quando aplicáveis.
 - Sidebar, módulos, recursos e botões respeitam permissões reais.
 - Relações prioritárias 1-N são editadas no formulário principal por formsets
   genéricos, com rollback integral em falha e permissão por ação do filho.
-- As 253 ações `POST` de domínio possuem representação na UI operacional; ações
+- As 240 ações `POST` de domínio possuem representação na UI operacional; ações
   de detalhe respeitam permissões e ciclo de vida antes de exibir o botão, e o
   endpoint DRF revalida todas as regras no envio.
 - Textos exibidos ao usuário são em português brasileiro.
@@ -137,9 +135,9 @@ ANVISA quando aplicáveis.
 - Models e schema não contêm artefatos funcionais de escopo por cliente.
 - Login por nome de usuário e controle de acesso pelo Django Admin funcionam.
 - UI, APIs, CRUD e relações prioritárias respeitam permissões.
-- O catálogo HTML e as ações `POST` DRF possuem exatamente as mesmas 253 chaves,
+- O catálogo HTML e as ações `POST` DRF possuem exatamente as mesmas 240 chaves,
   sem ações órfãs, duplicadas ou expostas em estado incompatível.
-- IA, RAG, backup, arquivos e criptografia funcionam no escopo global.
+- IA, backup, arquivos e criptografia funcionam no escopo global.
 - Documentação, matriz de requisitos e catálogo de evidências estão atualizados.
 - Pendências externas ou regulatórias são explicitadas e bloqueiam a declaração
   de encerramento formal quando aplicável.

@@ -289,7 +289,6 @@ class RecallsModelTests(TestCase):
         assert report.effectiveness_rate == Decimal('100.00')
 
     def test_rf22_supports_required_types_and_traceability_links(self):
-        from pharmacovigilance.models import PharmacovigilanceCase
         from recalls.models import MarketComplaint, RecallCampaign
 
         owner = User.objects.create_user(
@@ -300,20 +299,6 @@ class RecallsModelTests(TestCase):
         product, lot, customer, sales_order, fiscal_document, _crm_complaint, sample, document = (
             create_recalls_context(owner)
         )
-        pv_case = PharmacovigilanceCase.objects.create(
-            case_type=PharmacovigilanceCase.CaseType.TECHNICAL_COMPLAINT,
-            source=PharmacovigilanceCase.Source.CUSTOMER,
-            product=product,
-            stock_lot=lot,
-            customer=customer,
-            country='BR',
-            seriousness=PharmacovigilanceCase.Seriousness.NON_SERIOUS,
-            severity=PharmacovigilanceCase.Severity.MEDIUM,
-            outcome=PharmacovigilanceCase.Outcome.NOT_APPLICABLE,
-            event_reported_at=timezone.now(),
-            responsible=owner,
-            reported_by=owner,
-        )
         complaint = MarketComplaint.objects.create(
             complaint_type=MarketComplaint.ComplaintType.RECALL_REQUEST,
             source=MarketComplaint.Source.AUTHORITY,
@@ -323,7 +308,6 @@ class RecallsModelTests(TestCase):
             sales_order=sales_order,
             fiscal_document=fiscal_document,
             quality_sample=sample,
-            pharmacovigilance_case=pv_case,
             document=document,
             criticality=MarketComplaint.Criticality.HIGH,
             received_at=timezone.now(),
@@ -349,7 +333,6 @@ class RecallsModelTests(TestCase):
         assert complaint.sales_order == sales_order
         assert complaint.fiscal_document == fiscal_document
         assert complaint.quality_sample == sample
-        assert complaint.pharmacovigilance_case == pv_case
         assert complaint.document == document
 
 

@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import OperationalError, ProgrammingError
 
 from base.ui.registry import get_visible_modules
@@ -11,7 +10,6 @@ DASHBOARD_NAVIGATION = (
     ('operations', 'Operação e PCP', 'production'),
     ('inventory', 'Estoque', 'inventory'),
     ('quality', 'Qualidade', 'quality'),
-    ('regulatory', 'Regulatório e GxP', 'regulatory'),
     ('finance', 'Financeiro', 'finance'),
 )
 
@@ -37,7 +35,6 @@ def _institution_brand_context():
         'active_institution': institution,
         'institution_name': str(institution) if institution else 'RGN Farma System',
         'institution_logo_url': logo_url,
-        'rag_chat_local_only': getattr(settings, 'RAG_CHAT_LOCAL_ONLY', True),
     }
 
 

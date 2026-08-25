@@ -138,8 +138,6 @@ class ReportingModelTests(TestCase):
             'capa',
             'deviations',
             'risks',
-            'regulatory',
-            'pharmacovigilance',
         }
 
     def test_rf26_report_schedule_uses_celery_task_metadata_and_notifies_completion(self):

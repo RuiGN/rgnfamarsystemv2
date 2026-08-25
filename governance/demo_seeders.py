@@ -30,9 +30,9 @@ class DemoSeeder:
             self._seed_crm()
             self._seed_quality_and_qa()
             self._seed_documents_deviations_capa_risks_audits()
-            self._seed_regulatory_pv_recalls()
+            self._seed_recalls()
             self._seed_support_modules()
-            self._seed_ai_and_knowledge()
+            self._seed_ai_agents()
         return self.counts
 
     def _upsert(self, model, count_key, lookup, defaults=None):
@@ -217,9 +217,7 @@ class DemoSeeder:
             ('fiscal', 'Fiscal'),
             ('finance', 'Financeiro'),
             ('documents', 'Documentos'),
-            ('regulatory', 'Regulatorio'),
             ('workflow', 'Workflow'),
-            ('knowledge', 'Base de Conhecimento'),
         ]:
             module_refs[code] = self._upsert(
                 SystemModule,
@@ -1594,74 +1592,10 @@ class DemoSeeder:
             }
         )
 
-    def _seed_regulatory_pv_recalls(self):
-        from pharmacovigilance.models import PharmacovigilanceCase
+    def _seed_recalls(self):
         from recalls.models import RecallCampaign
-        from regulatory.models import RegulatoryDossier, RegulatoryProduct
 
         product = self.refs['products']['DEMO-PROD-PAR500']
-        reg_product = self._upsert(
-            RegulatoryProduct,
-            'regulatory.products',
-            {'regulatory_code': 'DEMO-REGPROD-0001'},
-            {
-                'product': product,
-                'presentation': 'Paracetamol 500 mg x 20 comprimidos',
-                'registration_holder': 'RGN Farma Demo Ltda',
-                'therapeutic_class': 'Analgesico',
-                'dosage_form': 'Comprimido',
-                'strength': '500 mg',
-                'route': 'Oral',
-                'status': RegulatoryProduct.Status.ACTIVE,
-                'responsible': self.refs['regulatory_user'],
-            },
-        )
-        dossier = self._upsert(
-            RegulatoryDossier,
-            'regulatory.dossiers',
-            {'dossier_number': 'DEMO-REGDOS-0001'},
-            {
-                'regulatory_product': reg_product,
-                'dossier_type': RegulatoryDossier.DossierType.POST_REGISTRATION,
-                'title': 'Dossie demo pos-registro',
-                'authority': 'ANVISA',
-                'subject': 'Alteracao pos-registro demo para testes.',
-                'responsible': self.refs['regulatory_user'],
-                'due_date': self.today + timezone.timedelta(days=120),
-                'status': RegulatoryDossier.Status.UNDER_REVIEW,
-                'submitted_by': self.refs['regulatory_user'],
-                'submitted_at': self.now,
-            },
-        )
-        pv_case = self._upsert(
-            PharmacovigilanceCase,
-            'pharmacovigilance.cases',
-            {'case_number': 'DEMO-PVCASE-0001'},
-            {
-                'case_type': PharmacovigilanceCase.CaseType.ADVERSE_EVENT,
-                'source': PharmacovigilanceCase.Source.CUSTOMER,
-                'product': product,
-                'stock_lot': self.refs['stock_lot_pa'],
-                'customer': self.refs['partners']['DEMO-CLIENTE-01'],
-                'patient_identifier_hash': self._hash('paciente-demo-001'),
-                'patient_age': 44,
-                'patient_gender': 'nao informado',
-                'country': 'Brasil',
-                'country_ref': self.refs['country'],
-                'seriousness': PharmacovigilanceCase.Seriousness.NON_SERIOUS,
-                'severity': PharmacovigilanceCase.Severity.MEDIUM,
-                'severity_ref': self.refs['severity_high'],
-                'outcome': PharmacovigilanceCase.Outcome.RECOVERED,
-                'description': 'Relato demo de evento adverso nao serio.',
-                'event_started_at': self.now - timezone.timedelta(days=2),
-                'event_reported_at': self.now,
-                'responsible': self.refs['regulatory_user'],
-                'reported_by': self.refs['regulatory_user'],
-                'status': PharmacovigilanceCase.Status.TRIAGE,
-                'triaged_by': self.refs['regulatory_user'],
-                'triaged_at': self.now,
-            },
-        )
         recall = self._upsert(
             RecallCampaign,
             'recalls.campaigns',
@@ -1673,24 +1607,16 @@ class DemoSeeder:
                 'stock_lot': self.refs['stock_lot_pa'],
                 'deviation_event': self.refs['quality_event'],
                 'capa': self.refs['capa'],
-                'pharmacovigilance_case': pv_case,
                 'criticality': RecallCampaign.Criticality.MEDIUM,
                 'criticality_ref': self.refs['severity_high'],
                 'reason': 'Campanha demo para simular avaliacao de campo.',
                 'decision_date': self.today,
                 'target_completion_date': self.today + timezone.timedelta(days=30),
-                'responsible': self.refs['regulatory_user'],
+                'responsible': self.refs['quality_user'],
                 'status': RecallCampaign.Status.DRAFT,
             },
         )
-        self.refs.update(
-            {
-                'regulatory_product': reg_product,
-                'regulatory_dossier': dossier,
-                'pv_case': pv_case,
-                'recall': recall,
-            }
-        )
+        self.refs.update({'recall': recall})
 
     def _seed_support_modules(self):
         from maintenance.models import EquipmentAsset, MaintenancePlan
@@ -1913,10 +1839,9 @@ class DemoSeeder:
             {'asset': asset, 'training_session': session, 'approval_task': task, 'report': report}
         )
 
-    def _seed_ai_and_knowledge(self):
+    def _seed_ai_agents(self):
         from ai_agents.models import AIAgentProfile, AIAgentRun, AIInsightSuggestion
         from integrations.models import ApiClientApplication, IntegrationConnector
-        from knowledge.models import KnowledgeChunk, KnowledgeDocument, KnowledgeSource
 
         connector = self._upsert(
             IntegrationConnector,
@@ -1955,7 +1880,7 @@ class DemoSeeder:
                 'provider': AIAgentProfile.Provider.LOCAL,
                 'model_name': 'opencode-go/qwen3.7-max',
                 'system_prompt': 'Responda de forma amigavel, cite fontes quando houver e sinalize limites de validacao regulatoria.',
-                'allowed_source_modules': ['documents', 'regulatory', 'quality'],
+                'allowed_source_modules': ['documents', 'quality'],
                 'configuration': {'demo': True},
                 'requires_human_review': True,
                 'is_active': True,
@@ -1999,88 +1924,10 @@ class DemoSeeder:
                 'status': AIInsightSuggestion.Status.PENDING_REVIEW,
             },
         )
-        source = self._upsert(
-            KnowledgeSource,
-            'knowledge.sources',
-            {'code': 'DEMO-RAG-REG'},
-            {
-                'title': 'Corpus regulatorio demo',
-                'source_type': KnowledgeSource.SourceType.GUIDELINE,
-                'publisher': 'RGN Farma Demo',
-                'jurisdiction': 'BR',
-                'version': '2026-demo',
-                'is_official': False,
-                'is_active': True,
-                'metadata': {'demo': True},
-            },
-        )
-        text = '\n'.join(
-            [
-                'DEMO-ALCOA: Registros GMP devem ser atribuiveis, legiveis, contemporaneos, originais e acurados.',
-                'DEMO-BPF: Desvios devem ser registrados, investigados, avaliados quanto a impacto e encerrados com aprovacao QA.',
-                'DEMO-CAPA: CAPAs devem possuir causa raiz, plano de acao, responsavel, prazo e verificacao de eficacia.',
-                'DEMO-FISCAL: NF-e demo em homologacao nao deve ser transmitida para ambiente de producao.',
-                'DEMO-FARMACOPEIA: Especificacoes analiticas devem definir metodo, parametro, limite e criterio de aceitacao.',
-            ]
-        )
-        document = self._upsert(
-            KnowledgeDocument,
-            'knowledge.documents',
-            {'source': source, 'content_hash': self._hash(text)},
-            {
-                'title': 'Base regulatoria demo para RAG',
-                'document_type': KnowledgeDocument.DocumentType.TEXT,
-                'version_label': 'demo',
-                'published_on': self.today,
-                'retrieved_at': self.now,
-                'status': KnowledgeDocument.Status.INGESTED,
-                'extracted_text': text,
-                'metadata': {'demo': True},
-            },
-        )
-        chunks = [
-            (
-                'DEMO-ALCOA',
-                'Integridade de dados ALCOA+ exige registros atribuiveis, legiveis, contemporaneos, originais e acurados.',
-            ),
-            (
-                'DEMO-BPF-DESVIOS',
-                'Desvios GMP devem ser registrados, investigados, classificados por criticidade e avaliados quanto ao impacto no lote.',
-            ),
-            (
-                'DEMO-CAPA-EFICACIA',
-                'CAPA efetiva deve conectar causa raiz, acoes corretivas e preventivas, evidencias e verificacao de eficacia.',
-            ),
-            (
-                'DEMO-NFE-HOMOLOGACAO',
-                'Notas fiscais demo devem permanecer em homologacao e nao representam documento fiscal real autorizado.',
-            ),
-            (
-                'DEMO-FARMACOPEIA-ESPEC',
-                'Especificacoes farmacopeicas devem declarar metodo, parametro, limites e criterio de aceitacao.',
-            ),
-        ]
-        for index, (title, content) in enumerate(chunks):
-            self._upsert(
-                KnowledgeChunk,
-                'knowledge.chunks',
-                {'document': document, 'chunk_index': index},
-                {
-                    'source': source,
-                    'title': title,
-                    'section_reference': title,
-                    'content': content,
-                    'content_hash': self._hash(content),
-                    'token_count': len(content.split()),
-                    'metadata': {'demo': True},
-                },
-            )
         self.refs.update(
             {
                 'integration_connector': connector,
                 'ai_agent': agent,
-                'knowledge_source': source,
-                'knowledge_document': document,
             }
         )
 

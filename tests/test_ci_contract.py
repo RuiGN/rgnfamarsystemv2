@@ -110,17 +110,17 @@ def test_runtime_dependencies_use_audited_compatible_versions():
     requirements = set(REQUIREMENTS.read_text(encoding='utf-8').splitlines())
 
     required_versions = {
-        'Django==5.2.16',
-        'langchain==1.3.13',
-        'langchain-openai==1.3.5',
-        'langgraph==1.2.9',
-        'langgraph-checkpoint==4.1.1',
-        'langgraph-sdk==0.4.2',
-        'openai==2.45.0',
-        'protobuf==6.33.6',
-        'pypdf==6.14.2',
+        'Django==6.0.8',
+        'langchain==1.3.17',
+        'langchain-openai==1.6.0',
+        'langgraph==1.2.11',
+        'langgraph-checkpoint==4.2.0',
+        'langgraph-sdk==0.4.3',
+        'openai==3.3.1',
+        'protobuf==7.36.0',
+        'pypdf==6.16.2',
         'pytest==9.1.1',
-        'websockets==15.0.1',
+        'websockets==16.1.1',
     }
 
     assert required_versions <= requirements

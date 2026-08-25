@@ -67,7 +67,6 @@ def create_agent(owner, code='AI-DOC-SUMMARY'):
             AIAgentProfile.SourceModule.AUDITS,
             AIAgentProfile.SourceModule.COMPLAINTS,
             AIAgentProfile.SourceModule.RISKS,
-            AIAgentProfile.SourceModule.REGULATORY,
         ],
         configuration={'force_local': True},
         created_by=owner,

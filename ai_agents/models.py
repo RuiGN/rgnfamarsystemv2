@@ -38,8 +38,6 @@ class AIAgentProfile(AutoCodeMixin, SingleInstanceModel):
         AUDITS = 'audits', 'Auditorias'
         COMPLAINTS = 'complaints', 'Reclamações'
         RISKS = 'risks', 'Riscos'
-        REGULATORY = 'regulatory', 'Regulatório'
-        PHARMACOVIGILANCE = 'pharmacovigilance', 'Farmacovigilância'
         QA = 'qa', 'Análise de Qualidade'
         PRODUCTION = 'production', 'Produção'
         GENERAL = 'general', 'Geral'

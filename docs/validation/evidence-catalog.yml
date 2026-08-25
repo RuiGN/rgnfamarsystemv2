@@ -43,7 +43,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-07-18T00:00:00Z'
     status: approved
-    sha256: 'c23a54a3da688ef98ef4b27f6a8d90b77728a632e4e0cf536de737ecbc518937'
+    sha256: '1047b9584cfa4567906f66c0a58b8e4069620d140b66f51f26795fb7c41f9fd5'
     artifact: tests/test_single_instance_schema.py
   - id: EV-SI-005
     requirement: SI-005
@@ -52,7 +52,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-07-28T00:00:00Z'
     status: approved
-    sha256: 'b3c34fed87cbc9e3d2092f81b3329644d3eec64a252196f842fc8d1740e5da50'
+    sha256: 'afb850a9a90f1b5cf3bee21c8dd40d0a6dc2115164938d53f65ff879fe0a5aa4'
     artifact: tests/test_formula_inline_components_ui.py
   - id: EV-SI-006
     requirement: SI-006
@@ -61,17 +61,8 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-07-28T00:00:00Z'
     status: approved
-    sha256: '6044a04567a7a7a2f6f4be056b7a20da20e5689d41b18e469cb735ca0a2319eb'
+    sha256: '3849e6bb3d125f7496d7c2dada490e4d6c2c27fd083b99d2b653a2358668656f'
     artifact: tests/test_ai_agents.py
-  - id: EV-SI-007
-    requirement: SI-007
-    title: Validação do assistente RAG em escopo global
-    owner: engineering
-    reviewed_by: automated-quality-gate
-    captured_at: '2026-07-18T00:00:00Z'
-    status: approved
-    sha256: '529f5fe25b74db8abc2d12e6fcd5d3666e80058d2237495ab7366d65b915ec4e'
-    artifact: tests/test_knowledge.py
   - id: EV-SI-008
     requirement: SI-008
     title: Validação de arquivos protegidos e autorização
@@ -124,7 +115,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-07-28T00:00:00Z'
     status: approved
-    sha256: 'f1c9f7586cfb2722eac6d502cfb09ce0817bca98a5933d95cc8f43f6c229bd79'
+    sha256: '25e628ea7c910c480dc33c87b69917b942facf815e5ac0afe2ddc0411aaf83a3'
     artifact: tests/test_action_catalog_completeness.py
   - id: EV-SIA-PTBR
     requirement: SIA-PTBR

@@ -19,7 +19,7 @@ integrações ou processos operacionais forem alterados.
 - UI operacional baseada no design system, com shell responsivo, sidebar,
   listagens, detalhes, formulários, confirmação de exclusão, badges, filtros,
   paginação, estados vazios e relações 1-N transacionais no formulário pai.
-- Catálogo HTML das 258 ações DRF, com permissões, formulários, confirmações e
+- Catálogo HTML das 240 ações DRF, com permissões, formulários, confirmações e
   visibilidade compatível com o estado atual do registro.
 
 ## Documentos principais

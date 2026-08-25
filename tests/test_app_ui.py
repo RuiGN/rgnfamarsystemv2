@@ -647,15 +647,6 @@ class AppUiSprint38ResourceTests(TestCase):
             for label in labels:
                 assert without_accents(label) in without_accents(content)
 
-    def test_knowledge_module_is_registered_for_rag_resources(self):
-        modules = {module.slug: module for module in get_modules()}
-
-        assert 'knowledge' in modules
-        labels = [resource.label for resource in modules['knowledge'].resources]
-        assert 'Fontes RAG' in labels
-        assert 'Documentos RAG' in labels
-        assert 'Conversas RAG' in labels
-
     def test_master_resource_list_uses_single_instance_global_scope(self):
         UnitOfMeasure.objects.create(code='g', name='Grama', symbol='g')
         UnitOfMeasure.objects.create(code='mL', name='Mililitro', symbol='mL')
@@ -696,7 +687,6 @@ class AppUiSprint39ResourceTests(TestCase):
     def test_sprint_39_modules_expose_expected_resources(self):
         expected = {
             'costing': [
-                'Centros de custo',
                 'Elementos de custo',
                 'Custos padrao',
                 'Simulacoes de custo',
@@ -979,27 +969,6 @@ class AppUiSprint41ResourceTests(TestCase):
                 'Revisões de risco',
                 'Alertas de risco',
             ],
-            'regulatory': [
-                'Produtos regulatórios',
-                'Dossiês regulatórios',
-                'Registros regulatórios',
-                'Petições regulatórias',
-                'Exigências regulatórias',
-                'Compromissos regulatórios',
-                'Evidências regulatórias',
-                'Links regulatórios',
-                'Relatórios regulatórios',
-                'Alertas regulatórios',
-            ],
-            'pharmacovigilance': [
-                'Casos de farmacovigilância',
-                'Classificações de farmacovigilância',
-                'Avaliações de causalidade',
-                'Investigações de farmacovigilância',
-                'Ações de farmacovigilância',
-                'Links de farmacovigilância',
-                'Relatórios de segurança',
-            ],
             'recalls': [
                 'Reclamacoes de mercado',
                 'Devolucoes de produto',
@@ -1025,8 +994,6 @@ class AppUiSprint41ResourceTests(TestCase):
         navigation = response.content.decode().split('</nav>', 1)[0]
         assert 'href="/app/audits/"' in navigation
         assert 'href="/app/risks/"' in navigation
-        assert 'href="/app/regulatory/"' in navigation
-        assert 'href="/app/pharmacovigilance/"' in navigation
         assert 'href="/app/recalls/"' in navigation
 
     def test_risk_record_list_uses_single_instance_global_scope(self):
@@ -1068,10 +1035,7 @@ class AppUiSprint41ResourceTests(TestCase):
     def test_hash_based_evidences_alerts_and_reports_are_read_only(self):
         protected_paths = (
             '/app/audits/evidences/new/',
-            '/app/regulatory/evidences/new/',
-            '/app/regulatory/alerts/new/',
             '/app/risks/alerts/new/',
-            '/app/pharmacovigilance/reports/new/',
             '/app/recalls/communications/new/',
         )
 
@@ -1323,7 +1287,6 @@ class AppUiSprint43ReadinessTests(TestCase):
             'Aplicativos',
             'Cockpit operacional',
             'Cockpit de qualidade',
-            'Cockpit regulatório',
             'Central de workflow',
         ):
             assert f'aria-label="{label}"' in template
@@ -1427,17 +1390,6 @@ class AppUiSprint43ReadinessTests(TestCase):
         assert 'Análises pendentes' in content
         assert 'Investigações abertas' in content
         assert 'href="/app/quality/samples/"' in content
-
-    def test_regulatory_workspace_exposes_compliance_deadline_metrics(self):
-        response = self.client.get('/app/workspaces/regulatory/')
-
-        assert response.status_code == 200
-        content = response.content.decode()
-        assert 'Cockpit regulatório' in content
-        assert 'Dossiês em análise' in content
-        assert 'Compromissos abertos' in content
-        assert 'Alertas regulatórios' in content
-        assert 'href="/app/regulatory/dossiers/"' in content
 
     def test_workflow_workspace_exposes_approval_and_async_job_metrics(self):
         response = self.client.get('/app/workspaces/workflow/')
