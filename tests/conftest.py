@@ -1,3 +1,5 @@
+import base64
+
 import pytest
 from django.contrib.auth.models import Permission
 from django.test import Client
@@ -9,6 +11,17 @@ PERMISSION_STRICT_TEST_FILES = {
     'test_master_data.py',
     'test_single_instance_runtime.py',
 }
+
+TEST_ENCRYPTION_KEYS = (
+    'test:' + base64.urlsafe_b64encode(b'rgn-farma-test-key-0123456789ab').decode('ascii')
+)
+
+
+@pytest.fixture(autouse=True)
+def default_data_encryption_keys(settings):
+    if not getattr(settings, 'DATA_ENCRYPTION_KEYS', ''):
+        settings.DATA_ENCRYPTION_KEYS = TEST_ENCRYPTION_KEYS
+        settings.DATA_ENCRYPTION_KEY_ID = 'test'
 
 
 @pytest.fixture(autouse=True)

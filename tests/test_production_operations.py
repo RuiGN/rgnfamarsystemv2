@@ -18,7 +18,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from formulations.models import FormulaComponent, ManufacturingRoute, MasterFormula, RouteStep
-from costing.models import ProductionCostCapture, StandardCost
+from costing.models import MonthlyCostClosing, ProductionCostCapture, StandardCost
 from inventory.models import StockBalance, StockLot, StockMovement, StockQualityStatus
 from masters.models import Product, Site, StorageLocation, UnitOfMeasure, Warehouse
 from production.models import (
@@ -3006,12 +3006,13 @@ def test_calculate_cost_selects_latest_approved_revision_not_lexical_version(
         created_at=timezone.make_aware(datetime(2026, 7, 12, 9, 0)),
     )
 
-    _create_approved_standard(
+    other_center_revision = _create_approved_standard(
         consumption=allocated_consumption,
         user=operations_user,
         effective_from=period_start,
         version='OUTRO-CENTRO',
     )
+    other_center_revision.obsolete()
     other_unit_revision = _create_approved_standard(
         consumption=allocated_consumption,
         user=operations_user,
@@ -5997,7 +5998,7 @@ MAP_SECTION_CASES = (
         'costing.view_productioncostcapture',
         'cost_captures',
         'costing_productioncostcapture',
-        'Centro do mapa',
+        'Custos planejados e reais da ordem',
     ),
     (
         'governance.view_governanceauditlog',
