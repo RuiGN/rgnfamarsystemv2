@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %} - {{ resource.label }} | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %} - {{ resource.label }}</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item">{% if form_mode == 'edit' %}Editar registro{% else %}Novo registro{% endif %}</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto d-none d-md-flex">
+        <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-arrow-left" aria-hidden="true"></i>Voltar</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="card stretch stretch-full">
+    <div class="card-body">
+        <form method="post" class="resource-form" data-ui="resource-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" id="{{ resource.slug }}-form-errors" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <div class="form-grid">
+                {% for field in form %}
+                <div class="form-field {{ field.field.rgn_layout_class }}{% if field.field.widget.input_type == 'checkbox' %} form-field-inline{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {% if field.field.rgn_icon %}
+                        <div class="input-group resource-input-group" data-field-icon="{{ field.name }}">
+                            <span class="input-group-text resource-input-icon"><i class="{{ field.field.rgn_icon }} text-muted fs-6" aria-hidden="true"></i></span>
+                            {{ field }}
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                    {% if field.help_text %}
+                        <span class="field-help" id="{{ field.id_for_label }}_help">{{ field.help_text }}</span>
+                    {% endif %}
+                    {% if field.errors %}
+                        <span class="invalid-feedback d-block field-error" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% if has_inline_formsets %}
+                {% for inline in inline_formsets %}
+                    {% if not inline.available %}
+                        <section class="card border mt-4 resource-inline-formset" data-inline-formset="{{ inline.key }}">
+                            <div class="card-header bg-light">
+                                <h2 class="h5 mb-1">{{ inline.title }}</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-secondary mb-0" role="status">
+                                    Você não possui permissão para visualizar estes registros.
+                                </div>
+                            </div>
+                        </section>
+                    {% elif inline.inline_style == 'tabular' %}
+                        {% include 'app/includes/inline_tabular.html' %}
+                    {% elif inline.inline_style == 'qc_grid' %}
+                        {% include 'app/includes/inline_qc_grid.html' %}
+                    {% else %}
+                        {% include 'app/includes/inline_stacked.html' %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% include 'includes/form_actions.html' %}
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+document.addEventListener('click', function (event) {
+    const addButton = event.target.closest('[data-inline-formset-add]');
+    if (!addButton) {
+        return;
+    }
+
+    const key = addButton.getAttribute('data-inline-formset-add');
+    const container = document.querySelector('[data-inline-formset-forms="' + key + '"]');
+    const template = document.querySelector('[data-inline-formset-empty="' + key + '"]');
+    const totalForms = document.getElementById('id_' + key + '-TOTAL_FORMS');
+
+    if (!container || !template || !totalForms) {
+        return;
+    }
+
+    const index = parseInt(totalForms.value, 10);
+    const templateHtml = template.innerHTML.replaceAll('__prefix__', index);
+    
+    // Using insertAdjacentHTML directly allows <tr> to be inserted into <tbody>
+    container.insertAdjacentHTML('beforeend', templateHtml);
+    totalForms.value = index + 1;
+});
+
+document.addEventListener('change', function(event) {
+    if(event.target.tagName === 'SELECT' && event.target.name.includes('result_status')) {
+        const row = event.target.closest('tr');
+        if(row && event.target.value === 'oos') {
+            row.classList.add('table-danger');
+            row.classList.remove('table-success', 'table-warning');
+        } else if (row && event.target.value === 'compliant') {
+            row.classList.add('table-success');
+            row.classList.remove('table-danger', 'table-warning');
+        } else if (row && event.target.value) {
+            row.classList.add('table-warning');
+            row.classList.remove('table-danger', 'table-success');
+        } else if (row) {
+            row.classList.remove('table-danger', 'table-success', 'table-warning');
+        }
+    }
+});
+</script>
+{% endblock %}

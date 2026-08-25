@@ -1,0 +1,614 @@
+# MODIFICACAO GERAL - PRD DE EXECUCAO
+
+> Estado em 20/07/2026: executado. As descricoes de arquitetura multi-tenant e
+> Control Plane abaixo registram a linha de base historica anterior a decisao
+> single-instance de 19/07/2026. A arquitetura vigente usa login unico, Django
+> Admin em `/admin/` e 253 acoes operacionais HTML despachadas para o DRF; nao
+> existe superficie `/platform/` nem dominio administrativo separado.
+
+## 1. Objetivo
+
+Transformar o RGN Farma System em um ERP farmaceutico single-instance, sem recursos de tenant, mantendo os modulos existentes, as funcionalidades de IA, backup, criptografia, arquivos protegidos, auditoria, workflow e governanca operacional.
+
+O sistema deve usar PostgreSQL local nesta fase e nao deve depender de Docker para desenvolvimento, testes ou execucao imediata.
+
+## 2. Decisao Arquitetural
+
+### 2.1 Estado Atual
+
+O projeto atual e um ERP SaaS multi-tenant. A arquitetura possui:
+
+- app `tenants`;
+- `TenantOwnedModel`;
+- `TenantMiddleware`;
+- `IsTenantMember`;
+- `TenantMembership`;
+- `TenantMembershipInvitation`;
+- `TenantModuleSetting`;
+- control plane para administracao de tenants;
+- filtros por `request.tenant` em telas, APIs, serializers, servicos e tarefas;
+- telas de selecao, convite e administracao de acesso por tenant.
+
+### 2.2 Estado Desejado
+
+O sistema deve passar a operar como uma instancia unica:
+
+- sem cadastro de tenants;
+- sem selecao de tenant;
+- sem header `X-Tenant-Slug`;
+- sem dominios por tenant;
+- sem contrato de modulos por tenant;
+- sem convites de tenant;
+- sem permissoes baseadas em `TenantMembership`;
+- com acesso baseado em `django.contrib.auth`;
+- com usuarios, grupos e permissoes geridos pelo Django Admin;
+- com uma unica tela de login;
+- com CRUD operacional unificado e responsivo seguindo `design_system/design-system.html`;
+- com PostgreSQL local configurado diretamente no `.env`;
+- sem uso de Docker nesta etapa.
+
+## 3. Regras Nao Negociaveis
+
+1. O dominio farmaceutico deve ser preservado.
+2. As funcionalidades existentes de IA, RAG, backup, criptografia, arquivos protegidos, workflow e auditoria devem continuar operacionais.
+3. O controle de acesso deve usar permissoes nativas do Django: `view`, `add`, `change`, `delete`.
+4. O Django Admin deve ser a fonte de verdade para usuarios, grupos e permissoes.
+5. A UI deve seguir o design system em `design_system/design-system.html`.
+6. O backend deve continuar usando Django, DRF, PostgreSQL, Redis, Celery e RabbitMQ quando aplicavel.
+7. Nesta fase, PostgreSQL sera local e Docker nao sera usado.
+8. Toda alteracao de modelo deve ter migration consistente.
+9. Toda regra de negocio alterada deve ter teste automatizado.
+10. O codigo deve permanecer em ingles e os textos exibidos ao usuario em portugues brasileiro.
+
+## 4. Escopo Funcional
+
+### 4.1 Login e Acesso
+
+- Manter apenas uma tela de login em `/accounts/login/`.
+- Remover telas de convite, selecao e associacao de tenant.
+- Redirecionar usuarios autenticados para `/app/`.
+- Usar `User`, `Group` e `Permission` do Django Admin para controle de acesso.
+- Exibir menus conforme permissoes reais do usuario.
+
+### 4.2 UI Operacional
+
+- Manter a navegacao operacional em `/app/`.
+- Refatorar templates principais para usar todos os recursos aplicaveis do design system:
+  - application shell;
+  - sidebar;
+  - header;
+  - breadcrumbs;
+  - cards;
+  - tabelas;
+  - formularios;
+  - botoes;
+  - badges;
+  - modais;
+  - empty states;
+  - paginacao;
+  - icones Feather;
+  - estados de erro, alerta e sucesso.
+- Garantir que recursos principais tenham:
+  - listagem;
+  - detalhe;
+  - adicao;
+  - edicao;
+  - confirmacao de exclusao.
+
+### 4.3 Telas 1-N em Template Unico
+
+Criar um mecanismo generico de formularios inline para telas principais com relacoes 1-N.
+
+Recursos prioritarios:
+
+- Formula mestre com componentes.
+- Ordem de producao com consumos.
+- Pedido de compra com itens.
+- Recebimento de compra com itens.
+- Documento controlado com anexos, aprovacoes e distribuicoes.
+- Desvio com investigacao, impacto, aprovacoes e evidencias.
+- CAPA com acoes, evidencias, aprovacoes e verificacao de efetividade.
+- Auditoria com checklist, achados, evidencias e acoes.
+- Risco com avaliacoes, controles, mitigacoes, revisoes e alertas.
+- Dossie regulatorio com registros, peticoes, requisitos, evidencias e compromissos.
+- Caso de farmacovigilancia com classificacao, causalidade, investigacao, acoes e relatos.
+- Campanha de recall com clientes impactados, comunicacoes e relatorio de efetividade.
+
+### 4.4 APIs REST
+
+- Remover dependencia de `request.tenant`.
+- Remover `IsTenantMember`.
+- Usar `IsAuthenticated` e `DjangoModelPermissions`.
+- Manter filtros, paginacao, serializers e regras de negocio.
+- Atualizar documentacao OpenAPI para remover header `X-Tenant-Slug`.
+
+### 4.5 Dados e Banco
+
+- Usar PostgreSQL local.
+- Nao usar Docker por enquanto.
+- Remover colunas `tenant` de models operacionais por migrations faseadas.
+- Remover constraints e indexes baseados em tenant.
+- Criar novas constraints globais ou por contexto funcional quando necessario.
+- Preservar dados existentes sempre que possivel.
+
+### 4.6 Funcionalidades Mantidas
+
+Devem permanecer no produto:
+
+- IA e agentes.
+- Assistente RAG.
+- Backup e restauracao.
+- Criptografia.
+- Arquivos protegidos.
+- Auditoria.
+- Logs.
+- Workflow.
+- Relatorios.
+- Integracoes.
+- Compliance GxP.
+
+## 5. Configuracao Local Obrigatoria
+
+### 5.1 PostgreSQL Local
+
+O ambiente local deve usar uma URL equivalente a:
+
+```env
+DATABASE_URL=postgres://rgnfarmasystem:rgnfarmasystem@localhost:5432/rgnfarmasystem
+```
+
+Comandos sugeridos para preparar o banco local:
+
+```bash
+sudo -u postgres psql
+```
+
+```sql
+CREATE USER rgnfarmasystem WITH PASSWORD 'rgnfarmasystem';
+CREATE DATABASE rgnfarmasystem OWNER rgnfarmasystem;
+ALTER ROLE rgnfarmasystem SET client_encoding TO 'utf8';
+ALTER ROLE rgnfarmasystem SET default_transaction_isolation TO 'read committed';
+ALTER ROLE rgnfarmasystem SET timezone TO 'America/Recife';
+```
+
+### 5.2 Execucao Local
+
+```bash
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py createsuperuser
+.venv/bin/python manage.py runserver 127.0.0.1:8000
+```
+
+### 5.3 Fora do Escopo Imediato
+
+- Dockerfile.
+- docker-compose.
+- Docker Swarm.
+- Traefik.
+- Publicacao VPS.
+- Nginx de producao.
+
+Esses itens devem ser retomados somente depois da conversao single-instance estar validada localmente.
+
+## 6. Sprints de Execucao
+
+## Sprint 1 - Preparacao Local e Congelamento do Escopo
+
+### Objetivo
+
+Preparar o projeto para executar localmente com PostgreSQL e registrar formalmente a mudanca arquitetural para single-instance.
+
+### Entregaveis
+
+- `.env` local usando PostgreSQL.
+- Banco PostgreSQL local criado.
+- Migrations atuais aplicadas no PostgreSQL.
+- Superusuario criado pelo Django Admin.
+- Documentacao atualizada informando que Docker esta fora do escopo imediato.
+- Inventario dos pontos multi-tenant a remover.
+
+### Tarefas
+
+1. Configurar `DATABASE_URL` para PostgreSQL local.
+2. Executar `python manage.py migrate`.
+3. Executar `python manage.py check`.
+4. Criar superusuario.
+5. Validar login em `/accounts/login/`.
+6. Listar arquivos que usam:
+   - `TenantOwnedModel`;
+   - `request.tenant`;
+   - `IsTenantMember`;
+   - `TenantMembership`;
+   - `TenantModuleSetting`;
+   - `active_tenant_id`;
+   - `X-Tenant-Slug`.
+7. Atualizar docs iniciais da mudanca.
+
+### Criterios de Aceite
+
+- O projeto executa localmente sem Docker.
+- O banco usado e PostgreSQL.
+- O login funciona.
+- O Django Admin abre com superusuario.
+- O inventario multi-tenant esta documentado.
+
+### Testes
+
+```bash
+.venv/bin/python manage.py check
+.venv/bin/python manage.py showmigrations
+.venv/bin/pytest tests/test_settings_profiles.py tests/test_admin_security.py -q
+```
+
+## Sprint 2 - Autenticacao Unica e Permissoes Django Admin
+
+### Objetivo
+
+Remover fluxos de acesso por tenant e fazer o sistema depender de usuarios, grupos e permissoes do Django Admin.
+
+### Entregaveis
+
+- Uma unica tela de login.
+- Remocao das telas operacionais de acesso por tenant.
+- Menus visiveis por permissoes `view`.
+- Acoes visiveis por permissoes `add`, `change`, `delete`.
+- Testes de acesso por grupo/permissao.
+
+### Tarefas
+
+1. Remover rotas de convite e associacao de tenant de `accounts.urls`.
+2. Remover views de `TenantAccessListView`, convites e suporte tenant-scoped.
+3. Ajustar `User` para nao depender de tenant.
+4. Atualizar `base.ui.registry.ResourceConfig` para usar apenas `user.has_perm`.
+5. Atualizar sidebar para permissao Django nativa.
+6. Remover seletor de tenant da UI.
+7. Atualizar testes de auth para grupos/permissoes.
+
+### Criterios de Aceite
+
+- Usuario sem permissao nao visualiza recurso.
+- Usuario com `view_model` visualiza listagem e detalhe.
+- Usuario com `add_model` visualiza botao de novo registro.
+- Usuario com `change_model` visualiza edicao.
+- Usuario com `delete_model` visualiza exclusao.
+- Nenhuma tela operacional solicita tenant.
+
+### Testes
+
+```bash
+.venv/bin/pytest tests/test_auth_tenant_access.py tests/test_app_ui.py tests/test_admin_security.py -q
+```
+
+Observacao: os testes existentes com nome `tenant` devem ser refatorados nesta sprint para validar permissoes globais.
+
+## Sprint 3 - Remocao dos Middlewares e Permissoes Tenant-Scoped
+
+### Objetivo
+
+Eliminar a resolucao de tenant no request e substituir permissoes DRF tenant-scoped por permissoes nativas.
+
+### Entregaveis
+
+- `TenantMiddleware` removido do stack.
+- `TenantModuleAccessMiddleware` removido do stack.
+- `IsTenantMember` removido das APIs.
+- APIs usando `IsAuthenticated` e `DjangoModelPermissions`.
+- OpenAPI sem `X-Tenant-Slug`.
+
+### Tarefas
+
+1. Remover middlewares tenant de `core/settings.py` e `core/settings/base.py`.
+2. Substituir imports de `IsTenantMember`.
+3. Refatorar `permission_classes` nos ViewSets.
+4. Refatorar `get_queryset()` para remover `filter(tenant=...)`.
+5. Refatorar `perform_create()` para remover `serializer.save(tenant=...)`.
+6. Remover dependencias de `request.tenant` em endpoints especiais.
+7. Atualizar documentacao das APIs.
+
+### Criterios de Aceite
+
+- Nenhuma API exige header `X-Tenant-Slug`.
+- Nenhuma API falha por ausencia de `request.tenant`.
+- Permissoes DRF respeitam permissoes do Django.
+- Schema OpenAPI nao documenta tenant como requisito.
+
+### Testes
+
+```bash
+.venv/bin/pytest tests/test_* -q
+.venv/bin/python manage.py spectacular --file /tmp/schema.yml
+```
+
+## Sprint 4 - Migrations para Remover Tenant dos Models
+
+### Objetivo
+
+Remover fisicamente o campo `tenant` dos models operacionais e ajustar constraints, indexes e validacoes.
+
+### Entregaveis
+
+- Migrations por app.
+- Constraints globais revisadas.
+- Validacoes sem comparacao de tenant.
+- Models herdando de `TimeStampedModel` ou model base equivalente.
+- Testes de integridade referencial atualizados.
+
+### Tarefas
+
+1. Alterar `TenantOwnedModel` ou substituir herancas por `TimeStampedModel`.
+2. Remover FKs `tenant` dos models.
+3. Remover indexes `tenant`.
+4. Remover constraints `unique_tenant_*`.
+5. Criar novas constraints por dominio.
+6. Remover validadores `_validate_same_tenant`.
+7. Remover validadores `_validate_user_tenant`.
+8. Gerar migrations.
+9. Revisar migrations manualmente antes de aplicar.
+10. Aplicar migrations no PostgreSQL local.
+
+### Criterios de Aceite
+
+- `makemigrations --check --dry-run` nao aponta pendencias apos migrations criadas.
+- `migrate` executa com sucesso no PostgreSQL local.
+- Models nao possuem campo `tenant`.
+- Regras de negocio continuam preservando integridade funcional.
+
+### Testes
+
+```bash
+.venv/bin/python manage.py makemigrations
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py makemigrations --check --dry-run
+.venv/bin/pytest tests/test_master_data.py tests/test_formulations.py tests/test_production.py tests/test_inventory.py -q
+```
+
+## Sprint 5 - CRUD Unificado com Design System
+
+### Objetivo
+
+Refatorar a UI operacional para usar o design system de forma consistente e disponibilizar CRUD completo em templates unificados.
+
+### Entregaveis
+
+- `templates/base.html` alinhado ao shell do design system.
+- Sidebar com icones e grupos por modulo.
+- Listagem padronizada.
+- Formulario padronizado.
+- Detalhe padronizado.
+- Confirmacao de exclusao padronizada.
+- Estados vazios, alertas, badges, botoes e paginacao padronizados.
+
+### Tarefas
+
+1. Mapear componentes de `design_system/design-system.html`.
+2. Refatorar `templates/base.html`.
+3. Refatorar `templates/includes/sidebar.html`.
+4. Refatorar `templates/app/resource_list.html`.
+5. Refatorar `templates/app/resource_form.html`.
+6. Refatorar `templates/app/resource_detail.html`.
+7. Refatorar `templates/app/resource_confirm_delete.html`.
+8. Ajustar CSS em `static/css/app.css`.
+9. Ajustar JS de formularios quando necessario.
+10. Criar testes de renderizacao e permissoes de botoes.
+
+### Criterios de Aceite
+
+- Todas as telas principais usam o mesmo shell visual.
+- Listagem, adicao, edicao, detalhe e exclusao seguem o mesmo padrao.
+- Nao ha referencia visual a tenant.
+- Textos cabem nos componentes em desktop e mobile.
+- Botoes usam icones Feather quando aplicavel.
+
+### Testes
+
+```bash
+.venv/bin/pytest tests/test_app_ui.py tests/test_formula_inline_components_ui.py -q
+```
+
+## Sprint 6 - Relacoes 1-N no Template Principal
+
+### Objetivo
+
+Disponibilizar recursos filhos 1-N dentro da tela principal do recurso pai, com salvamento transacional e permissao por acao.
+
+### Entregaveis
+
+- `InlineResourceConfig`.
+- Formsets genericos.
+- Salvamento atomico de pai e filhos.
+- Exclusao controlada de filhos.
+- UI inline padronizada.
+- Testes para recursos prioritarios.
+
+### Tarefas
+
+1. Criar estrutura de configuracao para inlines em `base.ui.registry`.
+2. Generalizar a logica atual de componentes de formula.
+3. Criar helper para montar formsets inline.
+4. Criar helper para aplicar widgets e metadados do design system.
+5. Adicionar inlines para formula e componentes.
+6. Adicionar inlines para pedido de compra e itens.
+7. Adicionar inlines para CAPA e acoes.
+8. Adicionar inlines para auditoria e checklist.
+9. Adicionar inlines para risco e mitigacoes.
+10. Testar transacoes e permissoes.
+
+### Criterios de Aceite
+
+- O usuario edita o recurso pai e os filhos na mesma tela.
+- A operacao salva tudo em transacao.
+- Falha em filho invalida a operacao inteira.
+- Permissoes de add/change/delete sao respeitadas.
+- A UI nao duplica templates especificos desnecessarios.
+
+### Testes
+
+```bash
+.venv/bin/pytest tests/test_formula_inline_components_ui.py tests/test_app_ui.py -q
+```
+
+## Sprint 7 - IA, RAG, Backup, Arquivos e Criptografia Sem Tenant
+
+### Objetivo
+
+Preservar funcionalidades criticas removendo apenas a dependencia de tenant.
+
+### Entregaveis
+
+- IA e agentes sem tenant.
+- RAG sem tenant.
+- Backup funcionando com PostgreSQL local.
+- Arquivos protegidos com permissao por usuario/grupo.
+- Criptografia preservada.
+- Auditoria sem tenant.
+
+### Tarefas
+
+1. Refatorar `ai_agents` para remover filtros e campos tenant.
+2. Refatorar `knowledge` e chat RAG para escopo global autenticado.
+3. Refatorar `files` para autorizacao por permissao e vinculo funcional.
+4. Refatorar logs de integracao para remover tenant.
+5. Refatorar backup para PostgreSQL local.
+6. Validar `core.crypto`.
+7. Atualizar documentacao de seguranca.
+8. Atualizar testes de IA, backup, arquivos e criptografia.
+
+### Criterios de Aceite
+
+- Chat RAG aparece para usuario autenticado autorizado.
+- Execucao de agente funciona sem tenant.
+- Backup local executa contra PostgreSQL.
+- Arquivos continuam nao publicos.
+- Download respeita autenticacao e autorizacao.
+- Criptografia continua validada por testes.
+
+### Testes
+
+```bash
+.venv/bin/pytest tests/test_ai_agents.py tests/test_knowledge.py tests/test_files.py tests/test_backup_encryption.py tests/test_encryption.py -q
+```
+
+## Sprint 8 - Governanca, Auditoria, Compliance e Documentacao Final
+
+### Objetivo
+
+Fechar a conversao single-instance com documentacao, testes finais, evidencias e criterios regulatorios.
+
+### Entregaveis
+
+- PRD principal atualizado.
+- Documentacao de arquitetura atualizada.
+- Documentacao de seguranca atualizada.
+- Documentacao de operacao local com PostgreSQL.
+- Evidencia de menus e permissoes.
+- Evidencia de testes.
+- Plano de rollback.
+- Lista de pendencias conhecidas, se houver.
+
+### Tarefas
+
+1. Atualizar `PRD.md`.
+2. Atualizar `docs/index.md`.
+3. Atualizar `docs/architecture/foundation.md`.
+4. Atualizar docs de cada modulo impactado.
+5. Atualizar docs de backup e criptografia.
+6. Atualizar docs de deploy local sem Docker.
+7. Remover documentacao obsoleta de tenant.
+8. Executar suite de testes.
+9. Executar lint.
+10. Registrar evidencia de verificacao.
+
+### Criterios de Aceite
+
+- Nao ha referencias funcionais obrigatorias a tenant.
+- O sistema roda localmente com PostgreSQL.
+- O login unico funciona.
+- O Django Admin controla acessos.
+- CRUD principal funciona.
+- Relacoes 1-N prioritarias funcionam.
+- IA, backup, arquivos e criptografia funcionam.
+- Documentacao esta coerente com a nova arquitetura.
+
+### Testes
+
+```bash
+.venv/bin/python manage.py check
+.venv/bin/python manage.py makemigrations --check --dry-run
+.venv/bin/ruff check .
+.venv/bin/pytest -q
+```
+
+## 7. Ordem Imediata de Execucao
+
+Executar agora nesta ordem:
+
+1. Sprint 1.
+2. Sprint 2.
+3. Sprint 3.
+4. Sprint 5.
+5. Sprint 6.
+6. Sprint 7.
+7. Sprint 4.
+8. Sprint 8.
+
+Justificativa: primeiro estabilizar acesso, UI e APIs sem depender de tenant em runtime. A remocao fisica das colunas `tenant` deve ocorrer depois que o comportamento single-instance estiver validado, reduzindo risco de perda de dados e migrations quebradas.
+
+### Verificacao de execucao local
+
+Em 20/07/2026, a ordem programada `1, 2, 3, 5, 6, 7, 4, 8` foi revalidada
+integralmente no ambiente local. Todas as sprints atenderam aos respectivos
+criterios de aceite: PostgreSQL sincronizado, 537 testes aprovados, cobertura
+de 83,86%, zero migrations pendentes e gates de qualidade, seguranca, OpenAPI e
+documentacao aprovados. O provisionamento do administrador da VPS permanece
+uma pendencia operacional externa e nao bloqueia a evolucao local.
+
+## 8. Riscos
+
+| Risco | Impacto | Mitigacao |
+|---|---:|---|
+| Remocao prematura de `tenant` quebrar migrations | Alto | Executar remocao fisica apenas na Sprint 4, depois de runtime sem tenant validado |
+| Testes existentes dependerem de tenant | Alto | Refatorar testes por sprint, mantendo cobertura de permissao |
+| Constraints globais criarem conflito com dados existentes | Alto | Auditar duplicidades antes das migrations |
+| IA/RAG depender de tenant para auditoria | Medio | Substituir escopo por usuario, modulo e objeto |
+| UI ficar inconsistente durante transicao | Medio | Centralizar templates genericos antes de telas especificas |
+| Permissoes ficarem permissivas demais | Alto | Usar testes explicitos para view/add/change/delete |
+
+## 9. Auditoria de Dados Antes da Sprint 4
+
+Antes de remover colunas `tenant`, executar uma auditoria de duplicidades para campos que eram unicos por tenant.
+
+Exemplos:
+
+- produtos por `code`;
+- unidades por `code`;
+- parceiros por `code` ou documento;
+- lotes por `lot_number`;
+- ordens por `order_number`;
+- documentos por `document_number`;
+- CAPAs por numero;
+- desvios por numero;
+- registros regulatórios por numero.
+
+Quando houver duplicidade, decidir entre:
+
+- mesclar registros;
+- renumerar registros;
+- tornar unicidade composta por contexto funcional;
+- manter campo nao unico quando o dominio permitir.
+
+## 10. Definition of Done Geral
+
+A modificacao geral sera considerada concluida quando:
+
+- o projeto executar localmente com PostgreSQL sem Docker;
+- nao houver dependencia funcional de tenant;
+- houver apenas uma tela de login;
+- Django Admin controlar usuarios, grupos e permissoes;
+- menus e acoes respeitarem permissoes nativas;
+- CRUD completo estiver disponivel no template operacional;
+- relacoes 1-N prioritarias estiverem disponiveis no template principal;
+- IA, RAG, backup, criptografia e arquivos protegidos estiverem validados;
+- migrations estiverem aplicadas;
+- testes relevantes passarem;
+- documentacao estiver atualizada;
+- nao houver pendencias conhecidas de seguranca, integridade, permissao ou dados.

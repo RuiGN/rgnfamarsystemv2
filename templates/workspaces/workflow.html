@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Central de workflow | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Central de workflow</h5>
+            <p class="text-muted mb-0">Aprovações, notificações e processamento assíncrono.</p>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item">Fluxo de trabalho</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="row g-4" aria-label="Indicadores de workflow">
+    <div class="col-xxl-4 col-md-6">
+        <article class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="avatar-text avatar-lg bg-soft-warning text-warning"><i class="feather-check-square" aria-hidden="true"></i></div>
+                    <span class="badge bg-soft-warning text-warning">Aprovações</span>
+                </div>
+                <p class="text-muted mb-1">Aprovações pendentes</p>
+                <strong class="fs-2 text-dark">{{ metrics.pending_approvals }}</strong>
+                <a href="{% url 'app:resource_list' 'workflow' 'tasks' %}" class="d-block mt-3">Ver tarefas <i class="feather-arrow-right ms-1" aria-hidden="true"></i></a>
+            </div>
+        </article>
+    </div>
+    <div class="col-xxl-4 col-md-6">
+        <article class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary"><i class="feather-bell" aria-hidden="true"></i></div>
+                    <span class="badge bg-soft-primary text-primary">Avisos</span>
+                </div>
+                <p class="text-muted mb-1">Notificações não lidas</p>
+                <strong class="fs-2 text-dark">{{ metrics.unread_notifications }}</strong>
+                <a href="{% url 'app:resource_list' 'workflow' 'notifications' %}" class="d-block mt-3">Ver notificações <i class="feather-arrow-right ms-1" aria-hidden="true"></i></a>
+            </div>
+        </article>
+    </div>
+    <div class="col-xxl-4 col-md-6">
+        <article class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="avatar-text avatar-lg bg-soft-info text-info"><i class="feather-loader" aria-hidden="true"></i></div>
+                    <span class="badge bg-soft-info text-info">Processamento</span>
+                </div>
+                <p class="text-muted mb-1">Jobs em execução</p>
+                <strong class="fs-2 text-dark">{{ metrics.running_jobs }}</strong>
+                <a href="{% url 'app:resource_list' 'workflow' 'async-jobs' %}" class="d-block mt-3">Ver jobs <i class="feather-arrow-right ms-1" aria-hidden="true"></i></a>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="card stretch stretch-full mt-4">
+    <div class="card-header"><h2 class="card-title h5 mb-0">Governança operacional</h2></div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-light-brand" href="{% url 'app:module' 'workflow' %}"><i class="feather-git-pull-request me-2" aria-hidden="true"></i>Todos os recursos</a>
+            <a class="btn btn-light-brand" href="{% url 'app:module' 'compliance' %}"><i class="feather-shield me-2" aria-hidden="true"></i>Compliance</a>
+            <a class="btn btn-light-brand" href="{% url 'app:module' 'governance' %}"><i class="feather-settings me-2" aria-hidden="true"></i>Governança</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

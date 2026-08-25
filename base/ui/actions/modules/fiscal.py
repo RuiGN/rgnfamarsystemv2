@@ -1,0 +1,18 @@
+ACTION_KEYS = (
+    ('tax-rules', 'approve'),
+    ('documents', 'approve'),
+    ('documents', 'cancel'),
+    ('documents', 'check_status'),
+    ('documents', 'create_financial_title'),
+    ('documents', 'issue'),
+    ('documents', 'post_entry'),
+    ('documents', 'recalculate'),
+    ('documents', 'review'),
+    ('documents', 'send_email'),
+    ('documents', 'submit_for_review'),
+    ('taxes', 'calculate'),
+    ('assessments', 'calculate'),
+    ('assessments', 'close'),
+    ('book-entries', 'from_document'),
+    ('obligations', 'submit'),
+)

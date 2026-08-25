@@ -1,0 +1,5 @@
+tunnel: 4fd0330d-9ee1-43cd-ac25-bfe096c81f31
+ingress:
+  - hostname: rgnfarmasystem.rgnsystems.com.br
+    service: http://127.0.0.1:8081
+  - service: http_status:404

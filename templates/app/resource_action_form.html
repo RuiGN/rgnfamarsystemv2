@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action.label }} | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title"><h5 class="m-b-10">{{ action.label }}</h5></div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item">{{ action.label }}</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="card stretch stretch-full mx-auto" style="max-width: 760px;">
+    <form
+        method="post"
+        action=""
+        class="m-0"
+        data-action-form
+        aria-describedby="action-description"
+        {% if action.submission_format.value == 'multipart' %}enctype="multipart/form-data"{% endif %}
+    >
+        {% csrf_token %}
+        <header class="card-header d-flex align-items-center gap-3">
+            <span class="avatar-text avatar-lg bg-soft-{{ action.tone }} text-{{ action.tone }}" aria-hidden="true"><i class="{{ action.icon }}"></i></span>
+            <div>
+                <span class="fs-11 fw-bold text-uppercase text-muted">{{ resource.label }}</span>
+                <h2 class="h4 mb-1">{{ action.label }}</h2>
+                <p id="action-description" class="text-muted mb-0">{{ action.description }}</p>
+            </div>
+        </header>
+        <div class="card-body">
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+                {% if field.is_hidden %}
+                    {{ field }}
+                {% elif field.name == 'confirmation_acknowledged' %}
+                    <div class="form-check bg-light border rounded p-3 ps-5 mb-3">
+                        {{ field }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.errors %}<div id="{{ field.id_for_label }}_errors" class="invalid-feedback d-block" role="alert">{% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span><span class="visually-hidden"> obrigatório</span>{% endif %}</label>
+                        {% if field.field.rgn_icon %}
+                            <div class="input-group resource-input-group" data-field-icon="{{ field.name }}">
+                                <span class="input-group-text resource-input-icon"><i class="{{ field.field.rgn_icon }} text-muted fs-6" aria-hidden="true"></i></span>
+                                {{ field }}
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        {% if field.help_text %}<div id="{{ field.id_for_label }}_help" class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div id="{{ field.id_for_label }}_errors" class="invalid-feedback d-block" role="alert">{% for error in field.errors %}{{ error }}{% endfor %}</div>{% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if action.confirmation %}
+            <aside class="alert alert-{{ action.tone }} d-flex gap-3 mb-0" aria-labelledby="confirmation-title">
+                <i class="feather-alert-circle" aria-hidden="true"></i>
+                <div>
+                    <h3 id="confirmation-title" class="h6">{{ action.confirmation.title }}</h3>
+                    <p class="mb-0">{{ action.confirmation.message }}</p>
+                </div>
+            </aside>
+            {% endif %}
+        </div>
+        <footer class="card-footer d-flex flex-wrap justify-content-end gap-2">
+            <a href="{{ cancel_url }}" class="btn btn-light-brand d-inline-flex align-items-center gap-2">
+                <i class="feather-x" aria-hidden="true"></i>
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-{{ action.tone }} d-inline-flex align-items-center gap-2" data-action-submit>
+                <i class="{{ action.icon }}" aria-hidden="true"></i>
+                Confirmar ação
+            </button>
+        </footer>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+title = "RGN Farma System secret detection policy"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Public example configuration is allowed but still scanned for real credentials"
+paths = ['''^\.env\.example$''']
+condition = "AND"
+
+regexTarget = "match"
+regexes = [
+  '''CHANGE_ME_[A-Z0-9_]+''',
+  '''example\.invalid''',
+]

@@ -1,0 +1,95 @@
+                    <section class="card border border-primary mt-4 resource-inline-formset qc-grid-section" data-inline-formset="{{ inline.key }}">
+                        <div class="card-header bg-soft-primary d-flex align-items-center justify-content-between">
+                            <div>
+                                <h2 class="h5 mb-1 text-primary"><i class="feather-grid me-2"></i>{{ inline.title }}</h2>
+                                {% if inline.description %}
+                                    <p class="text-primary mb-0 opacity-75">{{ inline.description }}</p>
+                                {% endif %}
+                            </div>
+                            {% if inline.can_add %}
+                                <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" data-inline-formset-add="{{ inline.key }}">
+                                    <i class="feather-plus" aria-hidden="true"></i>{{ inline.add_label }}
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="card-body p-0">
+                            {{ inline.formset.management_form }}
+                            {% if inline.formset.non_form_errors %}
+                                <div class="alert alert-danger m-3" role="alert">{{ inline.formset.non_form_errors }}</div>
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 qc-grid-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            {% for field in inline.formset.empty_form.visible_fields %}
+                                                {% if field.name == 'DELETE' %}
+                                                    <th style="width: 80px;" class="text-center">Ações</th>
+                                                {% else %}
+                                                    <th>{{ field.label }}</th>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody data-inline-formset-forms="{{ inline.key }}">
+                                        {% for inline_form in inline.formset.forms %}
+                                            <tr class="resource-inline-formset__form" data-inline-formset-form>
+                                                {% for hidden_field in inline_form.hidden_fields %}
+                                                    {{ hidden_field }}
+                                                {% endfor %}
+                                                {% for field in inline_form.visible_fields %}
+                                                    {% if field.name == 'DELETE' %}
+                                                        <td class="text-center align-middle">
+                                                            <div class="form-check d-inline-block m-0 p-0">
+                                                                {{ field }}
+                                                            </div>
+                                                        </td>
+                                                    {% else %}
+                                                        <td class="align-middle">
+                                                            {% if field.field.rgn_icon %}
+                                                                <div class="input-group resource-input-group" data-field-icon="{{ field.name }}">
+                                                                    <span class="input-group-text resource-input-icon"><i class="{{ field.field.rgn_icon }} text-muted fs-6" aria-hidden="true"></i></span>
+                                                                    {{ field }}
+                                                                </div>
+                                                            {% else %}
+                                                                {{ field }}
+                                                            {% endif %}
+                                                            {% if field.errors %}
+                                                                <span class="invalid-feedback d-block field-error mt-1" id="{{ field.id_for_label }}_errors" role="alert">{{ field.errors }}</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <template data-inline-formset-empty="{{ inline.key }}">
+                                <tr class="resource-inline-formset__form" data-inline-formset-form>
+                                    {% for hidden_field in inline.formset.empty_form.hidden_fields %}
+                                        {{ hidden_field }}
+                                    {% endfor %}
+                                    {% for field in inline.formset.empty_form.visible_fields %}
+                                        {% if field.name == 'DELETE' %}
+                                            <td class="text-center align-middle">
+                                                <div class="form-check d-inline-block m-0 p-0">
+                                                    {{ field }}
+                                                </div>
+                                            </td>
+                                        {% else %}
+                                            <td class="align-middle">
+                                                {% if field.field.rgn_icon %}
+                                                    <div class="input-group resource-input-group" data-field-icon="{{ field.name }}">
+                                                        <span class="input-group-text resource-input-icon"><i class="{{ field.field.rgn_icon }} text-muted fs-6" aria-hidden="true"></i></span>
+                                                        {{ field }}
+                                                    </div>
+                                                {% else %}
+                                                    {{ field }}
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            </template>
+                        </div>
+                    </section>

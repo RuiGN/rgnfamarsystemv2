@@ -1,0 +1,90 @@
+version: '1.0'
+requirements:
+  - id: CSV-001
+    title: Integridade de dados
+    framework: ALCOA+
+    control: Trilhas de auditoria imutáveis
+    evidence: tests/test_audits.py
+  - id: CSV-002
+    title: Controle de acesso
+    framework: GAMP5
+    control: Permissões Django e boundary administrativo padrão
+    evidence: tests/test_single_instance_admin_runtime.py
+  - id: CSV-003
+    title: Continuidade e restauração
+    framework: IQ/OQ/PQ
+    control: Backup, restore e readiness
+    evidence: tests/test_backup_restore_readiness.py
+  - id: SI-001
+    title: Autenticação single-instance
+    framework: GAMP5
+    control: Login único e acesso por permissões Django sem escopo por tenant
+    evidence: tests/test_single_instance_auth_access.py
+  - id: SI-002
+    title: Runtime operacional single-instance
+    framework: ALCOA+
+    control: UI e APIs sem seleção de tenant, sem header X-Tenant-Slug e sem request.tenant
+    evidence: tests/test_single_instance_runtime.py
+  - id: SI-003
+    title: PostgreSQL local isolado para testes
+    framework: IQ/OQ
+    control: Pytest usa core.settings.test e TEST_DATABASE_URL em PostgreSQL isolado
+    evidence: tests/test_local_test_environment.py
+  - id: SI-004
+    title: Schema físico single-instance
+    framework: IQ/OQ
+    control: Models, colunas, índices e constraints não possuem artefatos funcionais de tenant
+    evidence: tests/test_single_instance_schema.py
+  - id: SI-005
+    title: Relações prioritárias no formulário principal
+    framework: GAMP5
+    control: Formsets genéricos respeitam atomicidade e permissões add/change/delete dos filhos
+    evidence: tests/test_formula_inline_components_ui.py
+  - id: SI-006
+    title: Agentes de IA single-instance
+    framework: GAMP5
+    control: Perfis, execuções, sugestões e auditoria operam em escopo global autenticado
+    evidence: tests/test_ai_agents.py
+  - id: SI-007
+    title: Conhecimento RAG single-instance
+    framework: GAMP5
+    control: Ingestão, recuperação, chat e citações operam em escopo global autenticado
+    evidence: tests/test_knowledge.py
+  - id: SI-008
+    title: Arquivos protegidos
+    framework: ALCOA+
+    control: Download exige autenticação, autorização funcional e registra trilha de acesso
+    evidence: tests/test_files.py
+  - id: SI-009
+    title: Criptografia de backup
+    framework: ALCOA+
+    control: Artefatos usam AES-256-GCM, dados associados e verificação de integridade
+    evidence: tests/test_backup_encryption.py
+  - id: SI-010
+    title: Backup PostgreSQL nativo
+    framework: IQ/OQ/PQ
+    control: Dump local, mídia, dry-run e restore externo não dependem de container de banco
+    evidence: tests/test_native_postgres_deployment.py
+  - id: SIA-ADMIN
+    title: Administração single-instance
+    framework: GAMP5
+    control: Login único e Django Admin padrão sem superfície administrativa paralela
+    evidence: tests/test_single_instance_admin_runtime.py
+  - id: SIA-ACTION-253
+    title: Snapshot histórico do catálogo completo de ações operacionais
+    framework: GAMP5
+    control: As 253 ações POST DRF do release dda7ab1 possuíam configuração HTML correspondente e não duplicada
+    evidence: docs/validation/evidence/archive/sia-action-253/test_action_catalog_completeness.py
+    status: historical_snapshot
+    source_commit: dda7ab13524e6ddab3e63323ffac1ef35b2448f7
+    superseded_by: SIA-ACTION-258
+  - id: SIA-ACTION-258
+    title: Catálogo completo de ações operacionais
+    framework: GAMP5
+    control: As 258 ações POST DRF possuem configuração HTML correspondente e não duplicada
+    evidence: tests/test_action_catalog_completeness.py
+  - id: SIA-PTBR
+    title: Vocabulário operacional em português brasileiro
+    framework: GAMP5
+    control: Rótulos, confirmações e mensagens do catálogo usam cópia pt-BR aprovada
+    evidence: tests/test_action_copy_ptbr.py

@@ -1,0 +1,682 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Painel</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item">Início</li>
+            <li class="breadcrumb-item">Fundação do Projeto</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="row g-4" aria-label="Indicadores da fundação">
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-shield"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">Ativo</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Operação consolidada</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Operação local consolidada com PostgreSQL.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-user-check"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">Ativo</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Acesso por nome de usuário</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">E-mail mantido apenas como contato.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-activity"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">/health/</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Verificação de saúde</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Rota leve para contêiner e Traefik.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-package"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-02</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Cadastros mestres</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Produtos, parceiros, unidades e estruturas operacionais.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-clipboard"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-03</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Fórmulas e roteiros</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Versionamento, vigência, componentes e etapas de fabricação.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-play-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-04</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Execução de ordens</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Liberação, apontamento de consumo, execução e conclusão.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-calendar"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-05</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">PCP, MPS e MRP</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Plano mestre, necessidade líquida, sugestões e alertas.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-shopping-cart"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-06</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Compras e suprimentos</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Requisições, cotações, pedidos, fornecedores e recebimentos.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-archive"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-07</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Estoque e rastreabilidade</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Lotes, saldos, endereços, movimentos, reservas e genealogia.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-dollar-sign"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-08</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Custos industriais</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Custo padrão, simulação, custo real, fechamento e margem.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-credit-card"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-09</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Financeiro</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Títulos, baixas, bancos, conciliação, caixa e fechamento.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-file-text"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-10</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Fiscal e tributário</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Notas, impostos, conferência, apurações, obrigações e auditoria.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-users"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-11</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">CRM e vendas</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Clientes, funil, propostas, contratos, pedidos e atendimento.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-check-square"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-12</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Controle de qualidade</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Especificações, amostras, análises, resultados, investigações e laudos.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-shield"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-13</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Garantia da qualidade</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Revisões QA, liberação de lote, bloqueios e treinamentos críticos.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-file-text"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-14</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Gestão documental</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Documentos controlados, revisões, distribuição, leitura e trilha ALCOA+.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-alert-triangle"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-15</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Desvios e NC</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Abertura, investigação, impacto, vínculos e aprovações de encerramento.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-target"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-16</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">CAPA</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Ações corretivas e preventivas, evidências, eficácia, aprovações e alertas.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-git-pull-request"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-17</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Gestão de mudanças</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Avaliação multidisciplinar, ações obrigatórias, aprovações, implementação e estoque.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-clipboard"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-18</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Auditorias</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Programas, planos, checklists, achados, evidências, ações e relatórios.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-alert-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-19</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Gestão de riscos</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Matriz, FMEA, controles, mitigação, risco residual, vínculos e alertas.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-award"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-20</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Assuntos regulatórios</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Produtos, dossiês, registros, petições, exigências, compromissos e alertas.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-activity"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-21</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Farmacovigilância</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Casos, triagem, classificação, causalidade, ações, vínculos e relatórios.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-radio"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-22</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Recall e recolhimento</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Reclamações, devoluções, clientes impactados, comunicações, retorno e efetividade.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-tool"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-23</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Equipamentos e manutenção</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Ativos críticos, calibração, manutenção, bloqueios, paradas e indicadores.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-user-check"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-24</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Treinamentos</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Matriz, competências, convocação, avaliação, certificados e aderência.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-lock"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-25</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Arquivos protegidos</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Anexos protegidos, sigilo, links temporários e auditoria de acesso.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-bar-chart-2"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-26</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Relatórios e BI</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Painéis, filtros, exportações, agendamentos e notificações.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-bell"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-27</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Fluxo de trabalho</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Notificações, aprovações, delegações, anexos, histórico e jobs.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-share-2"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-28</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">APIs e integrações</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">APIs versionadas, conectores externos, clientes, logs e eventos seguros.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-cpu"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-29</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Agentes de IA</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">LangGraph, execução Celery, sugestões revisáveis e auditoria de prompts.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-sliders"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-30</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Governança</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Módulos globais, parâmetros, catálogos, logs e carga demo.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+    <div class="col-12 col-md-6 col-xl-4">
+        <article class="card stretch stretch-full h-100">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                        <i class="feather-shield"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold text-dark">RF-31</div>
+                        <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Conformidade transversal</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 border-top">
+                <p class="fs-12 text-muted mb-0">Políticas, histórico de status, ações críticas e checks por módulo.</p>
+            </div>
+        </div>
+        </article>
+    </div>
+</section>
+{% endblock %}

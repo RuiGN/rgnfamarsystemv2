@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gantt PCP - {{ resource.label }} | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10"><i class="feather-bar-chart-2 me-2"></i>PCP Gantt: {{ resource.label }}</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item">Gantt</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Voltar</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-list" aria-hidden="true"></i>Ver lista</a>
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="card stretch stretch-full border-info">
+    <div class="card-header bg-soft-info border-bottom border-info d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="h5 text-info mb-0">Planejamento e Controle da Produção (PCP)</h4>
+            <p class="text-muted fs-12 mb-0">Visão temporal do sequenciamento de Ordens de Produção (MPS/MRP)</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-info text-white active">Dia</button>
+            <button type="button" class="btn btn-sm btn-light-brand">Semana</button>
+            <button type="button" class="btn btn-sm btn-light-brand">Mês</button>
+        </div>
+    </div>
+    <div class="card-body p-0" style="overflow-x: auto;">
+        <div class="gantt-wrapper" style="min-width: 1200px; padding: 20px;">
+            <!-- Linha do tempo (Header) -->
+            <div class="d-flex border-bottom pb-2 mb-3 text-center text-muted fw-bold fs-12" style="margin-left: 250px;">
+                <div style="flex: 1;">Seg (01)</div>
+                <div style="flex: 1;">Ter (02)</div>
+                <div style="flex: 1;">Qua (03)</div>
+                <div style="flex: 1;">Qui (04)</div>
+                <div style="flex: 1;">Sex (05)</div>
+                <div style="flex: 1;" class="bg-soft-secondary border-start border-end">Sáb (06)</div>
+                <div style="flex: 1;" class="bg-soft-secondary">Dom (07)</div>
+            </div>
+            
+            <!-- Linhas de Ordens de Produção -->
+            {% for item in objects %}
+            <div class="d-flex align-items-center mb-3 gantt-row hover-bg-light p-1 rounded">
+                <!-- Informações do Job -->
+                <div style="width: 250px; padding-right: 15px;" class="border-end">
+                    <h6 class="mb-0 fs-13 text-dark fw-bold text-truncate" title="{{ item }}">{{ item.order_number }}</h6>
+                    <div class="fs-11 text-muted text-truncate">{{ item.product.code|default:item }}</div>
+                </div>
+                <!-- Gráfico de Barras -->
+                <div class="d-flex position-relative rounded bg-soft-light ms-2" style="flex: 1; height: 32px; border: 1px dashed #e2e8f0;">
+                    <!-- Simulando a barra de progresso baseada no mock -->
+                    <div class="position-absolute h-100 rounded {% if item.status == 'completed' %}bg-success{% elif item.status == 'in_progress' %}bg-primary{% else %}bg-warning{% endif %} d-flex align-items-center px-2 text-white shadow-sm overflow-hidden gantt-bar" 
+                         style="left: {% cycle '0%' '14%' '28%' '42%' %}; width: {% cycle '42%' '28%' '57%' '14%' %}; cursor: pointer; transition: all 0.2s;"
+                         onclick="window.location.href='{% url 'app:resource_detail' module.slug resource.slug item.pk %}'">
+                        <span class="fs-10 fw-bold text-truncate text-white">{{ item.get_status_display|default:"Planejado" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="feather-calendar fs-1 text-light mb-3 d-block"></i>
+                Não há ordens de produção para exibir no gráfico.
+            </div>
+            {% endfor %}
+            
+            <!-- Legenda -->
+            <div class="mt-5 d-flex gap-4 border-top pt-3 fs-12 text-muted justify-content-center">
+                <div class="d-flex align-items-center"><span class="d-inline-block rounded bg-warning me-2 shadow-sm" style="width: 14px; height: 14px;"></span> Planejado</div>
+                <div class="d-flex align-items-center"><span class="d-inline-block rounded bg-primary me-2 shadow-sm" style="width: 14px; height: 14px;"></span> Em Execução (EBR)</div>
+                <div class="d-flex align-items-center"><span class="d-inline-block rounded bg-success me-2 shadow-sm" style="width: 14px; height: 14px;"></span> Concluído</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .gantt-bar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        opacity: 0.9;
+    }
+    .hover-bg-light:hover {
+        background-color: #f8fafc;
+    }
+</style>
+{% endblock %}

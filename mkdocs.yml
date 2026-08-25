@@ -1,0 +1,62 @@
+site_name: RGN Farma System
+site_description: Documentação técnica e funcional do ERP SaaS farmacêutico.
+theme:
+  name: material
+  language: pt-BR
+plugins:
+  - search
+  - mermaid2
+nav:
+  - Início: index.md
+  - Arquitetura:
+      - Fundação: architecture/foundation.md
+      - Autenticação e Single-instance: architecture/auth-single-instance.md
+      - Administração single-instance: architecture/admin-single-instance.md
+      - Ações operacionais: architecture/domain-actions.md
+      - Cadastros Mestres: architecture/master-data.md
+      - Fórmulas e Roteiros: architecture/formulations.md
+      - Produção e execução de ordens: architecture/production.md
+      - PCP, MPS e MRP: architecture/planning.md
+      - Compras e Suprimentos: architecture/procurement.md
+      - Estoque e Rastreabilidade: architecture/inventory.md
+      - Custos Industriais: architecture/costing.md
+      - Financeiro: architecture/finance.md
+      - Fiscal e Tributário: architecture/fiscal.md
+      - CRM, Vendas e Atendimento: architecture/crm.md
+      - Controle de Qualidade: architecture/quality.md
+      - Garantia da Qualidade: architecture/qa.md
+      - Gestão Documental: architecture/documents.md
+      - Desvios e Investigações: architecture/deviations.md
+      - CAPA: architecture/capa.md
+      - Gestão de Mudanças: architecture/changes.md
+      - Auditorias: architecture/audits.md
+      - Gestão de Riscos: architecture/risks.md
+      - Assuntos Regulatórios: architecture/regulatory.md
+      - Farmacovigilância: architecture/pharmacovigilance.md
+      - Recall e Recolhimento: architecture/recalls.md
+      - Equipamentos e Manutenção: architecture/maintenance.md
+      - Treinamentos e Qualificação: architecture/training.md
+      - Arquivos Protegidos: architecture/files.md
+      - Relatórios e BI: architecture/reports.md
+      - Notificações e Workflow: architecture/workflow.md
+      - APIs REST e Integrações: architecture/integrations.md
+      - Agentes de IA e Automações: architecture/ai-agents.md
+      - Conhecimento RAG: architecture/knowledge.md
+      - Cadastros Auxiliares: architecture/auxiliary.md
+      - Administração e Governança: architecture/governance.md
+      - Conformidade Transversal: architecture/compliance.md
+      - Prontidão Operacional: architecture/operational-readiness.md
+      - Backup e Restauração: architecture/backup-restore.md
+      - Criptografia AES-256: architecture/security-encryption.md
+      - Aceite Técnico de Produto: architecture/product-acceptance.md
+      - Prontidão de Release: architecture/release-readiness.md
+      - Templates e Design System: architecture/templates.md
+      - Relações 1-N: architecture/inline-resources.md
+      - Sidebar e Permissões: architecture/sidebar-permissions.md
+  - Operação:
+      - Deploy: deployment.md
+      - Auditoria de dados single-instance: validation/single-instance-data-audit.md
+      - Verificação final single-instance: validation/single-instance-final-verification.md
+      - Rollback single-instance: validation/single-instance-rollback.md
+      - Aceite single-domain e ações: validation/single-domain-actions-acceptance.md
+      - Pendências conhecidas: validation/known-pending-items.md

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Painel {{ dashboard.title }} | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title"><h5 class="m-b-10">{{ dashboard.title }}</h5></div>
+        <ul class="breadcrumb mb-0"><li class="breadcrumb-item">Painéis</li><li class="breadcrumb-item">{{ dashboard.title }}</li></ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                <label class="sr-only" for="dashboard-selector">Selecionar dashboard</label>
+                <div class="input-group">
+                    
+                    <select id="dashboard-selector" class="form-select" onchange="if(this.value) window.location=this.value">
+                        {% for slug, option in dashboard_options.items %}
+                        <option value="{% url 'app:dashboard_hub' slug %}"{% if slug == dashboard_slug %} selected{% endif %}>{{ option.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section aria-labelledby="dashboard-heading">
+    <div class="d-flex align-items-center justify-content-between gap-3 mb-4"><div><span class="text-muted">Visão consolidada da operação</span><h2 id="dashboard-heading" class="h5 mt-1 mb-0">Indicadores em tempo real</h2></div></div>
+    <div class="row g-4 mb-4">
+        {% for metric in dashboard_data.kpis %}
+        <div class="col-xxl-3 col-md-6">
+            <article class="card stretch stretch-full h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between mb-4">
+                        <div class="d-flex gap-4 align-items-center">
+                            <div class="avatar-text avatar-lg bg-soft-{{ metric.tone|default:'primary' }} text-{{ metric.tone|default:'primary' }}">
+                                <i class="{{ metric.icon }}"></i>
+                            </div>
+                            <div>
+                                <div class="fs-4 fw-bold text-dark">{{ metric.value }}</div>
+                                <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">{{ metric.label }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <article class="card stretch stretch-full h-100"><div class="card-header"><h5 class="card-title">Distribuição dos indicadores</h5><span class="text-muted fs-12">Atualizado agora</span></div><div class="card-body"><div id="dashboard-main-chart" style="min-height: 300px;" aria-label="Gráfico de distribuição"></div><p id="dashboard-chart-empty" class="p-4 text-muted text-center mb-0" hidden>Não há dados suficientes para exibir este gráfico.</p></div></article>
+        </div>
+        <div class="col-12 col-xl-4">
+            <article class="card stretch stretch-full h-100"><div class="card-header"><h5 class="card-title">Itens prioritários</h5></div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><caption class="sr-only">Itens prioritários do dashboard</caption><thead><tr><th>Item</th><th>Status/valor</th></tr></thead><tbody>{% for row in dashboard_data.table %}<tr>{% for value in row.values %}<td>{{ value|default:'—' }}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="2"><div class="p-4 text-muted text-center">Nenhum registro encontrado.</div></td></tr>{% endfor %}</tbody></table></div></div></article>
+        </div>
+    </div>
+</section>
+{{ dashboard_data.chart|json_script:'dashboard-chart-data' }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/duralux/js/apexcharts.min.js' %}" defer></script>
+<script src="{% static 'js/dashboard-hub.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if map_kind == 'control' %}Mapa de controle{% else %}Mapa de resultados{% endif %} | {{ order.order_number }}{% endblock %}
+
+{% block page_header %}
+<div class="page-header production-order-map__header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h1 class="h5 m-b-10">{% if map_kind == 'control' %}Mapa de controle{% else %}Mapa de resultados{% endif %}</h1>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' 'production' %}">Produção</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_detail' 'production' 'orders' order.pk %}">{{ order.order_number }}</a></li>
+            <li class="breadcrumb-item">{% if map_kind == 'control' %}Controle{% else %}Resultados{% endif %}</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto d-flex gap-2 d-print-none">
+        <a class="btn btn-light" href="{% url 'app:resource_detail' 'production' 'orders' order.pk %}">
+            <i class="feather-arrow-left me-1" aria-hidden="true"></i> Voltar
+        </a>
+        <button type="button" class="btn btn-light" data-production-map-print>
+            <i class="feather-printer me-1" aria-hidden="true"></i> Imprimir
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="production-order-map" data-ui="production-order-map" aria-labelledby="production-order-map-title">
+    <section class="card stretch stretch-full mb-4" aria-labelledby="production-order-map-title">
+        <div class="card-header d-flex flex-wrap justify-content-between gap-3 align-items-start">
+            <div>
+                <span class="text-muted text-uppercase fs-11 fw-semibold">Registro operacional do lote</span>
+                <h2 id="production-order-map-title" class="h4 mb-1">{{ order.order_number }} · {{ order.product }}</h2>
+                <p class="text-muted mb-0">Lote {{ order.batch_number|default:'Não informado' }}</p>
+            </div>
+            <span class="badge bg-soft-primary text-primary">{{ order.get_status_display }}</span>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0 production-order-map__definition-list">
+                <dt class="col-sm-3 text-muted">Fórmula vigente</dt><dd class="col-sm-3">{{ order.formula }}</dd>
+                <dt class="col-sm-3 text-muted">Roteiro vigente</dt><dd class="col-sm-3">{{ order.route }}</dd>
+                <dt class="col-sm-3 text-muted">Prioridade</dt><dd class="col-sm-3">{{ order.get_priority_display }}</dd>
+                <dt class="col-sm-3 text-muted">Responsável</dt><dd class="col-sm-3">{{ order.responsible|default:'—' }}</dd>
+                <dt class="col-sm-3 text-muted">Linha de produção</dt><dd class="col-sm-3">{{ order.production_line|default:'—' }}</dd>
+                <dt class="col-sm-3 text-muted">Equipamento principal</dt><dd class="col-sm-3">{{ order.equipment_code|default:'—' }}</dd>
+                <dt class="col-sm-3 text-muted">Quantidade planejada</dt><dd class="col-sm-3">{{ order.planned_quantity|floatformat:4 }} {{ order.unit }}</dd>
+                <dt class="col-sm-3 text-muted">Período planejado</dt>
+                <dd class="col-sm-3">{{ order.scheduled_start|date:'d/m/Y'|default:'—' }} — {{ order.scheduled_end|date:'d/m/Y'|default:'—' }}</dd>
+                <dt class="col-sm-3 text-muted">Início real</dt><dd class="col-sm-3">{{ order.actual_start|date:'d/m/Y H:i'|default:'—' }}</dd>
+                <dt class="col-sm-3 text-muted">Conclusão real</dt><dd class="col-sm-3">{{ order.actual_end|date:'d/m/Y H:i'|default:'—' }}</dd>
+                <dt class="col-sm-3 text-muted">Observações da ordem</dt><dd class="col-sm-9 text-break">{{ order.notes|default:'—'|linebreaksbr }}</dd>
+            </dl>
+        </div>
+    </section>
+
+    {% if map_kind == 'results' %}
+        <section class="card stretch stretch-full mb-4" aria-labelledby="results-summary-title">
+            <div class="card-header"><h2 id="results-summary-title" class="h6 mb-0">Resumo dos resultados</h2></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Rendimento</dt><dd class="col-sm-8">{{ summary.yield_percent|floatformat:4 }}%</dd>
+                    <dt class="col-sm-4 text-muted">Perda real</dt><dd class="col-sm-8">{{ summary.loss_quantity|floatformat:4 }} {{ order.unit }}</dd>
+                    <dt class="col-sm-4 text-muted">Retrabalho</dt><dd class="col-sm-8">{{ summary.rework_quantity|floatformat:4 }} {{ order.unit }}</dd>
+                    {% if summary.process_minutes is not None %}
+                        <dt class="col-sm-4 text-muted">Tempo real de processo</dt><dd class="col-sm-8">{{ summary.process_minutes|floatformat:2 }} min</dd>
+                    {% endif %}
+                    {% if summary.labor_minutes is not None %}
+                        <dt class="col-sm-4 text-muted">Tempo de mão de obra</dt><dd class="col-sm-8">{{ summary.labor_minutes|floatformat:2 }} min</dd>
+                    {% endif %}
+                    {% if summary.planned_cost is not None %}
+                        <dt class="col-sm-4 text-muted">Custo planejado</dt><dd class="col-sm-8">{{ summary.planned_cost|floatformat:4 }}</dd>
+                        <dt class="col-sm-4 text-muted">Custo real total</dt><dd class="col-sm-8">{{ summary.actual_cost|floatformat:4 }}</dd>
+                        <dt class="col-sm-4 text-muted">Variação de custo (real − planejado)</dt><dd class="col-sm-8">{{ summary.cost_variance|floatformat:4 }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </section>
+
+        <section class="card stretch stretch-full mb-4" aria-labelledby="material-variance-title">
+            <div class="card-header"><h2 id="material-variance-title" class="h6 mb-0">Variação de materiais</h2></div>
+            <div class="card-body p-0">
+                {% if material_variances is None %}
+                    <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os materiais.</div>
+                {% elif material_variances %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <caption class="visually-hidden">Variação real menos planejado por material</caption>
+                            <thead><tr><th scope="col">Material</th><th scope="col">Planejado</th><th scope="col">Real</th><th scope="col">Real − planejado</th><th scope="col">Perda</th><th scope="col">Devolução</th></tr></thead>
+                            <tbody>
+                                {% for row in material_variances %}
+                                    <tr>
+                                        <th scope="row">{{ row.material.material }}</th>
+                                        <td>{{ row.planned_quantity|floatformat:4 }} {{ row.material.unit }}</td>
+                                        <td>{{ row.actual_quantity|floatformat:4 }} {{ row.material.unit }}</td>
+                                        <td>{{ row.variance_quantity|floatformat:4 }} {{ row.material.unit }}</td>
+                                        <td>{{ row.loss_quantity|floatformat:4 }} {{ row.material.unit }}</td>
+                                        <td>{{ row.returned_quantity|floatformat:4 }} {{ row.material.unit }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    {% include 'app/includes/empty_state.html' with title='Sem materiais apontados' message='Não há consumos para comparar neste lote.' %}
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="materials-title">
+        <div class="card-header"><h2 id="materials-title" class="h6 mb-0">Matérias-primas e lotes</h2></div>
+        <div class="card-body p-0">
+            {% if materials is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os materiais.</div>
+            {% elif materials %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Materiais, lotes, quantidades e observações da ordem</caption>
+                        <thead><tr><th scope="col">Material</th><th scope="col">Lote</th><th scope="col">Local</th><th scope="col">Planejado</th><th scope="col">Real</th><th scope="col">Perda</th><th scope="col">Devolução</th><th scope="col">Qualidade</th><th scope="col">Validade</th><th scope="col">Observações</th></tr></thead>
+                        <tbody>
+                            {% for material in materials %}
+                                <tr>
+                                    <th scope="row">{{ material.material }}</th>
+                                    <td>{{ material.stock_lot|default:material.lot_number|default:'—' }}</td>
+                                    <td>{{ material.warehouse|default:'—' }} / {{ material.location|default:'—' }}</td>
+                                    <td>{{ material.planned_quantity|floatformat:4 }} {{ material.unit }}</td>
+                                    <td>{{ material.actual_quantity|floatformat:4 }} {{ material.unit }}</td>
+                                    <td>{{ material.loss_quantity|floatformat:4 }} {{ material.unit }}</td>
+                                    <td>{{ material.returned_quantity|floatformat:4 }} {{ material.unit }}</td>
+                                    <td>{{ material.get_quality_status_display }}</td>
+                                    <td>{{ material.expiry_date|date:'d/m/Y'|default:'—' }}</td>
+                                    <td class="text-break">{{ material.notes|default:'—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem materiais apontados' message='Não há matérias-primas registradas nesta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="outputs-title">
+        <div class="card-header"><h2 id="outputs-title" class="h6 mb-0">Produtos acabados e situação de qualidade</h2></div>
+        <div class="card-body p-0">
+            {% if outputs is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os produtos acabados.</div>
+            {% elif outputs %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Produtos acabados, lotes e situação de qualidade</caption>
+                        <thead><tr><th scope="col">Produto</th><th scope="col">Lote</th><th scope="col">Produzido</th><th scope="col">Recebimento</th><th scope="col">Qualidade do lote</th><th scope="col">Local</th><th scope="col">Fabricação</th><th scope="col">Validade</th><th scope="col">Recebido por/em</th><th scope="col">Apontamento de qualidade</th></tr></thead>
+                        <tbody>
+                            {% for output in outputs %}
+                                <tr>
+                                    <th scope="row">{{ output.product }}</th>
+                                    <td>{{ output.lot_number }}{% if output.sublot_number %} / {{ output.sublot_number }}{% endif %}</td>
+                                    <td>{{ output.produced_quantity|floatformat:4 }} {{ output.unit }}</td>
+                                    <td>{{ output.get_status_display }}</td>
+                                    <td>{% if output.stock_lot %}{{ output.stock_lot.get_quality_status_display }}{% else %}—{% endif %}</td>
+                                    <td>{{ output.warehouse|default:'—' }} / {{ output.location|default:'—' }}</td>
+                                    <td>{{ output.manufacturing_date|date:'d/m/Y'|default:'—' }}</td>
+                                    <td>{{ output.expiry_date|date:'d/m/Y'|default:'—' }}</td>
+                                    <td>{{ output.received_by|default:'—' }} / {{ output.received_at|date:'d/m/Y H:i'|default:'—' }}</td>
+                                    <td class="text-break">{{ output.notes|default:'—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem produtos acabados' message='Não há recebimentos de produção para esta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="operations-title">
+        <div class="card-header"><h2 id="operations-title" class="h6 mb-0">Processos e equipamentos</h2></div>
+        <div class="card-body p-0">
+            {% if operations is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os processos.</div>
+            {% elif operations %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Execuções, equipamentos, horários e observações do processo</caption>
+                        <thead><tr><th scope="col">Seq.</th><th scope="col">Operação</th><th scope="col">Centro</th><th scope="col">Equipamento</th><th scope="col">Planejado</th><th scope="col">Real</th><th scope="col">Início/fim</th><th scope="col">Status</th><th scope="col">Executor</th><th scope="col">Observações</th></tr></thead>
+                        <tbody>
+                            {% for operation in operations %}
+                                <tr>
+                                    <th scope="row">{{ operation.sequence }}</th>
+                                    <td>{{ operation.operation }}</td>
+                                    <td>{{ operation.work_center|default:'—' }}</td>
+                                    <td>{{ operation.equipment_code|default:'—' }}</td>
+                                    <td>{{ operation.planned_minutes|floatformat:2 }} min</td>
+                                    <td>{{ operation.actual_minutes|floatformat:2 }} min</td>
+                                    <td>{{ operation.started_at|date:'d/m/Y H:i'|default:'—' }} / {{ operation.ended_at|date:'d/m/Y H:i'|default:'—' }}</td>
+                                    <td>{{ operation.get_status_display }}</td>
+                                    <td>{{ operation.recorded_by|default:'—' }}</td>
+                                    <td class="text-break">{{ operation.notes|default:'—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem processos apontados' message='Não há execuções de processo nesta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="labor-title">
+        <div class="card-header"><h2 id="labor-title" class="h6 mb-0">Colaboradores e horários</h2></div>
+        <div class="card-body p-0">
+            {% if labor_entries is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os colaboradores.</div>
+            {% elif labor_entries %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Apontamentos de mão de obra da ordem</caption>
+                        <thead><tr><th scope="col">Colaborador</th><th scope="col">Função</th><th scope="col">Equipamento</th><th scope="col">Início</th><th scope="col">Fim</th><th scope="col">Duração</th><th scope="col">Observações</th></tr></thead>
+                        <tbody>
+                            {% for labor in labor_entries %}
+                                <tr>
+                                    <th scope="row">{{ labor.user }}</th>
+                                    <td>{{ labor.role }}</td>
+                                    <td>{{ labor.equipment_code|default:'—' }}</td>
+                                    <td>{{ labor.started_at|date:'d/m/Y H:i' }}</td>
+                                    <td>{{ labor.ended_at|date:'d/m/Y H:i' }}</td>
+                                    <td>{{ labor.duration_minutes|floatformat:2 }} min</td>
+                                    <td class="text-break">{{ labor.notes|default:'—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem colaboradores apontados' message='Não há registros de mão de obra nesta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="movements-title">
+        <div class="card-header"><h2 id="movements-title" class="h6 mb-0">Movimentos de estoque</h2></div>
+        <div class="card-body p-0">
+            {% if movements is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os movimentos de estoque.</div>
+            {% elif movements %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Movimentos de estoque vinculados à ordem</caption>
+                        <thead><tr><th scope="col">Movimento</th><th scope="col">Tipo</th><th scope="col">Produto/lote</th><th scope="col">Quantidade</th><th scope="col">Origem</th><th scope="col">Destino</th><th scope="col">Qualidade</th><th scope="col">Data/ator</th><th scope="col">Motivo</th></tr></thead>
+                        <tbody>
+                            {% for movement in movements %}
+                                <tr>
+                                    <th scope="row">{{ movement.movement_number }}</th>
+                                    <td>{{ movement.get_movement_type_display }}</td>
+                                    <td>{{ movement.product }} / {{ movement.lot }}</td>
+                                    <td>{{ movement.quantity|floatformat:4 }} {{ movement.unit }}</td>
+                                    <td>{{ movement.from_warehouse|default:'—' }} / {{ movement.from_location|default:'—' }}</td>
+                                    <td>{{ movement.to_warehouse|default:'—' }} / {{ movement.to_location|default:'—' }}</td>
+                                    <td>{{ movement.get_quality_status_display }}</td>
+                                    <td>{{ movement.movement_date|date:'d/m/Y H:i' }} / {{ movement.created_by|default:'—' }}</td>
+                                    <td class="text-break">{{ movement.reason|default:'—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem movimentos' message='Não há movimentos de estoque vinculados a esta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="genealogy-title">
+        <div class="card-header"><h2 id="genealogy-title" class="h6 mb-0">Genealogia de lotes</h2></div>
+        <div class="card-body p-0">
+            {% if genealogy is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar a genealogia de lotes.</div>
+            {% elif genealogy %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Rastreabilidade dos lotes de entrada para os lotes de saída</caption>
+                        <thead><tr><th scope="col">Lote de entrada</th><th scope="col">Lote de saída</th><th scope="col">Relação</th><th scope="col">Quantidade</th><th scope="col">Observações</th></tr></thead>
+                        <tbody>
+                            {% for link in genealogy %}
+                                <tr><th scope="row">{{ link.input_lot }}</th><td>{{ link.output_lot }}</td><td>{{ link.get_relation_type_display }}</td><td>{{ link.quantity|floatformat:4 }} {{ link.unit }}</td><td class="text-break">{{ link.notes|default:'—' }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem genealogia de lotes' message='Não há vínculos de entrada e saída registrados nesta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="costs-title">
+        <div class="card-header"><h2 id="costs-title" class="h6 mb-0">Capturas de custo</h2></div>
+        <div class="card-body p-0">
+            {% if cost_captures is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar as capturas de custo.</div>
+            {% elif cost_captures %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Custos planejados e reais da ordem</caption>
+                        <thead><tr><th scope="col">Período</th><th scope="col">Planejado</th><th scope="col">Real</th><th scope="col">Variação (real − planejado)</th></tr></thead>
+                        <tbody>
+                            {% for capture in cost_captures %}
+                                <tr><th scope="row">{{ capture.period_start|date:'m/Y' }}</th><td>{{ capture.planned_cost|floatformat:4 }}</td><td>{{ capture.total_actual_cost|floatformat:4 }}</td><td>{{ capture.variance_amount|floatformat:4 }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem captura de custo' message='Não há custos calculados para esta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card stretch stretch-full mb-4" aria-labelledby="events-title">
+        <div class="card-header"><h2 id="events-title" class="h6 mb-0">Eventos operacionais</h2></div>
+        <div class="card-body p-0">
+            {% if events is None %}
+                <div class="alert alert-secondary m-3 mb-0" role="status">Você não possui permissão para visualizar os eventos operacionais.</div>
+            {% elif events %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <caption class="visually-hidden">Trilha dos eventos operacionais da ordem</caption>
+                        <thead><tr><th scope="col">Data</th><th scope="col">Ação</th><th scope="col">Severidade</th><th scope="col">Ator</th><th scope="col">Registro</th></tr></thead>
+                        <tbody>
+                            {% for event in events %}
+                                <tr>
+                                    <th scope="row">{{ event.occurred_at|date:'d/m/Y H:i:s' }}</th>
+                                    <td>{{ event.action }}</td>
+                                    <td>{{ event.get_severity_display }}</td>
+                                    <td>{{ event.user|default:'Sistema' }}</td>
+                                    <td class="text-break">{{ event.message }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include 'app/includes/empty_state.html' with title='Sem eventos operacionais' message='Não há eventos de auditoria vinculados a esta ordem.' %}
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/production-order-map.js' %}" defer></script>
+{% endblock %}

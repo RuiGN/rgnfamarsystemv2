@@ -1,0 +1,22 @@
+name: rgnfarmasystem-test
+
+services:
+  postgres_test:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${TEST_POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: rgn_test
+      POSTGRES_USER: rgn_test
+      POSTGRES_PASSWORD: rgn_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U rgn_test -d rgn_test]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  postgres_test_data:

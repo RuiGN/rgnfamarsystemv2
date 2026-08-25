@@ -1,0 +1,15 @@
+ACTION_KEYS = (
+    ('reviews', 'approve'),
+    ('reviews', 'reject'),
+    ('reviews', 'submit'),
+    ('checklist-items', 'complete'),
+    ('lot-releases', 'approve'),
+    ('lot-releases', 'block'),
+    ('lot-releases', 'reject'),
+    ('lot-releases', 'unblock'),
+    ('blocks', 'apply'),
+    ('blocks', 'unblock'),
+    ('training-records', 'complete'),
+    ('training-records', 'revoke'),
+    ('critical-activity-rules', 'authorize'),
+)

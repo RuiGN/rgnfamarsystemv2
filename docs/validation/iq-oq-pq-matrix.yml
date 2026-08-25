@@ -1,0 +1,17 @@
+version: '1.0'
+protocols:
+  - id: IQ-001
+    phase: IQ
+    objective: Confirmar ambiente e versões instaladas
+    acceptance: Docker, Python e dependências registrados
+    owner: infrastructure
+  - id: OQ-001
+    phase: OQ
+    objective: Confirmar comportamento dos gates
+    acceptance: Testes e readiness aprovados
+    owner: quality
+  - id: PQ-001
+    phase: PQ
+    objective: Confirmar uso operacional controlado
+    acceptance: Smoke, backup e rollback documentados
+    owner: operations

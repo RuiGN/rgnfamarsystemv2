@@ -1,0 +1,61 @@
+name: Release v1 validation
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (vMAJOR.MINOR.PATCH)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: rgn_test
+          POSTGRES_USER: rgn_test
+          POSTGRES_PASSWORD: rgn_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd="pg_isready -U rgn_test -d rgn_test"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_DATABASE_URL: postgresql://rgn_test:rgn_test@127.0.0.1:5432/rgn_test
+      DATABASE_URL: postgresql://rgn_test:rgn_test@127.0.0.1:5432/rgn_test
+      REDIS_URL: redis://127.0.0.1:6379/1
+      SECRET_KEY: ci-only-non-production-secret-key-with-adequate-length
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CSRF_TRUSTED_ORIGINS: https://app.example.invalid
+      CUSTOMER_APP_BASE_URL: https://app.example.invalid
+      DATA_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      RELEASE_VERSION: ${{ inputs.version || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with: {python-version: '3.13'}
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py spectacular --file openapi-schema.yml --validate --fail-on-warn
+      - run: python manage.py check_release_readiness --fail-on-error
+      - run: bash scripts/release_gate.sh "$RELEASE_VERSION"
+
+  build:
+    needs: gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build immutable local artifact
+        run: docker build --tag "rgnfarmasystem:${GITHUB_SHA}" .
+      - name: Inspect artifact
+        run: docker image inspect "rgnfarmasystem:${GITHUB_SHA}" --format '{{.Id}}'

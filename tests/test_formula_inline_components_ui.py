@@ -1,0 +1,763 @@
+from decimal import Decimal
+from unittest.mock import patch
+
+from django.contrib.auth.models import Permission
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+
+from base.ui.forms import build_resource_form
+from base.ui.registry import get_resource
+from formulations.models import FormulaComponent, MasterFormula
+from masters.models import Product, UnitOfMeasure
+
+
+class FormulaInlineComponentsUiTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            email='admin-formulas@example.com',
+            password='S3curePass!123',
+            username='Admin Formulas',
+        )
+        self.client.force_login(self.user)
+        self.unit = UnitOfMeasure.objects.create(
+            code='KG',
+            name='Quilograma',
+            symbol='kg',
+        )
+        self.product = Product.objects.create(
+            code='PA-PAR500',
+            description='Paracetamol 500mg comprimido',
+            item_type=Product.ItemType.FINISHED_PRODUCT,
+            unit=self.unit,
+            status=Product.Status.APPROVED,
+        )
+        self.materials = [
+            Product.objects.create(
+                code=f'MAT-{index}',
+                description=f'Material {index}',
+                item_type=item_type,
+                unit=self.unit,
+                status=Product.Status.APPROVED,
+            )
+            for index, item_type in enumerate(
+                [
+                    Product.ItemType.RAW_MATERIAL,
+                    Product.ItemType.EXCIPIENT,
+                    Product.ItemType.PACKAGING,
+                    Product.ItemType.PACKAGING,
+                ],
+                start=1,
+            )
+        ]
+
+    def test_formula_form_renders_inline_component_section(self):
+        response = self.client.get(
+            reverse(
+                'app:resource_create',
+                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+            )
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'data-inline-formset="components"' in content
+        assert 'Componentes da fórmula' in content
+        assert 'Adicionar componente' in content
+        assert 'components-TOTAL_FORMS' in content
+
+    def test_priority_parent_forms_render_registered_inline_sections(self):
+        expectations = self._priority_inline_expectations()
+
+        for module_slug, resource_slug, inline_key, title in expectations:
+            resource = get_resource(module_slug, resource_slug)
+            assert inline_key in {inline.key for inline in resource.inlines}
+
+            response = self.client.get(
+                reverse(
+                    'app:resource_create',
+                    kwargs={'module_slug': module_slug, 'resource_slug': resource_slug},
+                )
+            )
+
+            assert response.status_code == 200
+            content = response.content.decode()
+            assert f'data-inline-formset="{inline_key}"' in content
+            assert title in content
+            assert f'{inline_key}-TOTAL_FORMS' in content
+
+    def test_priority_inline_registry_covers_prd_relationships(self):
+        expected_relationships = {
+            ('formulations', 'formulas'): {'components': ('FormulaComponent', 'formula')},
+            ('production', 'orders'): {
+                'material-consumptions': ('MaterialConsumption', 'order'),
+                'outputs': ('ProductionOutput', 'order'),
+                'operations': ('ProductionOperationExecution', 'order'),
+                'labor-entries': ('ProductionLaborEntry', 'order'),
+            },
+            ('procurement', 'orders'): {'items': ('PurchaseOrderItem', 'order')},
+            ('procurement', 'receipts'): {'items': ('PurchaseReceiptItem', 'receipt')},
+            ('documents', 'controlled-documents'): {
+                'attachments': ('DocumentAttachment', 'document'),
+                'approvals': ('DocumentApproval', 'document'),
+                'distributions': ('DocumentDistribution', 'document'),
+            },
+            ('deviations', 'events'): {
+                'investigations': ('DeviationInvestigation', 'event'),
+                'impact-assessments': ('DeviationImpactAssessment', 'event'),
+                'approvals': ('DeviationApproval', 'event'),
+                'evidences': ('DeviationEvidence', 'event'),
+            },
+            ('capa', 'records'): {
+                'actions': ('CapaAction', 'capa'),
+                'evidences': ('CapaEvidence', 'capa'),
+                'approvals': ('CapaApproval', 'capa'),
+                'effectiveness-checks': ('EffectivenessCheck', 'capa'),
+            },
+            ('audits', 'plans'): {
+                'checklist-items': ('AuditChecklistItem', 'audit'),
+                'findings': ('AuditFinding', 'audit'),
+                'evidences': ('AuditEvidence', 'audit'),
+            },
+            ('audits', 'findings'): {
+                'actions': ('AuditFollowUpAction', 'finding'),
+            },
+            ('risks', 'records'): {
+                'assessments': ('RiskAssessment', 'risk'),
+                'controls': ('RiskControl', 'risk'),
+                'actions': ('RiskMitigationAction', 'risk'),
+                'reviews': ('RiskReview', 'risk'),
+                'alerts': ('RiskAlert', 'risk'),
+            },
+            ('regulatory', 'dossiers'): {
+                'registrations': ('RegulatoryRegistration', 'dossier'),
+                'petitions': ('RegulatoryPetition', 'dossier'),
+                'requirements': ('RegulatoryRequirement', 'dossier'),
+                'evidences': ('RegulatoryEvidence', 'dossier'),
+                'commitments': ('RegulatoryCommitment', 'dossier'),
+            },
+            ('pharmacovigilance', 'cases'): {
+                'classifications': ('PharmacovigilanceClassification', 'case'),
+                'causality-assessments': ('PharmacovigilanceCausalityAssessment', 'case'),
+                'investigations': ('PharmacovigilanceInvestigation', 'case'),
+                'actions': ('PharmacovigilanceAction', 'case'),
+                'reports': ('PharmacovigilanceSafetyReport', 'case'),
+            },
+            ('recalls', 'campaigns'): {
+                'impacted-customers': ('RecallImpactedCustomer', 'campaign'),
+                'communications': ('RecallCommunication', 'campaign'),
+                'reports': ('RecallEffectivenessReport', 'campaign'),
+            },
+        }
+
+        actual_relationships = {}
+        for parent, expected_inlines in expected_relationships.items():
+            resource = get_resource(*parent)
+            actual_relationships[parent] = {
+                inline.key: (inline.child_model.__name__, inline.parent_field)
+                for inline in resource.inlines
+                if inline.key in expected_inlines
+            }
+
+        assert actual_relationships == expected_relationships
+
+    def test_production_material_inline_includes_allocation_fields_for_operational_actions(self):
+        resource = get_resource('production', 'orders')
+        material_inline = next(
+            inline for inline in resource.inlines if inline.key == 'material-consumptions'
+        )
+
+        assert {'stock_lot', 'warehouse', 'location'} <= set(material_inline.fields)
+        assert {
+            'reserved_quantity',
+            'issued_quantity',
+            'reservation_movement',
+            'issue_movement',
+        } & set(material_inline.fields) == set()
+
+    def test_regulated_inline_forms_exclude_controlled_decision_fields(self):
+        document = get_resource('documents', 'controlled-documents')
+        document_fields = {inline.key: inline.fields for inline in document.inlines}
+        assert document_fields['approvals'] == ('role', 'user')
+        assert document_fields['distributions'] == ('recipient', 'due_date')
+
+        deviation = get_resource('deviations', 'events')
+        deviation_fields = {inline.key: inline.fields for inline in deviation.inlines}
+        assert 'decision' not in deviation_fields['approvals']
+
+        capa = get_resource('capa', 'records')
+        capa_fields = {inline.key: inline.fields for inline in capa.inlines}
+        assert 'decision' not in capa_fields['approvals']
+        assert 'status' not in capa_fields['actions']
+        assert 'result' not in capa_fields['effectiveness-checks']
+
+    def test_regulated_document_outcomes_are_read_only_outside_parent_workflow(self):
+        from documents.models import ControlledDocument, DocumentApproval
+
+        approval_resource = get_resource('documents', 'approvals')
+        distribution_resource = get_resource('documents', 'distributions')
+        assert approval_resource.read_only is True
+        assert distribution_resource.read_only is True
+
+        document = ControlledDocument.objects.create(
+            document_type=ControlledDocument.DocumentType.POLICY,
+            code='POL-READ-ONLY-OUTCOMES',
+            title='Resultados controlados',
+            area='Qualidade',
+            effective_from=timezone.localdate(),
+            owner=self.user,
+            content='Conteúdo controlado.',
+            change_summary='Emissão inicial.',
+        )
+        approval = DocumentApproval.objects.create(
+            document=document,
+            role=DocumentApproval.Role.APPROVER,
+            user=self.user,
+        )
+
+        create_response = self.client.get(
+            reverse(
+                'app:resource_create',
+                kwargs={'module_slug': 'documents', 'resource_slug': 'approvals'},
+            )
+        )
+        edit_response = self.client.get(
+            reverse(
+                'app:resource_edit',
+                kwargs={
+                    'module_slug': 'documents',
+                    'resource_slug': 'approvals',
+                    'pk': approval.pk,
+                },
+            )
+        )
+
+        assert create_response.status_code == 403
+        assert edit_response.status_code == 403
+        approval.refresh_from_db()
+        assert approval.decision == DocumentApproval.Decision.PENDING
+
+    def test_document_inline_actor_fields_are_attributed_to_request_user(self):
+        from documents.models import ControlledDocument, DocumentAttachment, DocumentDistribution
+
+        document = get_resource('documents', 'controlled-documents')
+        inline_actor_fields = {inline.key: inline.actor_field for inline in document.inlines}
+        assert inline_actor_fields['attachments'] == 'uploaded_by'
+        assert inline_actor_fields['distributions'] == 'distributed_by'
+
+        controlled_document = ControlledDocument.objects.create(
+            document_type=ControlledDocument.DocumentType.POLICY,
+            code='POL-INLINE-ACTOR',
+            title='Atribuição de atores',
+            area='Qualidade',
+            version='1.0',
+            status=ControlledDocument.Status.PUBLISHED,
+            effective_from=timezone.localdate(),
+            owner=self.user,
+            content='Conteúdo controlado.',
+            change_summary='Emissão inicial.',
+        )
+        response = self.client.post(
+            reverse(
+                'app:resource_edit',
+                kwargs={
+                    'module_slug': 'documents',
+                    'resource_slug': 'controlled-documents',
+                    'pk': controlled_document.pk,
+                },
+            ),
+            {
+                'document_type': controlled_document.document_type,
+                'code': controlled_document.code,
+                'title': controlled_document.title,
+                'area': controlled_document.area,
+                'area_ref': '',
+                'version': controlled_document.version,
+                'effective_from': controlled_document.effective_from.isoformat(),
+                'valid_until': '',
+                'owner': str(self.user.pk),
+                'content': controlled_document.content,
+                'change_summary': controlled_document.change_summary,
+                'supersedes': '',
+                'attachments-TOTAL_FORMS': '1',
+                'attachments-INITIAL_FORMS': '0',
+                'attachments-MIN_NUM_FORMS': '0',
+                'attachments-MAX_NUM_FORMS': '1000',
+                'attachments-0-file_name': 'procedimento.pdf',
+                'attachments-0-file_reference': 'documents/procedimento.pdf',
+                'attachments-0-content_hash': 'sha256:documento-controlado',
+                'attachments-0-description': 'Anexo controlado.',
+                'approvals-TOTAL_FORMS': '0',
+                'approvals-INITIAL_FORMS': '0',
+                'approvals-MIN_NUM_FORMS': '0',
+                'approvals-MAX_NUM_FORMS': '1000',
+                'distributions-TOTAL_FORMS': '1',
+                'distributions-INITIAL_FORMS': '0',
+                'distributions-MIN_NUM_FORMS': '0',
+                'distributions-MAX_NUM_FORMS': '1000',
+                'distributions-0-recipient': str(self.user.pk),
+                'distributions-0-due_date': timezone.localdate().isoformat(),
+            },
+        )
+
+        assert response.status_code == 302, self._response_form_errors(response)
+        assert DocumentAttachment.objects.get(document=controlled_document).uploaded_by == self.user
+        assert (
+            DocumentDistribution.objects.get(document=controlled_document).distributed_by
+            == self.user
+        )
+
+    def test_document_ui_creation_records_domain_audit_in_same_flow(self):
+        from documents.models import ControlledDocument, DocumentAuditTrail
+
+        response = self.client.post(
+            reverse(
+                'app:resource_create',
+                kwargs={
+                    'module_slug': 'documents',
+                    'resource_slug': 'controlled-documents',
+                },
+            ),
+            {
+                'document_type': ControlledDocument.DocumentType.POLICY,
+                'code': 'POL-CREATION-AUDIT',
+                'title': 'Auditoria de criação',
+                'area': 'Qualidade',
+                'area_ref': '',
+                'version': '1.0',
+                'effective_from': timezone.localdate().isoformat(),
+                'valid_until': '',
+                'owner': str(self.user.pk),
+                'content': 'Conteúdo controlado.',
+                'change_summary': 'Emissão inicial auditada.',
+                'supersedes': '',
+                'attachments-TOTAL_FORMS': '0',
+                'attachments-INITIAL_FORMS': '0',
+                'attachments-MIN_NUM_FORMS': '0',
+                'attachments-MAX_NUM_FORMS': '1000',
+                'approvals-TOTAL_FORMS': '0',
+                'approvals-INITIAL_FORMS': '0',
+                'approvals-MIN_NUM_FORMS': '0',
+                'approvals-MAX_NUM_FORMS': '1000',
+                'distributions-TOTAL_FORMS': '0',
+                'distributions-INITIAL_FORMS': '0',
+                'distributions-MIN_NUM_FORMS': '0',
+                'distributions-MAX_NUM_FORMS': '1000',
+            },
+        )
+
+        assert response.status_code == 302, self._response_form_errors(response)
+        controlled_document = ControlledDocument.objects.get(code='POL-CREATION-AUDIT')
+        creation_audit = DocumentAuditTrail.objects.get(
+            document=controlled_document,
+            action=DocumentAuditTrail.Action.CREATED,
+        )
+        assert creation_audit.actor == self.user
+        assert creation_audit.reason == controlled_document.change_summary
+
+    def test_gxp_resources_block_generic_hard_delete(self):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            code='FRM-RETENTION',
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+        response = self.client.post(
+            reverse(
+                'app:resource_delete',
+                kwargs={
+                    'module_slug': 'formulations',
+                    'resource_slug': 'formulas',
+                    'pk': formula.pk,
+                },
+            )
+        )
+
+        # Formulations remain editable master data; regulated execution records are retained.
+        assert response.status_code == 302
+
+        from documents.models import ControlledDocument
+
+        controlled_document = ControlledDocument.objects.create(
+            document_type=ControlledDocument.DocumentType.POLICY,
+            code='POL-RETENTION',
+            title='Política retida',
+            area='Qualidade',
+            version='1.0',
+            effective_from=timezone.localdate(),
+            owner=self.user,
+            content='Conteúdo controlado.',
+            change_summary='Emissão inicial.',
+        )
+        response = self.client.post(
+            reverse(
+                'app:resource_delete',
+                kwargs={
+                    'module_slug': 'documents',
+                    'resource_slug': 'controlled-documents',
+                    'pk': controlled_document.pk,
+                },
+            )
+        )
+
+        assert response.status_code == 403
+        assert ControlledDocument.objects.filter(pk=controlled_document.pk).exists()
+
+    def test_formula_form_creates_multiple_components_in_same_post(self):
+        response = self.client.post(
+            reverse(
+                'app:resource_create',
+                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+            ),
+            {
+                'product': str(self.product.pk),
+                'code': 'FRM-PAR500',
+                'version': '1',
+                'status': MasterFormula.Status.DRAFT,
+                'batch_size': '100.0000',
+                'batch_unit': str(self.unit.pk),
+                'expected_yield_percent': '98.5000',
+                'effective_from': '',
+                'effective_to': '',
+                'copied_from': '',
+                'notes': 'Fórmula criada com componentes inline.',
+                'components-TOTAL_FORMS': '4',
+                'components-INITIAL_FORMS': '0',
+                'components-MIN_NUM_FORMS': '0',
+                'components-MAX_NUM_FORMS': '1000',
+                **self._component_payload(0, 10, self.materials[0], FormulaComponent.Role.ACTIVE),
+                **self._component_payload(
+                    1, 20, self.materials[1], FormulaComponent.Role.EXCIPIENT
+                ),
+                **self._component_payload(
+                    2, 30, self.materials[2], FormulaComponent.Role.PACKAGING
+                ),
+                **self._component_payload(
+                    3, 40, self.materials[3], FormulaComponent.Role.PACKAGING
+                ),
+            },
+        )
+
+        assert response.status_code == 302, self._response_form_errors(response)
+        formula = MasterFormula.objects.get(code='FRM-PAR500')
+        assert formula.components.count() == 4
+        assert list(
+            formula.components.order_by('line_number').values_list('line_number', flat=True)
+        ) == [
+            10,
+            20,
+            30,
+            40,
+        ]
+        from governance.models import GovernanceAuditLog
+
+        audit = GovernanceAuditLog.objects.get(
+            action='ui.resource.created',
+            target_model='MasterFormula',
+            target_record_id=str(formula.pk),
+        )
+        assert audit.user == self.user
+        assert audit.safe_context['inline_resources']['components'] == 4
+
+    def test_formula_edit_form_loads_existing_components(self):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            code='FRM-EDIT',
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+        component = FormulaComponent.objects.create(
+            formula=formula,
+            line_number=10,
+            material=self.materials[0],
+            role=FormulaComponent.Role.ACTIVE,
+            quantity=Decimal('2.0000'),
+            unit=self.unit,
+        )
+
+        response = self.client.get(
+            reverse(
+                'app:resource_edit',
+                kwargs={
+                    'module_slug': 'formulations',
+                    'resource_slug': 'formulas',
+                    'pk': formula.pk,
+                },
+            )
+        )
+
+        assert response.status_code == 200
+        formset = response.context['inline_formsets'][0]['formset']
+        assert formset.initial_form_count() == 1
+        assert formset.forms[0].instance == component
+        content = response.content.decode()
+        assert 'name="components-0-line_number"' in content
+        assert f'value="{component.pk}"' in content
+
+    def test_formula_edit_updates_and_deletes_existing_components(self):
+        formula, first = self._formula_with_component('FRM-EDIT-POST', quantity='2.0000')
+        second = FormulaComponent.objects.create(
+            formula=formula,
+            line_number=20,
+            material=self.materials[1],
+            role=FormulaComponent.Role.EXCIPIENT,
+            quantity=Decimal('3.0000'),
+            unit=self.unit,
+        )
+        payload = {
+            **self._formula_payload(formula.code),
+            'components-TOTAL_FORMS': '2',
+            'components-INITIAL_FORMS': '2',
+            'components-MIN_NUM_FORMS': '0',
+            'components-MAX_NUM_FORMS': '1000',
+            **self._existing_component_payload(0, first, quantity='5.0000'),
+            **self._existing_component_payload(1, second, quantity='3.0000'),
+            'components-1-DELETE': 'on',
+        }
+
+        response = self.client.post(self._formula_edit_url(formula), payload)
+
+        assert response.status_code == 302, self._response_form_errors(response)
+        first.refresh_from_db()
+        assert first.quantity == Decimal('5.0000')
+        assert not FormulaComponent.objects.filter(pk=second.pk).exists()
+
+    def test_formula_edit_child_failure_rolls_back_parent_and_existing_child(self):
+        formula, component = self._formula_with_component('FRM-EDIT-ROLLBACK', quantity='2.0000')
+        payload = {
+            **self._formula_payload(formula.code),
+            'notes': 'Alteração que precisa ser revertida.',
+            'components-TOTAL_FORMS': '1',
+            'components-INITIAL_FORMS': '1',
+            'components-MIN_NUM_FORMS': '0',
+            'components-MAX_NUM_FORMS': '1000',
+            **self._existing_component_payload(0, component, quantity='9.0000'),
+        }
+
+        with patch.object(FormulaComponent, 'save', side_effect=RuntimeError('storage failure')):
+            with self.assertRaisesMessage(RuntimeError, 'storage failure'):
+                self.client.post(self._formula_edit_url(formula), payload)
+
+        formula.refresh_from_db()
+        component.refresh_from_db()
+        assert formula.notes == ''
+        assert component.quantity == Decimal('2.0000')
+
+    def test_child_save_failure_rolls_back_parent_and_children(self):
+        payload = {
+            **self._formula_payload('FRM-ROLLBACK'),
+            'components-TOTAL_FORMS': '1',
+            'components-INITIAL_FORMS': '0',
+            'components-MIN_NUM_FORMS': '0',
+            'components-MAX_NUM_FORMS': '1000',
+            **self._component_payload(0, 10, self.materials[0], FormulaComponent.Role.ACTIVE),
+        }
+
+        with patch.object(FormulaComponent, 'save', side_effect=RuntimeError('storage failure')):
+            with self.assertRaisesMessage(RuntimeError, 'storage failure'):
+                self.client.post(
+                    reverse(
+                        'app:resource_create',
+                        kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+                    ),
+                    payload,
+                )
+
+        assert not MasterFormula.objects.filter(code='FRM-ROLLBACK').exists()
+        assert FormulaComponent.objects.count() == 0
+
+    def test_child_add_permission_is_enforced_before_atomic_save(self):
+        user = get_user_model().objects.create_user(
+            email='formula-operator@example.com',
+            password='S3curePass!123',
+            username='Operador de Fórmulas',
+        )
+        self.client.force_login(user)
+        child_add_permission = Permission.objects.get(
+            content_type__app_label='formulations', codename='add_formulacomponent'
+        )
+        user.user_permissions.remove(child_add_permission)
+        user._perm_cache = set(user.get_all_permissions())
+        user._perm_cache.discard('formulations.add_formulacomponent')
+
+        response = self.client.post(
+            reverse(
+                'app:resource_create',
+                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+            ),
+            {
+                **self._formula_payload('FRM-NO-CHILD-PERMISSION'),
+                'components-TOTAL_FORMS': '1',
+                'components-INITIAL_FORMS': '0',
+                'components-MIN_NUM_FORMS': '0',
+                'components-MAX_NUM_FORMS': '1000',
+                **self._component_payload(0, 10, self.materials[0], FormulaComponent.Role.ACTIVE),
+            },
+        )
+
+        assert response.status_code == 403
+        assert not MasterFormula.objects.filter(code='FRM-NO-CHILD-PERMISSION').exists()
+        assert FormulaComponent.objects.count() == 0
+
+    def test_component_resource_form_validates_without_legacy_scope_context(self):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            code='FRM-COMP',
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+        request = type('Request', (), {'user': self.user})()
+        form_class = build_resource_form(get_resource('formulations', 'components'))
+
+        form = form_class(
+            {
+                'formula': str(formula.pk),
+                'line_number': '10',
+                'material': str(self.materials[0].pk),
+                'role': FormulaComponent.Role.ACTIVE,
+                'quantity': '1.0000',
+                'unit': str(self.unit.pk),
+                'expected_loss_percent': '0.0000',
+                'conversion_factor': '1.000000',
+                'is_active': 'on',
+            },
+            request=request,
+        )
+
+        assert form.is_valid(), form.errors
+
+    def _component_payload(self, index, line_number, material, role):
+        return {
+            f'components-{index}-id': '',
+            f'components-{index}-formula': '',
+            f'components-{index}-line_number': str(line_number),
+            f'components-{index}-material': str(material.pk),
+            f'components-{index}-role': role,
+            f'components-{index}-quantity': str(Decimal('1.0000') * index + Decimal('1.0000')),
+            f'components-{index}-unit': str(self.unit.pk),
+            f'components-{index}-expected_loss_percent': '0.0000',
+            f'components-{index}-conversion_factor': '1.000000',
+            f'components-{index}-is_active': 'on',
+        }
+
+    def _formula_with_component(self, code, *, quantity):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            code=code,
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+        component = FormulaComponent.objects.create(
+            formula=formula,
+            line_number=10,
+            material=self.materials[0],
+            role=FormulaComponent.Role.ACTIVE,
+            quantity=Decimal(quantity),
+            unit=self.unit,
+        )
+        return formula, component
+
+    def _existing_component_payload(self, index, component, *, quantity):
+        return {
+            f'components-{index}-id': str(component.pk),
+            f'components-{index}-formula': str(component.formula_id),
+            f'components-{index}-line_number': str(component.line_number),
+            f'components-{index}-material': str(component.material_id),
+            f'components-{index}-role': component.role,
+            f'components-{index}-quantity': quantity,
+            f'components-{index}-unit': str(component.unit_id),
+            f'components-{index}-expected_loss_percent': str(component.expected_loss_percent),
+            f'components-{index}-conversion_factor': str(component.conversion_factor),
+            f'components-{index}-is_active': 'on',
+        }
+
+    def _formula_edit_url(self, formula):
+        return reverse(
+            'app:resource_edit',
+            kwargs={
+                'module_slug': 'formulations',
+                'resource_slug': 'formulas',
+                'pk': formula.pk,
+            },
+        )
+
+    def _formula_payload(self, code):
+        return {
+            'product': str(self.product.pk),
+            'code': code,
+            'version': '1',
+            'status': MasterFormula.Status.DRAFT,
+            'batch_size': '100.0000',
+            'batch_unit': str(self.unit.pk),
+            'expected_yield_percent': '98.5000',
+            'effective_from': '',
+            'effective_to': '',
+            'copied_from': '',
+            'notes': 'Teste do contrato transacional de formulários inline.',
+        }
+
+    def _priority_inline_expectations(self):
+        return [
+            ('formulations', 'formulas', 'components', 'Componentes da fórmula'),
+            ('production', 'orders', 'material-consumptions', 'Matérias-primas'),
+            ('production', 'orders', 'outputs', 'Produtos acabados'),
+            ('production', 'orders', 'operations', 'Processos'),
+            ('production', 'orders', 'labor-entries', 'Colaboradores'),
+            ('procurement', 'orders', 'items', 'Itens do pedido'),
+            ('procurement', 'receipts', 'items', 'Itens do recebimento'),
+            ('documents', 'controlled-documents', 'attachments', 'Anexos documentais'),
+            ('documents', 'controlled-documents', 'approvals', 'Aprovações documentais'),
+            ('documents', 'controlled-documents', 'distributions', 'Distribuições documentais'),
+            ('deviations', 'events', 'investigations', 'Investigações de desvio'),
+            ('deviations', 'events', 'impact-assessments', 'Avaliações de impacto'),
+            ('deviations', 'events', 'approvals', 'Aprovações de desvio'),
+            ('deviations', 'events', 'evidences', 'Evidências de desvio'),
+            ('capa', 'records', 'actions', 'Ações CAPA'),
+            ('capa', 'records', 'evidences', 'Evidências CAPA'),
+            ('capa', 'records', 'approvals', 'Aprovações CAPA'),
+            ('capa', 'records', 'effectiveness-checks', 'Verificações de eficácia'),
+            ('audits', 'plans', 'checklist-items', 'Checklist de auditoria'),
+            ('audits', 'plans', 'findings', 'Achados de auditoria'),
+            ('audits', 'plans', 'evidences', 'Evidências de auditoria'),
+            ('audits', 'findings', 'actions', 'Ações de auditoria'),
+            ('risks', 'records', 'assessments', 'Avaliações de risco'),
+            ('risks', 'records', 'controls', 'Controles de risco'),
+            ('risks', 'records', 'actions', 'Ações de mitigação'),
+            ('risks', 'records', 'reviews', 'Revisões de risco'),
+            ('risks', 'records', 'alerts', 'Alertas de risco'),
+            ('regulatory', 'dossiers', 'registrations', 'Registros regulatórios'),
+            ('regulatory', 'dossiers', 'petitions', 'Petições regulatórias'),
+            ('regulatory', 'dossiers', 'requirements', 'Exigências regulatórias'),
+            ('regulatory', 'dossiers', 'evidences', 'Evidências regulatórias'),
+            ('regulatory', 'dossiers', 'commitments', 'Compromissos regulatórios'),
+            ('pharmacovigilance', 'cases', 'classifications', 'Classificações'),
+            ('pharmacovigilance', 'cases', 'causality-assessments', 'Avaliações de causalidade'),
+            ('pharmacovigilance', 'cases', 'investigations', 'Investigações'),
+            ('pharmacovigilance', 'cases', 'actions', 'Ações de farmacovigilância'),
+            ('pharmacovigilance', 'cases', 'reports', 'Relatos de segurança'),
+            ('recalls', 'campaigns', 'impacted-customers', 'Clientes impactados'),
+            ('recalls', 'campaigns', 'communications', 'Comunicações de recall'),
+            ('recalls', 'campaigns', 'reports', 'Relatório de efetividade'),
+        ]
+
+    def _response_form_errors(self, response):
+        if not response.context:
+            return 'Sem contexto de formulário.'
+        inline_errors = []
+        for inline in response.context.get('inline_formsets', []):
+            formset = inline['formset']
+            inline_errors.append(
+                {
+                    'non_form_errors': list(formset.non_form_errors()),
+                    'form_errors': [form.errors for form in formset.forms],
+                }
+            )
+        return {
+            'form_errors': response.context['form'].errors,
+            'inline_errors': inline_errors,
+        }

@@ -1,0 +1,37 @@
+from rest_framework.permissions import DjangoModelPermissions
+
+
+class SingleInstanceDjangoModelPermissions(DjangoModelPermissions):
+    perms_map = {
+        **DjangoModelPermissions.perms_map,
+        'GET': ['%(app_label)s.view_%(model_name)s'],
+        'OPTIONS': ['%(app_label)s.view_%(model_name)s'],
+        'HEAD': ['%(app_label)s.view_%(model_name)s'],
+    }
+
+    def has_permission(self, request, view):
+        action = getattr(view, 'action', None)
+        configured_permissions = getattr(view, 'action_permission_map', {}).get(action)
+        if configured_permissions is not None:
+            if getattr(view, '_ignore_model_permissions', False):
+                return True
+            if not request.user or (
+                not request.user.is_authenticated and self.authenticated_users_only
+            ):
+                return False
+            return request.user.has_perms(configured_permissions)
+
+        if request.method != 'POST' or not action or action == 'create':
+            return super().has_permission(request, view)
+
+        if getattr(view, '_ignore_model_permissions', False):
+            return True
+        if not request.user or (
+            not request.user.is_authenticated and self.authenticated_users_only
+        ):
+            return False
+
+        queryset = self._queryset(view)
+        permission_method = 'POST' if getattr(view, 'detail', True) is False else 'PUT'
+        required_permissions = self.get_required_permissions(permission_method, queryset.model)
+        return request.user.has_perms(required_permissions)

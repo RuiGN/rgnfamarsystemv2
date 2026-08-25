@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Cockpit operacional | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Cockpit operacional</h5>
+            <p class="text-muted mb-0">Produção, estoque e qualidade em um único contexto.</p>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item">Operação</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="row g-4" aria-label="Indicadores operacionais">
+    <div class="col-xxl-4 col-md-6">
+        <article class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="d-flex gap-4 align-items-center">
+                        <div class="avatar-text avatar-lg bg-soft-primary text-primary">
+                            <i class="feather-play-circle" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-dark">{{ metrics.production_in_progress|default:"0" }}</div>
+                            <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Ordens em execução</h3>
+                        </div>
+                    </div>
+                    <span class="badge bg-soft-primary text-primary">Produção</span>
+                </div>
+                <div class="pt-4 border-top">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <a href="{% url 'app:resource_list' 'production' 'orders' %}" class="fs-12 fw-medium text-muted text-truncate-1-line">Ver ordens</a>
+                        <div class="w-100 text-end">
+                            <i class="feather-arrow-right fs-12 text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="col-xxl-4 col-md-6">
+        <article class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="d-flex gap-4 align-items-center">
+                        <div class="avatar-text avatar-lg bg-soft-success text-success">
+                            <i class="feather-archive" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-dark">{{ metrics.stock_lots|default:"0" }}</div>
+                            <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Lotes em estoque</h3>
+                        </div>
+                    </div>
+                    <span class="badge bg-soft-success text-success">Estoque</span>
+                </div>
+                <div class="pt-4 border-top">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <a href="{% url 'app:resource_list' 'inventory' 'lots' %}" class="fs-12 fw-medium text-muted text-truncate-1-line">Ver lotes</a>
+                        <div class="w-100 text-end">
+                            <i class="feather-arrow-right fs-12 text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="col-xxl-4 col-md-6">
+        <article class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                    <div class="d-flex gap-4 align-items-center">
+                        <div class="avatar-text avatar-lg bg-soft-warning text-warning">
+                            <i class="feather-check-square" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-dark">{{ metrics.pending_samples|default:"0" }}</div>
+                            <h3 class="fs-13 fw-semibold text-truncate-1-line mb-0">Amostras pendentes</h3>
+                        </div>
+                    </div>
+                    <span class="badge bg-soft-warning text-warning">Qualidade</span>
+                </div>
+                <div class="pt-4 border-top">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <a href="{% url 'app:resource_list' 'quality' 'samples' %}" class="fs-12 fw-medium text-muted text-truncate-1-line">Ver amostras</a>
+                        <div class="w-100 text-end">
+                            <i class="feather-arrow-right fs-12 text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="card stretch stretch-full mt-4">
+    <div class="card-header"><h2 class="card-title h5 mb-0">Acessos rápidos</h2></div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-light-brand" href="{% url 'app:module' 'planning' %}"><i class="feather-calendar me-2" aria-hidden="true"></i>Planejamento</a>
+            <a class="btn btn-light-brand" href="{% url 'app:module' 'procurement' %}"><i class="feather-shopping-cart me-2" aria-hidden="true"></i>Compras</a>
+            <a class="btn btn-light-brand" href="{% url 'app:module' 'quality' %}"><i class="feather-check-square me-2" aria-hidden="true"></i>Qualidade</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

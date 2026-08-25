@@ -1,0 +1,18 @@
+ACTION_KEYS = (
+    ('opportunities', 'advance'),
+    ('opportunities', 'mark_lost'),
+    ('opportunities', 'mark_won'),
+    ('proposals', 'accept'),
+    ('proposals', 'recalculate'),
+    ('proposals', 'reject'),
+    ('proposals', 'send'),
+    ('contracts', 'activate'),
+    ('contracts', 'cancel'),
+    ('contracts', 'suspend'),
+    ('orders', 'approve'),
+    ('orders', 'cancel'),
+    ('orders', 'recalculate'),
+    ('complaints', 'cancel'),
+    ('complaints', 'close'),
+    ('complaints', 'start_investigation'),
+)

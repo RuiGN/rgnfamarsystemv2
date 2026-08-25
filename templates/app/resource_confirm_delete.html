@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir {{ object }} | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Excluir registro</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:resource_list' module.slug resource.slug %}">{{ resource.label }}</a></li>
+            <li class="breadcrumb-item">Excluir</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="card stretch stretch-full" data-ui="delete-confirmation">
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="avatar-text avatar-lg bg-soft-danger text-danger"><i class="feather-trash-2" aria-hidden="true"></i></div>
+            <div><h2 class="h5 mb-1">Excluir registro</h2><p class="text-muted mb-0">Esta ação não pode ser desfeita.</p></div>
+        </div>
+        <p>Confirme a exclusão de <strong>{{ object }}</strong>.</p>
+        <form method="post" class="form-actions">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><i class="feather-trash-2 me-2" aria-hidden="true"></i>Excluir</button>
+            <a href="{% url 'app:resource_detail' module.slug resource.slug object.pk %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-x" aria-hidden="true"></i>Cancelar</a>
+        </form>
+    </div>
+</section>
+{% endblock %}

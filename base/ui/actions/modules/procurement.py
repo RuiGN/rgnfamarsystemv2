@@ -1,0 +1,14 @@
+ACTION_KEYS = (
+    ('requisitions', 'approve'),
+    ('requisitions', 'cancel'),
+    ('requisitions', 'reject'),
+    ('requisitions', 'submit'),
+    ('rfqs', 'approve'),
+    ('rfqs', 'send'),
+    ('orders', 'approve'),
+    ('orders', 'cancel'),
+    ('orders', 'send'),
+    ('receipts', 'mark_received'),
+    ('receipts', 'post_stock'),
+    ('receipts', 'release_quality'),
+)

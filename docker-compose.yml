@@ -1,0 +1,128 @@
+services:
+  app:
+    build: .
+    image: rgnfarmasystem:latest
+    container_name: rgnfarmasystem_app
+    restart: unless-stopped
+    ports:
+      - "4127:8000"
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 600s
+
+  celery_worker:
+    build: .
+    image: rgnfarmasystem:latest
+    container_name: rgnfarmasystem_celery_worker
+    restart: unless-stopped
+    command: ["celery", "-A", "core", "worker", "-l", "INFO"]
+    entrypoint: ["/app/worker-entrypoint.sh"]
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - ./media:/app/media
+    depends_on:
+      app:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping --destination celery@$$(hostname) --timeout=5 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 600s
+
+  celery_beat:
+    build: .
+    image: rgnfarmasystem:latest
+    container_name: rgnfarmasystem_celery_beat
+    restart: unless-stopped
+    command: ["celery", "-A", "core", "beat", "-l", "INFO", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+    entrypoint: ["/app/worker-entrypoint.sh"]
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      app:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import pathlib, sys; cmds=[' '.join(p.read_text(errors='ignore').split('\\\\0')) for p in pathlib.Path('/proc').glob('[0-9]*/cmdline')]; sys.exit(0 if any('celery' in c and 'beat' in c for c in cmds) else 1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 600s
+
+  db:
+    image: postgres:15-alpine
+    container_name: rgnfarmasystem_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rgnfarmasystem}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rgnfarmasystem}
+      POSTGRES_DB: ${POSTGRES_DB:-rgnfarmasystem}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rgnfarmasystem} -d ${POSTGRES_DB:-rgnfarmasystem}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: rgnfarmasystem_redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rgnfarmasystem_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-rgnfarmasystem}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-rgnfarmasystem}
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  cloudflared:
+    profiles: [cloudflare]
+    image: cloudflare/cloudflared:latest
+    container_name: rgnfarmasystem_cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      app:
+        condition: service_started
+
+volumes:
+  postgres_data:

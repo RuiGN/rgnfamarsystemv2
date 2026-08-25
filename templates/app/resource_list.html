@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ resource.label }} | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">{{ resource.label }}</h5>
+        </div>
+        <ul class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:module' module.slug %}">{{ module.label }}</a></li>
+            <li class="breadcrumb-item">{{ resource.label }}</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+            <div class="d-flex d-md-none">
+                <a href="javascript:void(0)" class="page-header-right-close-toggle">
+                    <i class="feather-arrow-left me-2"></i>
+                    <span>Voltar</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                {% if resource.has_gantt_view %}
+                    <a href="{% url 'app:resource_gantt' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-bar-chart-2" aria-hidden="true"></i>Ver Gantt</a>
+                {% endif %}
+                {% if resource.has_kanban_view %}
+                    <a href="{% url 'app:resource_kanban' module.slug resource.slug %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-trello" aria-hidden="true"></i>Ver Kanban</a>
+                {% endif %}
+                {% if can_add %}
+                    <a href="{% url 'app:resource_create' module.slug resource.slug %}" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-plus" aria-hidden="true"></i>Novo registro</a>
+                {% else %}
+                    <span class="badge bg-soft-secondary text-secondary">Somente leitura</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+            <a href="javascript:void(0)" class="page-header-right-open-toggle">
+                <i class="feather-align-right fs-20"></i>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% include 'app/includes/resource_actions.html' with actions=collection_actions %}
+<section class="card stretch stretch-full" data-ui="resource-panel">
+    <div class="card-body p-0">
+        {% if not can_add and not can_change and not can_delete %}
+            <div class="alert alert-info">Este recurso está em modo somente leitura na UI operacional.</div>
+        {% endif %}
+        <div class="p-4 border-bottom" data-ui="resource-filters">
+            {% include 'app/includes/search_filters.html' %}
+        </div>
+        {% if rows %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <caption class="px-4 pt-3 pb-0 text-muted fs-12 fw-bold text-start">{{ resource.label }} - listagem operacional</caption>
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th scope="col">{{ header|capfirst }}</th>
+                        {% endfor %}
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        {% for cell in row.cells %}
+                            <td>
+                                {% if cell.is_status %}
+                                    <span class="badge bg-soft-{{ cell.status_tone }} text-{{ cell.status_tone }}" data-field-status="{{ cell.field }}">{{ cell.value }}</span>
+                                {% else %}
+                                    {{ cell.value }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                        <td class="text-end">
+                            <a href="{% url 'app:resource_detail' module.slug resource.slug row.object.pk %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2" aria-label="Ver detalhe de {{ row.object }}"><i class="feather-eye" aria-hidden="true"></i>Detalhe</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include 'app/includes/pagination.html' %}
+        {% else %}
+            {% include 'app/includes/empty_state.html' with title='Nenhum registro encontrado' message='Crie um registro ou ajuste a busca para ver resultados.' %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

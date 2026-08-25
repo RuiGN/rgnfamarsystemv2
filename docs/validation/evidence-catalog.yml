@@ -1,0 +1,137 @@
+version: '1.0'
+evidence:
+  - id: EV-CSV-001
+    requirement: CSV-001
+    title: Teste de trilha de auditoria
+    owner: quality
+    reviewed_by: qa
+    captured_at: '2026-07-15T00:00:00Z'
+    status: approved
+    sha256: 'f80e1c1a95713ef3634e80a2da1f72d2813afc5ad6ed58711a1c67b7befd2802'
+    artifact: tests/test_audits.py
+  - id: EV-SI-001
+    requirement: SI-001
+    title: Validação de autenticação single-instance
+    owner: engineering
+    reviewed_by: qa
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: '5c2017110fea1d3609c3cc82a6cf490eae940d4b2a6082a649e4048c770b307b'
+    artifact: tests/test_single_instance_auth_access.py
+  - id: EV-SI-002
+    requirement: SI-002
+    title: Validação de runtime operacional sem tenant
+    owner: engineering
+    reviewed_by: qa
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: 'bf6122e6d9e74c3391fe492b37679c240c1944283d6e9770639b99a8d7abe4eb'
+    artifact: tests/test_single_instance_runtime.py
+  - id: EV-SI-003
+    requirement: SI-003
+    title: Validação de PostgreSQL local isolado para pytest
+    owner: engineering
+    reviewed_by: qa
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: 'a906a2627637bb56ddb795ca86c95252796a9884aff90c78100747725e5025de'
+    artifact: tests/test_local_test_environment.py
+  - id: EV-SI-004
+    requirement: SI-004
+    title: Validação física do schema single-instance
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: 'c23a54a3da688ef98ef4b27f6a8d90b77728a632e4e0cf536de737ecbc518937'
+    artifact: tests/test_single_instance_schema.py
+  - id: EV-SI-005
+    requirement: SI-005
+    title: Validação das relações 1-N prioritárias
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-28T00:00:00Z'
+    status: approved
+    sha256: 'b3c34fed87cbc9e3d2092f81b3329644d3eec64a252196f842fc8d1740e5da50'
+    artifact: tests/test_formula_inline_components_ui.py
+  - id: EV-SI-006
+    requirement: SI-006
+    title: Validação de agentes de IA em escopo global
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-28T00:00:00Z'
+    status: approved
+    sha256: '6044a04567a7a7a2f6f4be056b7a20da20e5689d41b18e469cb735ca0a2319eb'
+    artifact: tests/test_ai_agents.py
+  - id: EV-SI-007
+    requirement: SI-007
+    title: Validação do assistente RAG em escopo global
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: '529f5fe25b74db8abc2d12e6fcd5d3666e80058d2237495ab7366d65b915ec4e'
+    artifact: tests/test_knowledge.py
+  - id: EV-SI-008
+    requirement: SI-008
+    title: Validação de arquivos protegidos e autorização
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-28T00:00:00Z'
+    status: approved
+    sha256: '45b7c7b06fc7a989c7bc4a08a9a4607144589267aec8ca8c6f4235d2a82d23ff'
+    artifact: tests/test_files.py
+  - id: EV-SI-009
+    requirement: SI-009
+    title: Validação da criptografia de backup
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: '5dcbcbfb67391cd13babed0122be56fc66af0450baffe7dcf2978a8c5b29d7c7'
+    artifact: tests/test_backup_encryption.py
+  - id: EV-SI-010
+    requirement: SI-010
+    title: Validação do backup PostgreSQL nativo
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-18T00:00:00Z'
+    status: approved
+    sha256: 'a8df250f04dd94af0e425d7add39ccd3c4884bd47e6a17d2fa77d496df499408'
+    artifact: tests/test_native_postgres_deployment.py
+  - id: EV-SIA-ADMIN
+    requirement: SIA-ADMIN
+    title: Validação do Django Admin single-instance
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-20T00:00:00Z'
+    status: approved
+    sha256: 'ba0b7b074e2ec721243fad1de8b37717b0013d2e69463ca85ff66e4bf2e802d4'
+    artifact: tests/test_single_instance_admin_runtime.py
+  - id: EV-SIA-ACTION-253
+    requirement: SIA-ACTION-253
+    title: Snapshot histórico da igualdade entre ações POST DRF e catálogo HTML
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-20T00:00:00Z'
+    status: approved
+    sha256: 'c5a622328b62e9dc3b2383f8e266d9c6a22a7af4e1eff75e107015b7b4297ea9'
+    artifact: docs/validation/evidence/archive/sia-action-253/test_action_catalog_completeness.py
+  - id: EV-SIA-ACTION-258
+    requirement: SIA-ACTION-258
+    title: Igualdade entre ações POST DRF e catálogo HTML
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-28T00:00:00Z'
+    status: approved
+    sha256: 'f1c9f7586cfb2722eac6d502cfb09ce0817bca98a5933d95cc8f43f6c229bd79'
+    artifact: tests/test_action_catalog_completeness.py
+  - id: EV-SIA-PTBR
+    requirement: SIA-PTBR
+    title: Validação do vocabulário pt-BR das ações
+    owner: engineering
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-07-20T00:00:00Z'
+    status: approved
+    sha256: 'f6a2626938901b6c4295aaf674e9b3dfa159d96d997754e926eec5c321fe0d0f'
+    artifact: tests/test_action_copy_ptbr.py

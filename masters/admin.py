@@ -1,0 +1,94 @@
+from django.contrib import admin
+from masters.models import (
+    BusinessPartner,
+    MasterCategory,
+    Product,
+    Site,
+    StorageLocation,
+    UnitOfMeasure,
+    Warehouse,
+)
+
+
+@admin.register(UnitOfMeasure)
+class UnitOfMeasureAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'symbol', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('code', 'name', 'symbol')
+
+
+@admin.register(MasterCategory)
+class MasterCategoryAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'kind', 'parent', 'is_active')
+    list_filter = ('kind', 'is_active')
+    search_fields = ('code', 'name')
+    autocomplete_fields = ('parent',)
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('code', 'description', 'item_type', 'status', 'unit')
+    list_filter = ('item_type', 'status', 'requires_quality_release', 'requires_approved_supplier')
+    search_fields = ('code', 'description', 'fiscal_ncm')
+    autocomplete_fields = (
+        'unit',
+        'category',
+        'therapeutic_class',
+        'pharmaceutical_form',
+        'administration_route',
+    )
+
+
+@admin.register(BusinessPartner)
+class BusinessPartnerAdmin(admin.ModelAdmin):
+    list_display = (
+        'code',
+        'legal_name',
+        'partner_type',
+        'city_ref',
+        'state_ref',
+        'qualification_status',
+        'qualification_valid_until',
+        'is_blocked',
+    )
+    list_filter = (
+        'partner_type',
+        'qualification_status',
+        'state_ref',
+        'is_active',
+        'is_blocked',
+    )
+    search_fields = (
+        'code',
+        'legal_name',
+        'trade_name',
+        'document',
+        'city_ref__name',
+        'state_ref__name',
+        'state_ref__name',
+    )
+    autocomplete_fields = ('city_ref', 'state_ref')
+
+
+@admin.register(Site)
+class SiteAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'site_type', 'city_ref', 'state_ref', 'is_active')
+    list_filter = ('site_type', 'state_ref', 'is_active')
+    search_fields = ('code', 'name', 'city_ref__name', 'state_ref__name')
+    autocomplete_fields = ('city_ref', 'state_ref')
+
+
+@admin.register(Warehouse)
+class WarehouseAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'warehouse_type', 'site', 'is_active')
+    list_filter = ('warehouse_type', 'is_active')
+    search_fields = ('code', 'name', 'site__name')
+    autocomplete_fields = ('site',)
+
+
+@admin.register(StorageLocation)
+class StorageLocationAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'warehouse', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('code', 'name', 'warehouse__name')
+    autocomplete_fields = ('warehouse',)

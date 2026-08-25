@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Acesso negado | RGN Farma System{% endblock %}
+
+{% block page_header %}
+<div class="page-header" id="section-0">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Acesso negado</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
+            <li class="breadcrumb-item">Acesso negado</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="card stretch stretch-full">
+    <div class="card-body">
+        <div class="empty-state text-center py-5" data-ui="permission-denied" role="alert">
+            <div class="avatar-text avatar-lg bg-soft-danger text-danger mx-auto mb-3"><i class="feather-lock" aria-hidden="true"></i></div>
+            <h2 class="h5">Acesso negado</h2>
+            <p>{% if exception %}{{ exception }}{% else %}Seu usuário não possui permissão para esta operação.{% endif %}</p>
+            <a href="{% url 'app:index' %}" class="btn btn-light-brand d-inline-flex align-items-center gap-2"><i class="feather-arrow-left" aria-hidden="true"></i>Voltar para aplicativos</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
