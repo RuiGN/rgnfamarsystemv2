@@ -101,7 +101,10 @@ def test_rag_chat_toggle_stays_above_the_fixed_footer():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
 
     footer_block = re.search(r'(?m)^\.nxl-container \.footer\s*\{(?P<body>[^}]*)\}', css)
-    chat_block = re.search(r'(?m)^\.rag-chat\s*\{(?P<body>[^}]*)\}', css)
+    chat_block = re.search(
+        r'(?m)^\.rag-chat \.rag-chat__toggle\s*\{(?P<body>[^}]*)\}',
+        css,
+    )
     mobile_block = re.search(
         r'@media \(max-width: 575\.98px\)\s*\{(?P<body>.*?)'
         r'(?=\n@media \(max-width: 360px\))',
@@ -119,7 +122,7 @@ def test_rag_chat_toggle_stays_above_the_fixed_footer():
     assert chat_z_index > footer_z_index
     assert re.search(r'bottom:\s*90px', chat_block.group('body'))
     assert re.search(
-        r'\.rag-chat\s*\{[^}]*bottom:\s*120px',
+        r'\.rag-chat \.rag-chat__toggle\s*\{[^}]*bottom:\s*120px',
         mobile_block.group('body'),
         re.S,
     )

@@ -100,7 +100,7 @@
 
     function init(root) {
         var toggle = root.querySelector('.rag-chat__toggle');
-        var close = root.querySelector('.rag-chat__close');
+        var close = root.querySelector('[data-bs-dismiss="offcanvas"]');
         var panel = root.querySelector('.rag-chat__panel');
         var form = root.querySelector('.rag-chat__form');
         var input = root.querySelector('textarea[name="question"], input[name="question"]');
@@ -131,28 +131,6 @@
             root.setAttribute('aria-busy', loading ? 'true' : 'false');
             if (loading) {
                 setStatus('Consultando o manual e preparando a resposta…');
-            }
-        }
-
-        function openPanel() {
-            if (!panel || !toggle) {
-                return;
-            }
-            panel.hidden = false;
-            panel.setAttribute('aria-hidden', 'false');
-            toggle.setAttribute('aria-expanded', 'true');
-            input.focus();
-        }
-
-        function closePanel(shouldFocus) {
-            if (!panel || !toggle) {
-                return;
-            }
-            panel.hidden = true;
-            panel.setAttribute('aria-hidden', 'true');
-            toggle.setAttribute('aria-expanded', 'false');
-            if (shouldFocus !== false) {
-                toggle.focus();
             }
         }
 
@@ -215,18 +193,31 @@
                 });
         }
 
-        if (toggle && panel) {
-            closePanel(false);
-            toggle.addEventListener('click', function () {
-                if (panel.hidden) {
-                    openPanel();
-                } else {
-                    closePanel();
+        if (
+            panel
+            && panel.classList.contains('offcanvas')
+            && window.bootstrap
+            && bootstrap.Offcanvas
+        ) {
+            var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(panel);
+            panel.addEventListener('shown.bs.offcanvas', function () {
+                input.focus();
+            });
+            panel.addEventListener('hidden.bs.offcanvas', function () {
+                if (toggle) {
+                    toggle.focus();
                 }
             });
-        }
-        if (close) {
-            close.addEventListener('click', closePanel);
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    offcanvas.show();
+                });
+            }
+            if (close) {
+                close.addEventListener('click', function () {
+                    offcanvas.hide();
+                });
+            }
         }
         if (newConversation) {
             newConversation.addEventListener('click', function () {

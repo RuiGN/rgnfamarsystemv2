@@ -568,14 +568,11 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     border: 0;
 }
 
-.rag-chat {
+.rag-chat .rag-chat__toggle {
     position: fixed;
     right: 24px;
     bottom: 90px;
-    z-index: 1023;
-}
-
-.rag-chat .rag-chat__toggle {
+    z-index: 1050;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -594,59 +591,35 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 }
 
 .rag-chat .rag-chat__panel {
-    position: absolute;
-    right: 0;
-    bottom: 72px;
-    display: grid;
-    width: min(420px, calc(100vw - 32px));
-    max-height: min(680px, calc(100vh - 120px));
-    grid-template-rows: auto minmax(180px, 1fr) auto;
-    overflow: hidden;
+    width: min(560px, 96vw);
     background: #fff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    box-shadow: 0 18px 44px rgba(24, 33, 48, 0.22);
-}
-
-.rag-chat .rag-chat__panel[hidden] {
-    display: none !important;
+    border-left: 1px solid #cbd5e1;
 }
 
 .rag-chat .rag-chat__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     gap: 12px;
-    padding: 14px 16px;
-    color: #fff;
-    background: #1f2937;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.rag-chat .rag-chat__header strong,
 .rag-chat .rag-chat__header span {
     display: block;
-}
-
-.rag-chat .rag-chat__header span {
     margin-top: 2px;
-    color: #cbd5e1;
+    color: #64748b;
     font-size: 12px;
 }
 
-.rag-chat .rag-chat__close {
-    width: 32px;
-    height: 32px;
-    color: #fff;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 20px;
-    line-height: 1;
+.rag-chat .rag-chat__body {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .rag-chat .rag-chat__messages {
     display: grid;
+    min-height: 320px;
+    flex: 1 1 auto;
     align-content: start;
     gap: 12px;
     overflow-y: auto;
@@ -705,6 +678,7 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 }
 
 .rag-chat .rag-chat__composer {
+    flex: 0 0 auto;
     background: #fff;
     border-top: 1px solid #e2e8f0;
 }
@@ -808,7 +782,7 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         grid-column: 1 / -1;
     }
 
-    .rag-chat {
+    .rag-chat .rag-chat__toggle {
         right: 16px;
         bottom: 82px;
     }
@@ -829,10 +803,6 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         grid-column: 1 / -1;
     }
 
-    .rag-chat .rag-chat__panel {
-        right: -8px;
-        width: calc(100vw - 24px);
-    }
 }
 
 @media (max-width: 575.98px) {
@@ -853,7 +823,7 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         gap: 12px !important;
     }
 
-    .rag-chat {
+    .rag-chat .rag-chat__toggle {
         bottom: 120px;
     }
 }

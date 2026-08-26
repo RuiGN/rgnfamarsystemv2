@@ -216,6 +216,8 @@ class AppUiFoundationTests(TestCase):
         assert 'data-rag-chat-endpoint="/api/knowledge/chat/"' in content
         assert 'rag-chat.js' in content
         assert 'somente leitura' in content
+        assert 'data-bs-toggle="offcanvas"' in content
+        assert 'offcanvas offcanvas-end rag-chat__panel' in content
 
     def test_header_exposes_unread_workflow_notification_count(self):
         WorkflowNotification.objects.create(
@@ -253,12 +255,13 @@ class AppUiFoundationTests(TestCase):
 
         assert 'Dados da instância local' not in template
 
-    def test_rag_chat_hidden_panel_is_not_overridden_by_panel_display_rule(self):
+    def test_rag_chat_offcanvas_uses_reference_width_contract(self):
         css = Path('static/css/app.css').read_text()
 
-        assert re.search(
-            r'\.rag-chat__panel\[hidden\]\s*\{[^}]*display:\s*none\s*!important', css, re.S
-        )
+        panel = re.search(r'\.rag-chat \.rag-chat__panel\s*\{(?P<body>[^}]*)\}', css)
+
+        assert panel is not None
+        assert re.search(r'width:\s*min\(560px,\s*96vw\)', panel.group('body'))
 
     def test_foundation_module_is_not_exposed_to_customer_app(self):
         self.client.force_login(self.user)

@@ -37,3 +37,23 @@ def test_global_widget_declares_one_endpoint_and_accessible_status():
     assert 'role="log"' in template
     assert 'data-rag-chat-status' in template
     assert 'maxlength="4000"' in template
+
+
+def test_global_widget_uses_bootstrap_offcanvas_without_manual_visibility_control():
+    template = (ROOT / 'templates/includes/rag_chat.html').read_text(encoding='utf-8')
+    script = (ROOT / 'static/js/rag-chat.js').read_text(encoding='utf-8')
+
+    assert 'data-bs-toggle="offcanvas"' in template
+    assert 'data-bs-target="#rag-chat-panel"' in template
+    assert 'class="offcanvas offcanvas-end rag-chat__panel"' in template
+    assert 'data-bs-dismiss="offcanvas"' in template
+    assert 'aria-labelledby="rag-chat-title"' in template
+    assert 'shown.bs.offcanvas' in script
+    assert 'hidden.bs.offcanvas' in script
+    assert 'bootstrap.Offcanvas.getOrCreateInstance(panel)' in script
+    assert 'offcanvas.show()' in script
+    assert 'offcanvas.hide()' in script
+    assert 'toggle.focus()' in script
+    assert 'panel.hidden =' not in script
+    assert 'function openPanel()' not in script
+    assert 'function closePanel(' not in script
