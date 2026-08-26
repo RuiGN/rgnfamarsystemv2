@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from ai_agents.models import AIAgentProfile
-from base.ui.registry import get_module
+from base.ui.registry import get_module, get_visible_modules
 from knowledge.models import RAGChatSession
 
 
@@ -33,6 +33,25 @@ class KnowledgeUiRegistryTests(TestCase):
             },
         )
         self.assertTrue(all(resource.read_only for resource in module.resources))
+
+    def test_knowledge_module_stays_registered_but_is_hidden_from_navigation(self):
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label='knowledge',
+                codename='view_ragchatsession',
+            )
+        )
+
+        module = get_module('knowledge')
+        visible_slugs = {item.slug for item in get_visible_modules(self.user)}
+        response = self.client.get(reverse('app:index'))
+
+        self.assertIsNotNone(module)
+        self.assertNotIn('knowledge', visible_slugs)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Conhecimento RAG')
+        self.assertNotContains(response, '/app/knowledge/')
+        self.assertContains(response, 'id="rag-chat-root"')
 
     def test_agent_chat_requires_rag_chat_permission(self):
         profile = AIAgentProfile.objects.create(
@@ -76,4 +95,3 @@ class KnowledgeUiRegistryTests(TestCase):
         allowed_response = self.client.get(url)
 
         self.assertEqual(allowed_response.status_code, 200)
-

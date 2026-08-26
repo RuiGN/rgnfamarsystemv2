@@ -384,6 +384,7 @@ class ModuleConfig:
     icon: str = 'feather-grid'
     resources: tuple[ResourceConfig, ...] = field(default_factory=tuple)
     operational_permission: str = ''
+    show_in_navigation: bool = True
 
     def visible_resources(self, user):
         return tuple(resource for resource in self.resources if resource.can_view(user))
@@ -4275,6 +4276,7 @@ MODULES = (
                 read_only=True,
             ),
         ),
+        show_in_navigation=False,
     ),
     ModuleConfig(
         'governance',
@@ -4528,7 +4530,8 @@ def get_visible_modules(user):
     return tuple(
         replace(module, resources=visible_resources)
         for module in MODULES
-        if (visible_resources := module.visible_resources(user))
+        if module.show_in_navigation
+        and (visible_resources := module.visible_resources(user))
     )
 
 
