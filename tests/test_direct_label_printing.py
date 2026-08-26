@@ -2,6 +2,8 @@ from datetime import date, datetime
 from unittest.mock import Mock
 
 import pytest
+from django.contrib.auth.models import Permission
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -126,3 +128,78 @@ def test_print_lot_label_converts_socket_errors(monkeypatch, django_user_model):
         print_lot_label(make_lot(), user)
 
     assert 'network detail' not in str(caught.value)
+
+
+def test_print_endpoint_requires_stock_lot_permission(api_client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username='sem-permissao', email='sem-permissao@example.com'
+    )
+    api_client.force_authenticate(user)
+
+    response = api_client.post(reverse('inventory:lot-print-label', args=(make_lot().pk,)))
+
+    assert response.status_code == 403
+
+
+def test_print_endpoint_requires_authentication(api_client):
+    response = api_client.post(reverse('inventory:lot-print-label', args=(make_lot().pk,)))
+
+    assert response.status_code == 403
+
+
+def test_print_endpoint_enforces_csrf_for_session_authentication(django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador-csrf', email='operador-csrf@example.com'
+    )
+    user.user_permissions.add(Permission.objects.get(codename='view_stocklot'))
+    csrf_client = APIClient(enforce_csrf_checks=True)
+    csrf_client.force_login(user)
+
+    response = csrf_client.post(reverse('inventory:lot-print-label', args=(make_lot().pk,)))
+
+    assert response.status_code == 403
+
+
+def test_print_endpoint_returns_success(monkeypatch, api_client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador', email='operador-endpoint@example.com'
+    )
+    user.user_permissions.add(Permission.objects.get(codename='view_stocklot'))
+    api_client.force_authenticate(user)
+    lot = make_lot()
+    send = Mock(return_value={'printer_name': 'Argox principal', 'lot_number': lot.lot_number})
+    monkeypatch.setattr('inventory.views.print_lot_label', send)
+
+    response = api_client.post(reverse('inventory:lot-print-label', args=(lot.pk,)))
+
+    assert response.status_code == 200
+    assert response.data['detail'] == 'Etiqueta enviada à impressora.'
+    send.assert_called_once_with(lot, user)
+
+
+@pytest.mark.parametrize(
+    ('error_type', 'expected_status'),
+    (
+        (LabelDataError, 400),
+        (LabelPrinterConfigurationError, 503),
+        (LabelPrinterConnectionError, 503),
+    ),
+)
+def test_print_endpoint_normalizes_domain_errors(
+    monkeypatch, api_client, django_user_model, error_type, expected_status
+):
+    user = django_user_model.objects.create_user(
+        username=f'operador-{error_type.__name__}',
+        email=f'operador-{error_type.__name__.lower()}@example.com',
+    )
+    user.user_permissions.add(Permission.objects.get(codename='view_stocklot'))
+    api_client.force_authenticate(user)
+    lot = make_lot()
+    monkeypatch.setattr(
+        'inventory.views.print_lot_label', Mock(side_effect=error_type('mensagem segura'))
+    )
+
+    response = api_client.post(reverse('inventory:lot-print-label', args=(lot.pk,)))
+
+    assert response.status_code == expected_status
+    assert response.data == {'detail': 'mensagem segura'}

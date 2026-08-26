@@ -1,6 +1,16 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
+from base.permissions import SingleInstanceDjangoModelPermissions
+from inventory.label_service import (
+    LabelDataError,
+    LabelPrinterConfigurationError,
+    LabelPrinterConnectionError,
+    print_lot_label,
+)
 from inventory.models import StockBalance, StockLot, StockLotGenealogy, StockMovement
 from inventory.serializers import (
     StockBalanceSerializer,
@@ -8,7 +18,6 @@ from inventory.serializers import (
     StockLotSerializer,
     StockMovementSerializer,
 )
-from base.permissions import SingleInstanceDjangoModelPermissions
 
 
 class SingleInstanceInventoryViewSet(viewsets.ModelViewSet):
@@ -24,6 +33,8 @@ class SingleInstanceInventoryViewSet(viewsets.ModelViewSet):
 
 
 class StockLotViewSet(SingleInstanceInventoryViewSet):
+    exclude_from_action_registry = True
+    action_permission_map = {'print_label': ('inventory.view_stocklot',)}
     queryset = StockLot.objects.select_related(
         'product', 'supplier', 'source_purchase_receipt_item', 'source_production_order'
     )
@@ -44,6 +55,29 @@ class StockLotViewSet(SingleInstanceInventoryViewSet):
         'supplier__legal_name',
     )
     ordering = ('product__code', 'lot_number', 'sublot_number')
+
+    def get_permissions(self):
+        if getattr(self, 'action', '') == 'print_label':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
+    @action(detail=True, methods=('post',), url_path='print_label')
+    def print_label(self, request, pk=None):
+        if not request.user.has_perm('inventory.view_stocklot'):
+            return Response(
+                {'detail': 'Você não tem permissão para imprimir etiquetas de lote.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            result = print_lot_label(self.get_object(), request.user)
+        except LabelDataError as error:
+            return Response({'detail': str(error)}, status=status.HTTP_400_BAD_REQUEST)
+        except (LabelPrinterConfigurationError, LabelPrinterConnectionError) as error:
+            return Response({'detail': str(error)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response(
+            {'detail': 'Etiqueta enviada à impressora.', **result},
+            status=status.HTTP_200_OK,
+        )
 
 
 class StockBalanceViewSet(SingleInstanceInventoryViewSet):
