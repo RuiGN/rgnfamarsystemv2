@@ -5,7 +5,16 @@ from integrations.models import (
     ApiClientApplication,
     IntegrationConnector,
     IntegrationEvent,
+    LabelPrinterSettings,
 )
+
+
+@admin.register(LabelPrinterSettings)
+class LabelPrinterSettingsAdmin(admin.ModelAdmin):
+    list_display = ('name', 'host', 'port', 'protocol', 'width_mm', 'height_mm', 'is_active')
+    list_filter = ('protocol', 'is_active')
+    search_fields = ('name', 'host')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(IntegrationConnector)

@@ -8,6 +8,7 @@ from integrations.models import (
     ApiClientApplication,
     IntegrationConnector,
     IntegrationEvent,
+    LabelPrinterSettings,
 )
 
 
@@ -32,6 +33,19 @@ class SingleInstanceIntegrationSerializerMixin(ModelSerializerContractMixin):
             if hasattr(error, 'message_dict'):
                 raise serializers.ValidationError(error.message_dict) from error
             raise serializers.ValidationError(error.messages) from error
+
+
+class LabelPrinterSettingsSerializer(
+    SingleInstanceIntegrationSerializerMixin, serializers.ModelSerializer
+):
+    class Meta:
+        model = LabelPrinterSettings
+        fields = '__all__'
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate(self, attrs):
+        self._run_model_clean(self._instance_for_clean(attrs))
+        return attrs
 
 
 class IntegrationConnectorSerializer(

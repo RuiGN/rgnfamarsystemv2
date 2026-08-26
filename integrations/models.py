@@ -48,6 +48,56 @@ def sanitize_safe_context(context):
     return sanitized
 
 
+class LabelPrinterSettings(SingleInstanceModel):
+    class Protocol(models.TextChoices):
+        TSPL2 = 'tspl2', 'Argox TSPL2'
+
+    name = models.CharField('nome', max_length=120, default='Argox principal')
+    host = models.CharField('IP ou hostname', max_length=255, blank=True)
+    port = models.PositiveIntegerField('porta TCP', default=9100)
+    protocol = models.CharField(
+        'protocolo', max_length=16, choices=Protocol.choices, default=Protocol.TSPL2
+    )
+    width_mm = models.PositiveSmallIntegerField('largura (mm)', default=40)
+    height_mm = models.PositiveSmallIntegerField('altura (mm)', default=30)
+    is_active = models.BooleanField('ativo', default=True)
+    notes = models.TextField('observações', blank=True)
+
+    class Meta:
+        ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=('is_active',),
+                condition=models.Q(is_active=True),
+                name='unique_active_label_printer',
+            )
+        ]
+        verbose_name = 'configuração de impressora de etiquetas'
+        verbose_name_plural = 'configurações de impressoras de etiquetas'
+
+    def clean(self):
+        super().clean()
+        self.host = str(self.host or '').strip()
+        errors = {}
+        if self.is_active and not self.host:
+            errors['host'] = 'Informe o IP ou hostname da impressora ativa.'
+        if not 1 <= int(self.port or 0) <= 65535:
+            errors['port'] = 'Informe uma porta TCP entre 1 e 65535.'
+        if int(self.width_mm or 0) <= 0:
+            errors['width_mm'] = 'A largura da etiqueta deve ser positiva.'
+        if int(self.height_mm or 0) <= 0:
+            errors['height_mm'] = 'A altura da etiqueta deve ser positiva.'
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
 class IntegrationConnector(SingleInstanceModel):
     class ProviderType(models.TextChoices):
         ERP = 'erp', 'ERP externo'

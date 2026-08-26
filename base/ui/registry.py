@@ -106,6 +106,7 @@ from integrations.models import (
     ApiClientApplication,
     IntegrationConnector,
     IntegrationEvent,
+    LabelPrinterSettings,
 )
 from knowledge.models import (
     KnowledgeChunk,
@@ -4076,6 +4077,23 @@ MODULES = (
                     'responsible',
                     'status',
                     'is_active',
+                ),
+            ),
+            ResourceConfig(
+                'label-printers',
+                'Impressora de etiquetas',
+                LabelPrinterSettings,
+                ('name', 'host', 'port', 'protocol', 'width_mm', 'height_mm', 'is_active'),
+                ('name', 'host', 'protocol'),
+                form_fields=(
+                    'name',
+                    'host',
+                    'port',
+                    'protocol',
+                    'width_mm',
+                    'height_mm',
+                    'is_active',
+                    'notes',
                 ),
             ),
             ResourceConfig(

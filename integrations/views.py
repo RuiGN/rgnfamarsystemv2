@@ -9,12 +9,14 @@ from integrations.models import (
     ApiClientApplication,
     IntegrationConnector,
     IntegrationEvent,
+    LabelPrinterSettings,
 )
 from integrations.serializers import (
     ApiCallLogSerializer,
     ApiClientApplicationSerializer,
     IntegrationConnectorSerializer,
     IntegrationEventSerializer,
+    LabelPrinterSettingsSerializer,
 )
 from base.permissions import SingleInstanceDjangoModelPermissions
 
@@ -48,6 +50,14 @@ class SingleInstanceIntegrationViewSet(viewsets.ModelViewSet):
             result, context=self.get_serializer_context()
         )
         return Response(serializer.data, status=response_status)
+
+
+class LabelPrinterSettingsViewSet(SingleInstanceIntegrationViewSet):
+    queryset = LabelPrinterSettings.objects.all()
+    serializer_class = LabelPrinterSettingsSerializer
+    filterset_fields = ('protocol', 'is_active')
+    search_fields = ('name', 'host')
+    ordering = ('name',)
 
 
 class IntegrationConnectorViewSet(SingleInstanceIntegrationViewSet):
