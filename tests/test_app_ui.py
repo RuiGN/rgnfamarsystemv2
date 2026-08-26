@@ -190,19 +190,32 @@ class AppUiFoundationTests(TestCase):
         assert '/app/base/' not in content
         assert '/app/tenants/tenants/' not in content
 
-    def test_authenticated_layout_does_not_load_global_rag_chat_widget(self):
+    def test_authenticated_layout_hides_global_rag_chat_without_permission(self):
         self.client.force_login(self.user)
-        session = self.client.session
-        session.save()
-
         response = self.client.get('/app/')
 
         assert response.status_code == 200
         content = response.content.decode()
         assert 'id="rag-chat-root"' not in content
-        assert 'data-rag-chat-endpoint="/api/knowledge/chat/"' not in content
         assert 'rag-chat.js' not in content
-        assert 'Assistente regulatório' not in content
+
+    def test_authenticated_layout_loads_global_rag_chat_with_permission(self):
+        self.user.user_permissions.add(
+            Permission.objects.get(
+                content_type__app_label='knowledge',
+                codename='view_ragchatsession',
+            )
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get('/app/')
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'id="rag-chat-root"' in content
+        assert 'data-rag-chat-endpoint="/api/knowledge/chat/"' in content
+        assert 'rag-chat.js' in content
+        assert 'somente leitura' in content
 
     def test_header_exposes_unread_workflow_notification_count(self):
         WorkflowNotification.objects.create(

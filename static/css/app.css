@@ -704,6 +704,27 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     border-top: 1px solid #e2e8f0;
 }
 
+.rag-chat .rag-chat__composer {
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.rag-chat .rag-chat__composer .rag-chat__form {
+    border-top: 0;
+}
+
+.rag-chat .rag-chat__status {
+    min-height: 18px;
+    margin: 0;
+    padding: 8px 12px 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.rag-chat [data-rag-chat-retry] {
+    margin: 8px 12px 0;
+}
+
 .rag-chat .rag-chat__form .btn {
     gap: 8px;
 }
@@ -711,6 +732,40 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 .rag-chat .rag-chat__form.is-loading .btn {
     opacity: 0.72;
     pointer-events: none;
+}
+
+.rag-chat .rag-chat__spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: rag-chat-spin 0.7s linear infinite;
+}
+
+.rag-chat .rag-chat__form.is-loading .rag-chat__spinner {
+    display: inline-block;
+}
+
+.rag-chat .rag-chat__form.is-loading .rag-chat__submit-label {
+    opacity: 0.72;
+}
+
+.rag-chat.rag-chat--dedicated {
+    position: static;
+    min-height: 65vh;
+}
+
+.rag-chat .rag-chat__messages.rag-chat__messages--dedicated {
+    min-height: 420px;
+    max-height: 60vh;
+}
+
+@keyframes rag-chat-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (max-width: 1199.98px) {

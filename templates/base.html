@@ -182,6 +182,12 @@
         </footer>
         <!-- [ Footer ] end -->
     </main>
+    {% block global_rag_chat %}
+        {% if request.user.is_authenticated and perms.knowledge.view_ragchatsession %}
+            {% include 'includes/rag_chat.html' %}
+            <script src="{% static 'js/rag-chat.js' %}" defer></script>
+        {% endif %}
+    {% endblock %}
     <script src="{% static 'vendor/duralux/js/vendors.min.js' %}" defer></script>
     <script src="{% static 'vendor/duralux/js/common-init.min.js' %}" defer></script>
     <script src="{% static 'js/app-form-enhancements.js' %}" defer></script>

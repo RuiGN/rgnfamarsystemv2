@@ -54,5 +54,5 @@ def test_representative_functional_icons_remain_available():
     assert 'feather-x' in form_actions
     assert 'feather-search' in base
     assert 'btn-close' in base
-    assert 'feather-paperclip' in chat
+    assert 'feather-message-circle' in chat
     assert 'feather-send' in chat

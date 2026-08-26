@@ -223,7 +223,7 @@ class AdditionalResourceViewsTests(TestCase):
         self.assertContains(response, 'data-rag-chat-endpoint="/api/knowledge/chat/"')
         self.assertContains(response, 'rag-chat.js')
         self.assertContains(response, 'name="question"')
-        self.assertContains(response, 'Conectado localmente')
+        self.assertContains(response, 'Assistente de consulta — somente leitura')
 
     def test_chat_view_raises_404_when_disabled(self):
         unit = UnitOfMeasure.objects.create(code='KG-T5', name='Quilograma', symbol='kg')

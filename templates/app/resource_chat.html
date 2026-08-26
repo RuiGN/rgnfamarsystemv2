@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Agente IA - {{ object }} | RGN Farma System{% endblock %}
+{% block title %}Assistente - {{ object }} | RGN Farma System{% endblock %}
+
+{% block global_rag_chat %}{% endblock %}
 
 {% block page_header %}
 <div class="page-header" id="section-0">
     <div class="page-header-left d-flex align-items-center">
         <div class="page-header-title">
-            <h5 class="m-b-10"><i class="feather-cpu me-2"></i>Agente IA: {{ object }}</h5>
+            <h5 class="m-b-10"><i class="feather-message-circle me-2"></i>Agente IA: {{ object }}</h5>
         </div>
         <ul class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a href="{% url 'app:index' %}">Aplicativos</a></li>
@@ -23,103 +25,76 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-{{ block.super }}
-<script src="{% static 'js/rag-chat.js' %}" defer></script>
-{% endblock %}
-
 {% block content %}
-<div class="row h-100 pb-4">
-    <div class="col-xl-9 col-lg-8 h-100 d-flex flex-column">
-        <section class="card stretch stretch-full border-primary flex-grow-1 d-flex flex-column mb-0 shadow-sm">
-            <div class="card-header bg-soft-primary border-bottom border-primary d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="avatar-text avatar-md bg-primary text-white shadow-sm"><i class="feather-cpu"></i></div>
-                    <div>
-                        <h4 class="h5 mb-1 text-primary">{{ object.name }}</h4>
-                        <span class="text-muted fs-12">Provedor: {{ object.get_provider_display|default:object.provider }} | Modelo: {{ object.model_name }}</span>
-                    </div>
-                </div>
+<div class="row pb-4">
+    <div class="col-xl-9 col-lg-8">
+        <section
+            class="card stretch stretch-full border-primary shadow-sm rag-chat rag-chat--dedicated"
+            data-rag-chat-endpoint="/api/knowledge/chat/"
+            aria-label="Assistente de consulta ao manual"
+        >
+            <header class="card-header bg-soft-primary border-bottom border-primary d-flex align-items-center justify-content-between gap-3">
                 <div>
-                    <span class="badge bg-success rounded-pill px-3 py-2"><i class="feather-wifi me-2"></i>Conectado localmente</span>
+                    <h4 class="h5 mb-1 text-primary">{{ object.name }}</h4>
+                    <span class="text-muted fs-12">Provedor: {{ object.get_provider_display|default:object.provider }} | Modelo: {{ object.model_name }}</span>
                 </div>
+                <span class="badge bg-soft-success text-success rounded-pill px-3 py-2">Assistente de consulta — somente leitura</span>
+            </header>
+            <div class="rag-chat__messages rag-chat__messages--dedicated" role="log" aria-live="polite" aria-relevant="additions">
+                <article class="rag-chat__message rag-chat__message--assistant">
+                    <div class="rag-chat__bubble">Olá! Consulte o manual do ERP e receba orientações acompanhadas das fontes utilizadas.</div>
+                </article>
             </div>
-            
-            <div class="card-body bg-soft-light d-flex flex-column p-0" style="min-height: 65vh;" data-rag-chat-endpoint="/api/knowledge/chat/">
-                <!-- Área de mensagens do chat -->
-                <div class="flex-grow-1 p-4 rag-chat__messages" style="overflow-y: auto;">
-                    <!-- Mensagem do Agente -->
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="avatar-text avatar-sm bg-primary text-white me-3 rounded-circle shadow-sm"><i class="feather-cpu"></i></div>
-                        <div class="bg-white p-3 rounded-3 shadow-sm border" style="max-width: 80%;">
-                            <p class="mb-0 fs-13 text-dark">Olá! Eu sou o assistente <strong>{{ object.name }}</strong>. Fui configurado para atuar no módulo de <strong>{{ object.get_source_module_display|default:object.source_module }}</strong>.</p>
-                            <p class="mb-0 fs-13 text-dark mt-2">Como posso te ajudar hoje com suas análises ou investigações regulatórias?</p>
-                            <div class="fs-10 text-muted mt-2 text-end">Há 5 min</div>
-                        </div>
+            <div class="rag-chat__composer">
+                <p class="rag-chat__status" role="status" aria-live="polite" data-rag-chat-status></p>
+                <button type="button" class="btn btn-light btn-sm" data-rag-chat-retry hidden>Tentar novamente</button>
+                <form class="rag-chat__form no-loader">
+                    <label for="dedicated-rag-chat-question" class="form-label">Pergunta</label>
+                    <textarea
+                        id="dedicated-rag-chat-question"
+                        name="question"
+                        class="form-control"
+                        rows="4"
+                        maxlength="4000"
+                        placeholder="Digite sua pergunta sobre o uso do ERP..."
+                        required
+                    ></textarea>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-light" data-rag-chat-new>Nova conversa</button>
+                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                            <span class="rag-chat__submit-label"><i class="feather-send" aria-hidden="true"></i> Enviar</span>
+                            <span class="rag-chat__spinner" aria-hidden="true"></span>
+                        </button>
                     </div>
-                    
-                </div>
-                
-                <!-- Área de entrada do chat -->
-                <div class="bg-white p-3 border-top">
-                    <form class="d-flex align-items-center gap-3 rag-chat__form">
-                        <button type="button" class="btn btn-light btn-icon text-muted rounded-circle shadow-sm" title="Anexar arquivo PDF ou CSV"><i class="feather-paperclip"></i></button>
-                        <input type="text" name="question" class="form-control form-control-lg border shadow-sm bg-light" placeholder="Digite sua mensagem para o agente local..." style="border-radius: 30px; font-size: 14px;">
-                        <button type="submit" class="btn btn-primary btn-icon rounded-circle shadow-sm" title="Enviar mensagem" style="width: 45px; height: 45px;"><i class="feather-send"></i></button>
-                    </form>
-                </div>
+                </form>
             </div>
         </section>
     </div>
-    
-    <!-- Painel de Contexto Lateral -->
-    <div class="col-xl-3 col-lg-4">
+    <aside class="col-xl-3 col-lg-4">
         <div class="card mb-4 border-info shadow-sm">
             <div class="card-header bg-soft-info border-bottom border-info">
-                <h5 class="card-title mb-0 text-info"><i class="feather-settings me-2"></i>Governança do Agente</h5>
-            </div>
-            <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
-                        <span class="text-muted fs-13">Acesso a Dados ERP</span>
-                        <span class="badge bg-soft-success text-success"><i class="feather-check-circle me-1"></i>Liberado</span>
-                    </li>
-                    <li class="list-group-item px-4 py-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted fs-13">Revisão Humana (HITL)</span>
-                            {% if object.requires_human_review %}
-                            <span class="badge bg-soft-warning text-warning">Obrigatória</span>
-                            {% else %}
-                            <span class="badge bg-soft-secondary text-secondary">Opcional</span>
-                            {% endif %}
-                        </div>
-                        <p class="fs-11 text-muted mb-0 lh-base">Para conformidade GxP, ações diretas do agente podem necessitar de assinatura eletrônica humana prévia.</p>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="card-title mb-0"><i class="feather-tool me-2 text-muted"></i>Ferramentas Habilitadas</h5>
+                <h5 class="card-title mb-0 text-info"><i class="feather-shield me-2"></i>Governança</h5>
             </div>
             <div class="card-body">
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="badge bg-soft-dark text-dark border"><i class="feather-search me-1"></i>Busca Documental RAG</span>
-                    <span class="badge bg-soft-dark text-dark border"><i class="feather-database me-1"></i>SQL Seguro ERP</span>
-                    <span class="badge bg-soft-dark text-dark border"><i class="feather-activity me-1"></i>Gerar Relatório CAPA</span>
-                    <span class="badge bg-soft-dark text-dark border"><i class="feather-git-merge me-1"></i>Propor Ishikawa</span>
-                </div>
+                <p class="fs-13 mb-2">As respostas são orientações de consulta e não alteram registros do ERP.</p>
+                <p class="fs-12 text-muted mb-0">A revisão humana permanece necessária para validar orientações antes de qualquer decisão regulada.</p>
             </div>
         </div>
-    </div>
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="feather-book-open me-2 text-muted"></i>Recursos disponíveis</h5>
+            </div>
+            <div class="card-body d-flex flex-wrap gap-2">
+                <span class="badge bg-soft-dark text-dark border">Busca no Manual ERP</span>
+                <span class="badge bg-soft-dark text-dark border">Histórico</span>
+                <span class="badge bg-soft-dark text-dark border">Citações</span>
+            </div>
+        </div>
+    </aside>
 </div>
+{% endblock %}
 
-<style>
-.form-control:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
-    border-color: #86b7fe;
-    background-color: #fff !important;
-}
-</style>
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/rag-chat.js' %}" defer></script>
 {% endblock %}

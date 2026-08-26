@@ -1,0 +1,53 @@
+<section
+    id="rag-chat-root"
+    class="rag-chat"
+    data-rag-chat-endpoint="/api/knowledge/chat/"
+    aria-label="Assistente do manual RGN Farma System"
+>
+    <button
+        type="button"
+        class="rag-chat__toggle"
+        aria-controls="rag-chat-panel"
+        aria-expanded="false"
+        aria-label="Abrir assistente do manual"
+    >
+        <i class="feather-message-circle" aria-hidden="true"></i>
+    </button>
+    <div id="rag-chat-panel" class="rag-chat__panel" aria-hidden="true" hidden>
+        <header class="rag-chat__header">
+            <div>
+                <strong>Assistente RGN Farma System</strong>
+                <span>Consulta ao manual do ERP — somente leitura</span>
+            </div>
+            <button type="button" class="rag-chat__close" aria-label="Fechar assistente">×</button>
+        </header>
+        <div class="rag-chat__messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+        <div class="rag-chat__composer">
+            <p class="rag-chat__status" role="status" aria-live="polite" data-rag-chat-status></p>
+            <button type="button" class="btn btn-light btn-sm" data-rag-chat-retry hidden>
+                Tentar novamente
+            </button>
+            <form class="rag-chat__form no-loader">
+                <label class="sr-only" for="rag-chat-question">Mensagem para o assistente</label>
+                <textarea
+                    id="rag-chat-question"
+                    name="question"
+                    class="form-control"
+                    rows="3"
+                    maxlength="4000"
+                    placeholder="Ex.: Como cadastro uma fórmula mestra?"
+                    required
+                ></textarea>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light btn-sm" data-rag-chat-new>
+                        Nova conversa
+                    </button>
+                    <button type="submit" class="btn btn-primary flex-fill">
+                        <span class="rag-chat__submit-label">Enviar</span>
+                        <span class="rag-chat__spinner" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
