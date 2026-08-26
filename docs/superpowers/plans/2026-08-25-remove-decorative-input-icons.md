@@ -100,7 +100,7 @@ Run:
 
 ```bash
 .venv/bin/pytest \
-  tests/test_app_ui.py::AppUiFoundationTests::test_widget_metadata_adds_specific_placeholders_without_decorative_icons \
+  tests/test_app_ui.py::AppUiFormEnhancementTests::test_widget_metadata_adds_specific_placeholders_without_decorative_icons \
   tests/test_action_forms.py::ActionFormTests::test_action_fields_receive_project_widget_metadata \
   tests/test_accounts_avatar.py::UserAvatarTests::test_avatar_form_requires_login_and_renders_current_avatar \
   -q
@@ -235,7 +235,7 @@ Run:
 ```bash
 .venv/bin/pytest \
   tests/test_template_language.py::test_templates_do_not_render_decorative_input_icons \
-  tests/test_app_ui.py::AppUiFoundationTests::test_resource_form_renders_fields_without_decorative_icons \
+  tests/test_app_ui.py::AppUiFormEnhancementTests::test_resource_form_renders_fields_without_decorative_icons \
   tests/test_app_ui.py::AppUiFoundationTests::test_login_template_uses_design_system_auth_shell \
   -q
 ```

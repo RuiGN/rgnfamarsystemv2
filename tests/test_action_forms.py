@@ -137,21 +137,15 @@ class ActionFormTests(TestCase):
         form_class = build_action_form(action_with_fields(*fields), self.request)
 
         assert form_class.base_fields['document'].widget.attrs['data-mask'] == 'cpf-cnpj'
-        assert form_class.base_fields['document'].widget.attrs['data-icon'] == 'feather-file-text'
         assert form_class.base_fields['email'].widget.attrs['placeholder'] == 'nome@empresa.com'
-        assert form_class.base_fields['email'].widget.attrs['data-icon'] == 'feather-mail'
         assert form_class.base_fields['phone'].widget.attrs['type'] == 'tel'
         assert form_class.base_fields['phone'].widget.attrs['placeholder'] == '(00) 00000-0000'
-        assert form_class.base_fields['phone'].widget.attrs['data-icon'] == 'feather-phone'
         assert form_class.base_fields['zipcode'].widget.attrs['data-mask'] == 'cep'
         assert form_class.base_fields['zipcode'].widget.attrs['placeholder'] == '00000-000'
-        assert form_class.base_fields['zipcode'].widget.attrs['data-icon'] == 'feather-map-pin'
         assert form_class.base_fields['total_amount'].widget.attrs['placeholder'] == '0,00'
-        assert (
-            form_class.base_fields['total_amount'].widget.attrs['data-icon']
-            == 'feather-dollar-sign'
-        )
-        assert form_class.base_fields['evidence_file'].widget.attrs['data-icon'] == 'feather-upload'
+        for field in form_class.base_fields.values():
+            assert 'data-icon' not in field.widget.attrs
+            assert not hasattr(field, 'rgn_icon')
 
     def test_form_validates_json_confirmation_limits_and_custom_widget(self):
         config = action_with_fields(

@@ -285,52 +285,6 @@ def _apply_field_size_metadata(name, field, mask, address_target):
     _append_widget_class(field.widget, field.rgn_control_size)
 
 
-def _field_icon(name, field):
-    context = _field_context(name, field)
-    compact_name = _ascii(name).replace('_', '')
-    mask = _field_mask(name, field)
-    if 'email' in context:
-        return 'feather-mail'
-    if isinstance(field.widget, forms.URLInput) or 'url' in context:
-        return 'feather-link'
-    if isinstance(field.widget, forms.ClearableFileInput):
-        return 'feather-upload'
-    if compact_name in {'document', 'cpf', 'cnpj'} or 'cpf' in context or 'cnpj' in context:
-        return 'feather-file-text'
-    if mask == 'phone':
-        return 'feather-phone'
-    if mask == 'cep':
-        return 'feather-map-pin'
-    if isinstance(field.widget, (forms.DateInput, forms.DateTimeInput, forms.TimeInput)):
-        return 'feather-calendar'
-    if isinstance(field, forms.DecimalField) and any(
-        token in compact_name or token in context
-        for token in ('percent', 'percentage', 'percentual', 'taxa')
-    ):
-        return 'feather-percent'
-    if isinstance(field, forms.DecimalField) and any(
-        token in compact_name or token in context
-        for token in ('amount', 'valor', 'price', 'cost', 'total')
-    ):
-        return 'feather-dollar-sign'
-    if isinstance(field, (forms.DecimalField, forms.IntegerField)) and any(
-        token in compact_name or token in context
-        for token in ('quantity', 'quantidade', 'qty', 'volume', 'peso', 'weight')
-    ):
-        return 'feather-hash'
-    if isinstance(field.widget, (forms.CheckboxInput, forms.RadioSelect)):
-        return ''
-    if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
-        return 'feather-list'
-    if isinstance(field.widget, forms.Textarea):
-        return 'feather-align-left'
-    if isinstance(field.widget, forms.PasswordInput):
-        return 'feather-lock'
-    if isinstance(field, (forms.DecimalField, forms.FloatField, forms.IntegerField)):
-        return 'feather-hash'
-    return 'feather-edit-2'
-
-
 def _apply_placeholder_metadata(name, field, mask):
     attrs = field.widget.attrs
     context = _field_context(name, field)
@@ -384,10 +338,6 @@ def _apply_widget_metadata(name, field):
     mask = None if native_temporal_widget else _field_mask(name, field)
     address_target = _address_target(name, field)
     _apply_field_size_metadata(name, field, mask, address_target)
-    icon = _field_icon(name, field)
-    field.rgn_icon = icon
-    if icon:
-        attrs['data-icon'] = icon
 
     if isinstance(widget, (forms.Select, forms.SelectMultiple)):
         _append_widget_class(widget, 'form-select')

@@ -81,6 +81,7 @@ class UserAvatarTests(TestCase):
         assert 'accept="image/*"' in content
         assert 'capture="user"' in content
         assert 'avatars/user-existing.png' in content
+        assert 'data-icon=' not in content
 
     def test_avatar_validation_errors_use_project_markup(self):
         self.client.force_login(self.user)

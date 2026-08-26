@@ -13,7 +13,6 @@ class UserAvatarForm(forms.ModelForm):
                     'class': 'form-control',
                     'accept': 'image/*',
                     'capture': 'user',
-                    'data-icon': 'feather-upload',
                 }
             )
         }

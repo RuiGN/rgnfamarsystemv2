@@ -1592,7 +1592,7 @@ class AppUiFormEnhancementTests(TestCase):
         assert street_field.widget.attrs['data-address-target'] == 'street'
         assert street_field.rgn_layout_class == 'form-field--lg'
 
-    def test_widget_metadata_adds_specific_placeholders_and_icons(self):
+    def test_widget_metadata_adds_specific_placeholders_without_decorative_icons(self):
         document_field = forms.CharField(label='CPF/CNPJ')
         email_field = forms.EmailField(label='Email')
         date_field = forms.DateField(label='Validade')
@@ -1614,21 +1614,26 @@ class AppUiFormEnhancementTests(TestCase):
         _apply_widget_metadata('evidence_file', file_field)
 
         assert document_field.widget.attrs['placeholder'] == '000.000.000-00 ou 00.000.000/0000-00'
-        assert document_field.widget.attrs['data-icon'] == 'feather-file-text'
         assert email_field.widget.attrs['placeholder'] == 'nome@empresa.com'
-        assert email_field.widget.attrs['data-icon'] == 'feather-mail'
-        assert date_field.widget.attrs['data-icon'] == 'feather-calendar'
         assert money_field.widget.attrs['placeholder'] == '0,00'
-        assert money_field.widget.attrs['data-icon'] == 'feather-dollar-sign'
         assert phone_field.widget.attrs['placeholder'] == '(00) 00000-0000'
-        assert phone_field.widget.attrs['data-icon'] == 'feather-phone'
         assert url_field.widget.attrs['placeholder'] == 'https://exemplo.com'
-        assert url_field.widget.attrs['data-icon'] == 'feather-link'
         assert quantity_field.widget.attrs['placeholder'] == '0,0000'
-        assert quantity_field.widget.attrs['data-icon'] == 'feather-hash'
         assert percent_field.widget.attrs['placeholder'] == '0,00%'
-        assert percent_field.widget.attrs['data-icon'] == 'feather-percent'
-        assert file_field.widget.attrs['data-icon'] == 'feather-upload'
+        fields = (
+            document_field,
+            email_field,
+            date_field,
+            money_field,
+            phone_field,
+            url_field,
+            quantity_field,
+            percent_field,
+            file_field,
+        )
+        for field in fields:
+            assert 'data-icon' not in field.widget.attrs
+            assert not hasattr(field, 'rgn_icon')
 
     def test_resource_form_renders_icon_input_groups(self):
         response = self.client.get('/app/fiscal/companies/new/')
