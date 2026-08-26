@@ -1232,9 +1232,9 @@ class ResourceChatView(ResourceDetailView):
     def dispatch(self, request, *args, **kwargs):
         resource = self.get_resource()
         if not getattr(resource, 'has_chat_view', False):
-            from django.http import Http404
-
             raise Http404('Resource does not support chat view')
+        if not request.user.has_perm('knowledge.view_ragchatsession'):
+            raise PermissionDenied('Usuário sem permissão para utilizar o chat RAG.')
         return super().dispatch(request, *args, **kwargs)
 
 

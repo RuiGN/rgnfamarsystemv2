@@ -10,6 +10,7 @@ from production.models import ProductionOrder
 from documents.models import ControlledDocument
 from formulations.models import MasterFormula
 from ai_agents.models import AIAgentProfile
+from knowledge.models import RAGChatSession
 from masters.models import Product, UnitOfMeasure
 from tests.test_production import create_released_manufacturing_set
 
@@ -193,6 +194,7 @@ class AdditionalResourceViewsTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_chat_view_resolves_and_renders_properly(self):
+        grant_model_perm(self.user, RAGChatSession, 'view')
         profile = AIAgentProfile.objects.create(
             code='AI-TEST-CHAT',
             name='Agente Teste',
