@@ -18,6 +18,7 @@ urlpatterns = [
     path('formulations/', include('formulations.urls', namespace='v1_formulations')),
     path('governance/', include('governance.urls', namespace='v1_governance')),
     path('integrations/', include('integrations.urls', namespace='v1_integrations')),
+    path('knowledge/', include('knowledge.urls', namespace='v1_knowledge')),
     path('inventory/', include('inventory.urls', namespace='v1_inventory')),
     path('maintenance/', include('maintenance.urls', namespace='v1_maintenance')),
     path('masters/', include('masters.urls', namespace='v1_masters')),
