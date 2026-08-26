@@ -97,6 +97,34 @@ def test_rag_chat_component_styles_do_not_leak_into_duralux_resource_templates()
     assert unscoped_selectors == []
 
 
+def test_rag_chat_toggle_stays_above_the_fixed_footer():
+    css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+
+    footer_block = re.search(r'(?m)^\.nxl-container \.footer\s*\{(?P<body>[^}]*)\}', css)
+    chat_block = re.search(r'(?m)^\.rag-chat\s*\{(?P<body>[^}]*)\}', css)
+    mobile_block = re.search(
+        r'@media \(max-width: 575\.98px\)\s*\{(?P<body>.*?)'
+        r'(?=\n@media \(max-width: 360px\))',
+        css,
+        re.S,
+    )
+
+    assert footer_block is not None
+    assert chat_block is not None
+    assert mobile_block is not None
+
+    footer_z_index = int(re.search(r'z-index:\s*(\d+)', footer_block.group('body')).group(1))
+    chat_z_index = int(re.search(r'z-index:\s*(\d+)', chat_block.group('body')).group(1))
+
+    assert chat_z_index > footer_z_index
+    assert re.search(r'bottom:\s*90px', chat_block.group('body'))
+    assert re.search(
+        r'\.rag-chat\s*\{[^}]*bottom:\s*120px',
+        mobile_block.group('body'),
+        re.S,
+    )
+
+
 def test_duralux_feather_font_face_does_not_prefer_problematic_ttf_asset():
     css_paths = [
         ROOT / 'static' / 'vendor' / 'duralux' / 'css' / 'vendors.min.css',

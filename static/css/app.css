@@ -571,8 +571,8 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 .rag-chat {
     position: fixed;
     right: 24px;
-    bottom: 24px;
-    z-index: 60;
+    bottom: 90px;
+    z-index: 1023;
 }
 
 .rag-chat .rag-chat__toggle {
@@ -810,7 +810,7 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 
     .rag-chat {
         right: 16px;
-        bottom: 16px;
+        bottom: 82px;
     }
 }
 
@@ -851,6 +851,10 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     .nxl-container .footer .d-flex {
         flex-wrap: wrap;
         gap: 12px !important;
+    }
+
+    .rag-chat {
+        bottom: 120px;
     }
 }
 
