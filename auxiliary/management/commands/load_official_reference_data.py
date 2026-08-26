@@ -4,6 +4,7 @@ import logging
 from collections import defaultdict
 
 import requests
+from babel.numbers import get_currency_name
 from defusedxml import ElementTree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -241,7 +242,7 @@ class Command(BaseCommand):
         return {
             code: {
                 'code': code,
-                'name': values[0],
+                'name': str(get_currency_name(code, locale='pt_BR') or values[0]).strip(),
                 'numeric_code': values[1],
                 'decimal_places': values[2],
                 'symbol': CURRENCY_SYMBOLS.get(code, ''),

@@ -89,9 +89,10 @@ class OfficialReferenceDataCommandTests(TestCase):
         assert brazil.name == 'Brasil'
 
         assert recife.state == pernambuco
-        assert brl.name == 'Brazilian Real'
+        assert brl.name == 'Real brasileiro'
         assert brl.numeric_code == '986'
         assert brl.symbol == 'R$'
+        assert Currency.objects.get(code='USD').name == 'Dólar americano'
         assert Currency.objects.get(code='USD').description == (
             'Entidades usuárias: PUERTO RICO; UNITED STATES OF AMERICA. '
             'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
