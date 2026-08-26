@@ -210,7 +210,6 @@ markup assertions with:
         assert 'resource-input-group' not in content
         assert 'resource-input-icon' not in content
         assert 'data-field-icon=' not in content
-        assert 'feather-file-text' not in content
 ```
 
 Add to `test_login_template_uses_design_system_auth_shell`:

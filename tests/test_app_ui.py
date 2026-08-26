@@ -81,6 +81,8 @@ class AppUiFoundationTests(TestCase):
         assert 'favicon.svg' in content
         assert 'data-ui="auth-login"' in content
         assert 'class="form-control"' in content
+        assert 'resource-input-group' not in content
+        assert 'data-field-icon=' not in content
 
     def test_login_field_errors_use_project_validation_markup(self):
         response = self.client.post(reverse('accounts:login'), {'username': '', 'password': ''})
@@ -1635,15 +1637,15 @@ class AppUiFormEnhancementTests(TestCase):
             assert 'data-icon' not in field.widget.attrs
             assert not hasattr(field, 'rgn_icon')
 
-    def test_resource_form_renders_icon_input_groups(self):
+    def test_resource_form_renders_fields_without_decorative_icons(self):
         response = self.client.get('/app/fiscal/companies/new/')
 
         assert response.status_code == 200
         content = response.content.decode()
-        assert 'class="input-group resource-input-group"' in content
-        assert 'data-field-icon="document"' in content
-        assert 'input-group-text resource-input-icon' in content
-        assert 'feather-file-text' in content
+        assert 'name="document"' in content
+        assert 'resource-input-group' not in content
+        assert 'resource-input-icon' not in content
+        assert 'data-field-icon=' not in content
 
     def test_location_forms_render_normalized_labels_only(self):
         self.client.force_login(self.admin)

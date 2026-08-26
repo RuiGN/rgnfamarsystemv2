@@ -40,10 +40,7 @@
 
                             <div class="form-group mb-3">
                                 <label class="form-label" for="id_username">Nome do usuário</label>
-                                <div class="input-group resource-input-group" data-field-icon="username">
-                                    
-                                    <input id="id_username" type="text" name="username" class="form-control{% if form.username.errors %} is-invalid{% endif %}" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário" required autofocus autocomplete="username"{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_errors"{% endif %}>
-                                </div>
+                                <input id="id_username" type="text" name="username" class="form-control{% if form.username.errors %} is-invalid{% endif %}" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário" required autofocus autocomplete="username"{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_errors"{% endif %}>
                                 {% if form.username.errors %}
                                     <div id="id_username_errors" class="invalid-feedback d-block" role="alert">
                                         {% for error in form.username.errors %}{{ error }}{% endfor %}
@@ -53,10 +50,7 @@
 
                             <div class="form-group mb-3">
                                 <label class="form-label" for="id_password">Senha</label>
-                                <div class="input-group resource-input-group" data-field-icon="password">
-                                    
-                                    <input id="id_password" type="password" name="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" placeholder="Digite sua senha" required autocomplete="current-password"{% if form.password.errors %} aria-invalid="true" aria-describedby="id_password_errors"{% endif %}>
-                                </div>
+                                <input id="id_password" type="password" name="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" placeholder="Digite sua senha" required autocomplete="current-password"{% if form.password.errors %} aria-invalid="true" aria-describedby="id_password_errors"{% endif %}>
                                 {% if form.password.errors %}
                                     <div id="id_password_errors" class="invalid-feedback d-block" role="alert">
                                         {% for error in form.password.errors %}{{ error }}{% endfor %}
