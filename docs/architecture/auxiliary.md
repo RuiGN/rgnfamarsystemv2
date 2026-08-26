@@ -35,6 +35,10 @@ geográficos do IBGE e a lista vigente de moedas ISO 4217 mantida pela SIX:
 python manage.py load_official_reference_data
 ```
 
+Os nomes das moedas são localizados para português do Brasil com o catálogo
+CLDR fornecido por Babel. Códigos alfabéticos e numéricos, casas decimais,
+símbolos conhecidos e a referência à fonte ISO permanecem preservados.
+
 A carga valida a cardinalidade mínima esperada antes de gravar e não remove
 cadastros adicionados pelo usuário. Registros preexistentes são reconciliados
 pelos identificadores oficiais (`ISO alfa-2/alfa-3`, sigla da UF, código IBGE
@@ -50,6 +54,29 @@ Fontes oficiais:
 `--timeout` configura o limite de cada requisição HTTPS entre 1 e 300 segundos.
 `--allow-partial` desativa somente a verificação de cardinalidade e deve ser
 usado exclusivamente em testes automatizados ou cargas controladas.
+
+## Referências para indústria cosmética
+
+O catálogo curado em pt-BR preenche áreas, processos, departamentos, funções,
+condições comerciais, níveis de impacto, módulos, models e classificações
+auxiliares típicas de uma indústria cosmética:
+
+```bash
+.venv/bin/python manage.py load_cosmetics_auxiliary_data
+```
+
+Para obter primeiro as referências oficiais e em seguida aplicar o catálogo
+cosmético, execute:
+
+```bash
+.venv/bin/python manage.py load_cosmetics_auxiliary_data --with-official-references
+```
+
+A carga é idempotente e identifica o conjunto gerenciado por códigos estáveis.
+Ela não apaga registros locais, não altera `BackupRun` e não grava em outros
+apps. A carga oficial e a cosmética possuem transações próprias; qualquer erro
+de obtenção ou validação oficial interrompe a execução antes do catálogo
+cosmético.
 
 ## UF e município normalizados
 
