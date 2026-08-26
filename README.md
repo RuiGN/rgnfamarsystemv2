@@ -3,6 +3,14 @@
 ERP farmacêutico single-instance para a indústria farmacêutica, desenvolvido
 com Django, Django REST Framework, PostgreSQL, Redis, Celery e RabbitMQ.
 
+O sistema suporta impressão direta de etiquetas TSPL2 pela VPN para uma
+impressora ativa, com porta TCP 9100 por padrão. A etiqueta de lote contém
+Produto, Lote, Validade e assinatura operacional do usuário. O envio ocorre
+sem repetição automática e não confirma a saída física da etiqueta.
+
+Campos gerados automaticamente pelo servidor são desabilitados nos formulários
+operacionais e protegidos como somente leitura na API e no Django Admin.
+
 ## Ambiente local
 
 Para desenvolvimento e validação imediata, use PostgreSQL local configurado em
@@ -85,6 +93,7 @@ APIs iniciais:
 - `GET|POST /api/procurement/orders/` e `/api/procurement/order-items/` mantêm pedidos de compra e bloqueiam fornecedores inválidos quando o item exige fornecedor aprovado.
 - `GET|POST /api/procurement/receipts/` e `/api/procurement/receipt-items/` mantêm recebimento fiscal, físico, qualidade e entrada em estoque.
 - `GET|POST /api/inventory/lots/` mantém lotes, sublotes, status de qualidade, fornecedor, origem, fabricação e validade.
+- `POST /api/inventory/lots/{id}/print_label/` envia uma etiqueta TSPL2 do lote à impressora ativa pela VPN.
 - `GET|POST /api/inventory/balances/` mantém saldos por produto, lote, almoxarifado, localização e status de qualidade.
 - `GET|POST /api/inventory/movements/` mantém entradas, saídas, transferências, ajustes, inventários, reservas, devoluções, perdas, segregações, descartes e expedições.
 - `GET|POST /api/inventory/genealogy/` mantém genealogia entre lotes consumidos e lotes gerados; a migration da chave única interrompe com chave e IDs acionáveis se detectar duplicatas históricas, sem apagar evidências.
@@ -161,6 +170,7 @@ APIs iniciais:
 - `GET|POST /api/workflow/notifications/`, `/approval-queues/`, `/approval-tasks/`, `/delegations/`, `/comments/`, `/attachments/`, `/async-jobs/` e `GET /api/workflow/history/` mantêm central de notificações, aprovações, delegações, anexos, jobs assíncronos e histórico.
 - `POST /api/workflow/notifications/{id}/send/`, `/mark_read/`, `/archive/`, `/api/workflow/approval-tasks/{id}/approve/`, `/reject/`, `/cancel/` e `/api/workflow/async-jobs/{id}/start/`, `/update_progress/`, `/complete/`, `/fail/` executam o fluxo operacional.
 - `GET|POST /api/integrations/connectors/` mantém conectores para ERPs, fiscal, laboratório, equipamentos, email, OpenAI e BI.
+- `GET|POST /api/integrations/label-printers/` mantém a configuração da impressora de etiquetas; somente uma pode estar ativa.
 - `POST /api/integrations/connectors/{id}/activate/`, `/suspend/`, `/test_success/` e `/test_failure/` controlam o ciclo técnico do conector.
 - `GET|POST /api/integrations/api-clients/` mantém clientes de API e `POST /api/integrations/api-clients/{id}/rotate_secret/` rotaciona segredo com hash.
 - `GET /api/integrations/api-call-logs/` e `/api/integrations/events/` consultam chamadas, erros e eventos com contexto seguro em escopo global.

@@ -38,6 +38,8 @@ def discover_post_actions() -> tuple[DiscoveredAction, ...]:
             continue
 
         viewset = callback.cls
+        if getattr(viewset, 'exclude_from_action_registry', False):
+            continue
         action_name = actions['post']
         model = viewset.queryset.model
         detail = bool(initkwargs['detail'])

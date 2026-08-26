@@ -255,13 +255,14 @@ class TestFormulationApi:
 
         assert create_response.status_code == 201
         assert 'tenant' not in create_response.json()
+        assert create_response.json()['code'] == 'MF-0001'
 
         list_response = client.get('/api/formulations/formulas/')
 
         assert list_response.status_code == 200
         assert {item['code'] for item in list_response.json()['results']} == {
             'F-OTHER',
-            'F-PA-001',
+            'MF-0001',
         }
 
     def test_component_api_accepts_secondary_global_material(self):

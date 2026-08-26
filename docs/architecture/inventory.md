@@ -26,6 +26,26 @@ Endpoints REST devem usar `IsAuthenticated` e permissões Django de modelo. A UI
 operacional em `/app/` deve usar o shell, cards, tabelas, formulários, badges,
 modais, paginação e estados do design system.
 
+## Etiqueta de lote
+
+O detalhe de um lote apresenta **Imprimir etiqueta** somente ao usuário que
+possui `inventory.view_stocklot`. A ação envia, uma única vez, TSPL2 pela VPN
+à impressora ativa configurada na porta TCP 9100 por padrão.
+
+O layout contém exclusivamente Produto, Lote, Validade e assinatura
+operacional (nome do usuário autenticado e data/hora do servidor). Não contém
+código de barras, data de fabricação ou sublote. A assinatura operacional não
+substitui uma assinatura eletrônica GxP.
+
+O retorno de sucesso confirma o envio ao socket; não confirma a saída física
+da etiqueta. O fluxo funciona sem repetição automática. Diante de timeout ou
+resultado incerto, o operador deve conferir a impressora antes de reenviar.
+
+Os identificadores já gerados pelo servidor são apresentados desabilitados nos
+formulários da aplicação e como somente leitura na API e no Django Admin. A
+política usa uma lista explícita por modelo para preservar códigos e números
+manuais.
+
 ## Verificação mínima
 
 ```bash

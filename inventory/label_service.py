@@ -29,8 +29,12 @@ class LabelDataError(LabelPrinterError):
 
 def _printer_text(value, *, limit=48):
     text = unicodedata.normalize('NFKD', str(value or ''))
-    ascii_text = text.encode('ascii', 'ignore').decode('ascii').replace('"', "'")
-    return ascii_text[:limit]
+    ascii_text = text.encode('ascii', 'ignore').decode('ascii')
+    printable_text = ''.join(
+        character if 32 <= ord(character) <= 126 else ' ' for character in ascii_text
+    )
+    safe_text = ' '.join(printable_text.split()).replace('"', "'")
+    return safe_text[:limit]
 
 
 def _date_text(value: date | None):
@@ -40,7 +44,9 @@ def _date_text(value: date | None):
 def _signature_text(user, printed_at: datetime):
     name = str(user.get_full_name() or '').strip() or user.get_username()
     local_time = timezone.localtime(printed_at)
-    return _printer_text(f'{name} {local_time:%d/%m/%Y %H:%M}')
+    timestamp = f'{local_time:%d/%m/%Y %H:%M}'
+    name_limit = max(1, 48 - len(timestamp) - 1)
+    return f'{_printer_text(name, limit=name_limit)} {timestamp}'
 
 
 def render_lot_label_tspl(

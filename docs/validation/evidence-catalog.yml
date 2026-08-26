@@ -50,9 +50,9 @@ evidence:
     title: Validação das relações 1-N prioritárias
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-07-28T00:00:00Z'
+    captured_at: '2026-08-26T00:00:00Z'
     status: approved
-    sha256: 'afb850a9a90f1b5cf3bee21c8dd40d0a6dc2115164938d53f65ff879fe0a5aa4'
+    sha256: '8c5cb4ed9abd04686833a8d9d17c57b96e4e3076ba0b28dbf8e932d5ba22939c'
     artifact: tests/test_formula_inline_components_ui.py
   - id: EV-SI-006
     requirement: SI-006

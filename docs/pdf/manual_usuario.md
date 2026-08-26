@@ -799,6 +799,39 @@ qualquer decisão regulatória. Se o widget não estiver visível, solicite ao
 administrador a revisão da permissão funcional; não compartilhe sua sessão ou
 credenciais com outro usuário.
 
+## Impressão direta de etiquetas
+
+O administrador cadastra o endereço da impressora em **Integrações →
+Impressora de etiquetas**. Informe o IP ou hostname alcançável pelo servidor
+através da VPN, mantenha a porta TCP 9100 quando essa for a configuração do
+equipamento, confira largura e altura da mídia e deixe somente uma impressora
+ativa.
+
+Para imprimir, abra **Estoque → Lotes**, acesse o detalhe do lote e selecione
+**Imprimir etiqueta**. Confirme o envio uma única vez. O botão é exibido apenas
+a usuários com permissão para visualizar lotes.
+
+A etiqueta apresenta:
+
+- Produto: código e descrição;
+- Lote;
+- Validade;
+- assinatura operacional: nome completo do usuário autenticado, ou username
+  quando o nome estiver vazio, acompanhado da data e hora do servidor.
+
+A assinatura operacional identifica quem solicitou a impressão e não é uma
+assinatura eletrônica GxP. A etiqueta não inclui código de barras, data de
+fabricação ou sublote.
+
+O retorno de sucesso confirma o envio ao socket; não confirma a saída física
+da etiqueta. O envio é realizado sem repetição automática. Se houver timeout,
+falha de VPN ou resultado incerto, confira a impressora e a eventual etiqueta
+antes de tentar novamente, evitando duplicidade.
+
+Campos cujo valor é gerado automaticamente pelo sistema aparecem
+desabilitados. Não tente preenchê-los por API ou manipulação do navegador; o
+servidor ignora esses valores e mantém os identificadores imutáveis.
+
 ## Boas práticas de uso
 
 - Use seu usuário individual.

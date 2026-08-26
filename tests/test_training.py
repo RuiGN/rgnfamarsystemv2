@@ -473,7 +473,8 @@ class TestTrainingApi:
         assert report_response.status_code == 201
         assert generate_response.status_code == 200
         assert list_response.status_code == 200
-        assert 'TRN-API-001' in {item['code'] for item in list_response.json()['results']}
+        assert requirement_response.json()['code'] == 'TR-0002'
+        assert 'TR-0002' in {item['code'] for item in list_response.json()['results']}
         assert (
             TrainingEnrollment.objects.get(id=enrollment_id).status
             == TrainingEnrollment.Status.APPROVED

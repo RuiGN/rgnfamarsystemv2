@@ -217,6 +217,8 @@ class TestControlledDocumentApi:
 
         assert invalid_response.status_code == 201
         assert create_response.status_code == 201
+        assert invalid_response.json()['code'] == 'DOC-0001'
+        assert create_response.json()['code'] == 'DOC-0002'
         assert submit_response.status_code == 200
         assert review_response.status_code == 200
         assert approve_response.status_code == 200
@@ -227,9 +229,9 @@ class TestControlledDocumentApi:
         assert revision_response.status_code == 201
         assert revision_response.json()['version'] == '2.0'
         assert {item['code'] for item in list_response.json()['results']} == {
-            'POP-QA-API-X',
+            'DOC-0001',
+            'DOC-0002',
             'POP-QA-999',
-            'POP-QA-API',
         }
 
     def test_distribution_api_confirms_reading_for_authenticated_recipient(self):

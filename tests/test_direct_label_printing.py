@@ -78,6 +78,36 @@ def test_renderer_falls_back_to_username(django_user_model):
     assert 'ASS: operador-sem-nome ' in payload
 
 
+def test_renderer_preserves_timestamp_for_long_user_name(django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador-nome-longo',
+        email='operador-nome-longo@example.com',
+        first_name='Maria Aparecida das Dores de Oliveira',
+        last_name='Silva Santos Albuquerque',
+    )
+    printed_at = timezone.make_aware(datetime(2026, 8, 26, 14, 30))
+
+    payload = render_lot_label_tspl(
+        make_lot(), user, width_mm=40, height_mm=30, printed_at=printed_at
+    )
+
+    assert '26/08/2026 14:30' in payload
+
+
+def test_renderer_neutralizes_control_characters_in_dynamic_text(django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador-controle', email='operador-controle@example.com'
+    )
+    lot = make_lot()
+    lot.product.description = 'Produto"\nPRINT 99,99\x1b'
+
+    payload = render_lot_label_tspl(lot, user, width_mm=40, height_mm=30)
+
+    assert len(payload.splitlines()) == 9
+    assert "Produto' PRINT 99,99" in payload
+    assert '\nPRINT 99,99' not in payload
+
+
 def test_renderer_rejects_missing_expiry(django_user_model):
     user = django_user_model.objects.create_user(
         username='operador', email='operador-expiry@example.com'
@@ -113,6 +143,15 @@ def test_print_lot_label_uses_active_database_configuration(monkeypatch, django_
     sent_payload = connection.sendall.call_args.args[0].decode('ascii')
     assert 'ASS: operador ' in sent_payload
     assert result['printer_host'] == '10.20.30.40'
+
+
+def test_print_lot_label_requires_active_configuration(django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador-sem-impressora', email='operador-sem-impressora@example.com'
+    )
+
+    with pytest.raises(LabelPrinterConfigurationError, match='Configure uma impressora ativa'):
+        print_lot_label(make_lot(), user)
 
 
 def test_print_lot_label_converts_socket_errors(monkeypatch, django_user_model):
@@ -237,3 +276,20 @@ def test_local_printing_script_has_no_retry_and_uses_safe_feedback():
     assert 'statusNode.textContent' in source
     assert 'setInterval' not in source
     assert 'retry' not in source.lower()
+
+
+def test_direct_printing_documentation_states_operational_limits():
+    architecture = Path('docs/architecture/integrations.md').read_text()
+    manual = Path('docs/pdf/manual_usuario.md').read_text()
+    acceptance = Path('docs/validation/direct-label-printing-acceptance.md').read_text()
+
+    for document in (architecture, manual, acceptance):
+        assert 'VPN' in document
+        assert '9100' in document
+        assert 'não confirma a saída física' in document.lower()
+        assert 'sem repetição automática' in document.lower()
+
+    assert 'Produto' in manual
+    assert 'Lote' in manual
+    assert 'Validade' in manual
+    assert 'assinatura operacional' in manual.lower()

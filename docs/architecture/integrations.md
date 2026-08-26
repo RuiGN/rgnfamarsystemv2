@@ -26,6 +26,30 @@ Endpoints REST devem usar `IsAuthenticated` e permissões Django de modelo. A UI
 operacional em `/app/` deve usar o shell, cards, tabelas, formulários, badges,
 modais, paginação e estados do design system.
 
+## Impressão direta de etiquetas
+
+O servidor Django envia TSPL2 diretamente pela VPN ao host cadastrado em
+**Integrações → Impressora de etiquetas**, usando a porta TCP 9100 por padrão.
+Somente uma configuração pode estar ativa. A conexão tem timeout de cinco
+segundos e não usa fila, agente local ou Celery.
+
+A etiqueta contém Produto, Lote, Validade e a assinatura operacional formada
+pelo nome completo do usuário autenticado — com fallback para username — e
+pela data/hora do servidor. A assinatura operacional identifica o solicitante,
+mas não constitui assinatura eletrônica GxP. O payload não contém código de
+barras, data de fabricação ou sublote.
+
+O retorno de sucesso confirma o envio ao socket; não confirma a saída física
+da etiqueta. A operação trabalha sem repetição automática. Em caso de timeout
+ou resultado incerto, verifique a impressora antes de solicitar outra etiqueta.
+
+Interfaces REST:
+
+- `GET|POST /api/integrations/label-printers/` mantém as configurações;
+- `POST /api/inventory/lots/{id}/print_label/` envia a etiqueta do lote;
+- ambas exigem autenticação e permissões Django; chamadas de sessão exigem
+  CSRF.
+
 ## Verificação mínima
 
 ```bash

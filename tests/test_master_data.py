@@ -296,7 +296,8 @@ class TestMasterDataApi:
 
         assert response.status_code == 201
         assert 'tenant' not in response.json()
-        assert not hasattr(Product.objects.get(code='MP-010'), 'tenant')
+        assert response.json()['code'] == 'PRD-0001'
+        assert not hasattr(Product.objects.get(code='PRD-0001'), 'tenant')
 
         valid_global_unit_response = client.post(
             '/api/masters/products/',
@@ -310,6 +311,7 @@ class TestMasterDataApi:
         )
 
         assert valid_global_unit_response.status_code == 201
+        assert valid_global_unit_response.json()['code'] == 'PRD-0002'
 
         wrong_kind = MasterCategory.objects.create(
             code='CAT-001',

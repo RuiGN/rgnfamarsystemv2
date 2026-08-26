@@ -6,6 +6,7 @@ import pytest
 
 from base.ui.actions.discovery import discover_post_actions
 from base.ui.actions.types import ActionConfig
+from inventory.models import StockLot
 from production.models import ProductionOrder
 
 
@@ -16,6 +17,10 @@ def test_discovers_each_post_action_once_without_format_suffix_duplicates():
     assert len({action.key for action in actions}) == 240
     assert sum(action.detail for action in actions) == 235
     assert sum(not action.detail for action in actions) == 5
+    assert all(
+        not (action.model is StockLot and action.action_name == 'print_label')
+        for action in actions
+    )
 
     production = next(
         item

@@ -334,7 +334,9 @@ class FormulaInlineComponentsUiTests(TestCase):
         )
 
         assert response.status_code == 302, self._response_form_errors(response)
-        controlled_document = ControlledDocument.objects.get(code='POL-CREATION-AUDIT')
+        controlled_document = ControlledDocument.objects.get(title='Auditoria de criação')
+        assert controlled_document.code.startswith('DOC-')
+        assert controlled_document.code != 'POL-CREATION-AUDIT'
         creation_audit = DocumentAuditTrail.objects.get(
             document=controlled_document,
             action=DocumentAuditTrail.Action.CREATED,
@@ -427,7 +429,9 @@ class FormulaInlineComponentsUiTests(TestCase):
         )
 
         assert response.status_code == 302, self._response_form_errors(response)
-        formula = MasterFormula.objects.get(code='FRM-PAR500')
+        formula = MasterFormula.objects.get(notes='Fórmula criada com componentes inline.')
+        assert formula.code.startswith('MF-')
+        assert formula.code != 'FRM-PAR500'
         assert formula.components.count() == 4
         assert list(
             formula.components.order_by('line_number').values_list('line_number', flat=True)

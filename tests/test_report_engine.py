@@ -2583,7 +2583,7 @@ def test_system_definition_rejects_hostile_technical_json_without_invoking_dunde
 
 
 @pytest.mark.django_db
-def test_user_managed_definition_keeps_editable_legacy_contract(django_user_model):
+def test_user_managed_definition_keeps_generated_code_immutable(django_user_model):
     from reports.models import ReportDefinition, ReportExecution
     from reports.serializers import ReportDefinitionSerializer
 
@@ -2611,7 +2611,7 @@ def test_user_managed_definition_keeps_editable_legacy_contract(django_user_mode
 
     assert serializer.is_valid(), serializer.errors
     updated = serializer.save()
-    assert updated.code == 'USR-EDITED'
+    assert updated.code == 'USR-LEGACY'
     assert updated.query_config == {'source': 'quality.QualityResult'}
 
 
