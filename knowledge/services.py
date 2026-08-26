@@ -1,10 +1,13 @@
 import io
 import logging
 from pathlib import Path
+import time
+from decimal import Decimal
 
 import httpx
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 from pypdf import PdfReader
 
@@ -12,11 +15,18 @@ from knowledge.models import (
     KnowledgeDocument,
     KnowledgeIngestionLog,
     KnowledgeSource,
+    RAGChatMessage,
+    RAGChatSession,
+    RAGCitation,
     content_hash,
+    deterministic_embedding,
 )
+from knowledge.openai_gateway import OpenAIGateway
+from knowledge.redis_client import knowledge_redis_health
 
 
 logger = logging.getLogger(__name__)
+
 
 def normalize_text(value):
     return ' '.join(str(value or '').replace('\x00', ' ').split())
@@ -198,3 +208,262 @@ def extract_html_text(html):
         tag.decompose()
     main = soup.find('main') or soup.find('article') or soup.body or soup
     return main.get_text(' ', strip=True)
+
+
+class InvalidChatSession(ValueError):
+    pass
+
+
+def retrieve_context(question, limit=5):
+    redis_context = _redis_retrieve_context(question, limit=limit)
+    if redis_context is not None:
+        return redis_context
+    return _postgres_retrieve_context(question, limit=limit)
+
+
+def _postgres_retrieve_context(question, *, limit=5):
+    query_vector = deterministic_embedding(question)
+    scored = []
+    queryset = (
+        KnowledgeDocument.objects.filter(
+            status=KnowledgeDocument.Status.INGESTED,
+            source__is_active=True,
+            source__chat_eligible=True,
+            source__source_type=KnowledgeSource.SourceType.SYSTEM_MANUAL,
+        )
+        .select_related('source')
+        .prefetch_related('chunks')
+    )
+    for document in queryset:
+        for chunk in document.chunks.all():
+            lexical = chunk.match_score(question)
+            if lexical <= 0:
+                continue
+            vector = _cosine_similarity(query_vector, chunk.embedding_vector or [])
+            score = (lexical * 0.75) + (vector * 0.25)
+            if score <= 0:
+                continue
+            scored.append(_context_payload(chunk, score))
+    scored.sort(key=lambda item: item['score'], reverse=True)
+    return scored[:limit]
+
+
+def _redis_retrieve_context(question, *, limit=5):
+    from knowledge.models import KnowledgeIndexGeneration
+
+    if not KnowledgeIndexGeneration.objects.filter(
+        status=KnowledgeIndexGeneration.Status.ACTIVE
+    ).exists():
+        return None
+
+    try:
+        if not knowledge_redis_health().get('available', False):
+            logger.warning('Redis de conhecimento indisponível; usando PostgreSQL.')
+            return None
+    except Exception as error:
+        logger.warning(
+            'Falha ao verificar Redis de conhecimento; usando PostgreSQL. %s',
+            type(error).__name__,
+        )
+        return None
+
+    from knowledge.retrieval import retrieve_context as redis_retrieve
+
+    try:
+        chunks = redis_retrieve(question, limit=limit)
+    except Exception as error:
+        logger.warning(
+            'Falha ao recuperar contexto via Redis; usando PostgreSQL. %s',
+            type(error).__name__,
+        )
+        return None
+    return [_redis_chunk_payload(chunk) for chunk in chunks]
+
+
+def _redis_chunk_payload(chunk):
+    return {
+        'chunk_id': chunk.chunk_id,
+        'document_id': chunk.document_id,
+        'source_id': chunk.source_id,
+        'title': chunk.title or '',
+        'source_title': chunk.source_title,
+        'source_url': chunk.source_url,
+        'section_reference': chunk.section_reference,
+        'page_number': chunk.page_number,
+        'content': chunk.content,
+        'score': round(chunk.score, 6),
+    }
+
+
+@transaction.atomic
+def answer_question(user, question, *, session_id=None, limit=5):
+    started = time.monotonic()
+    session = _get_or_create_session(user, question, session_id=session_id)
+    session.add_user_message(question)
+    context = retrieve_context(question, limit=limit)
+
+    if getattr(settings, 'RAG_CHAT_LOCAL_ONLY', False):
+        answer = local_answer(question, context)
+        model_name = 'local'
+    else:
+        try:
+            answer, provider = invoke_openai(question, context)
+            model_name = provider['model']
+        except Exception as error:
+            logger.warning(
+                'Provedor externo indisponível; usando resposta local. %s',
+                type(error).__name__,
+            )
+            answer = local_answer(question, context, provider_fallback=True)
+            model_name = 'local'
+    latency_ms = int((time.monotonic() - started) * 1000)
+
+    assistant_message = RAGChatMessage.objects.create(
+        session=session,
+        role=RAGChatMessage.Role.ASSISTANT,
+        content=answer,
+        model_name=model_name,
+        status=RAGChatMessage.Status.SUCCEEDED,
+        latency_ms=latency_ms,
+        retrieved_context=context,
+        error_message='',
+        created_by=user,
+    )
+    citations = create_citations(assistant_message, context)
+    return {
+        'session_id': session.id,
+        'message_id': assistant_message.id,
+        'answer': answer,
+        'citations': citations,
+    }
+
+
+def invoke_openai(question, context):
+    generation = OpenAIGateway().generate_text(
+        instructions=build_system_prompt(),
+        input=build_prompt(question, context),
+    )
+    return generation.text, {
+        'provider': 'openai',
+        'response_id': generation.response_id,
+        'model': generation.model,
+    }
+
+
+def build_system_prompt():
+    return (
+        'Você é o assistente do manual de utilização do RGN Farma System, um ERP '
+        'farmacêutico. Responda sempre em português do Brasil, com tom cordial, claro e '
+        'profissional. Responda exclusivamente sobre funcionalidades, telas, permissões, '
+        'campos, fluxos e estados do sistema. Use somente as fontes do manual fornecidas como '
+        'contexto. Quando a pergunta for sobre como fazer algo no sistema, forneça instruções '
+        'passo a passo numeradas, incluindo caminho do menu, campos e botões. Não execute '
+        'ações, não crie propostas e não consulte legislação, Farmacopeia ou qualquer fonte '
+        'regulatória externa. Quando o manual não cobrir a pergunta, informe a limitação sem '
+        'inventar procedimentos.'
+    )
+
+
+def build_prompt(question, context):
+    sources = []
+    for index, item in enumerate(context, start=1):
+        sources.append(
+            f'[{index}] {item["title"]} | {item["section_reference"]} | '
+            f'{item["source_url"]}\n{item["content"]}'
+        )
+    context_text = '\n\n'.join(sources)
+    if not context_text:
+        return (
+            f'Pergunta do usuário:\n{question}\n\n'
+            'Fontes recuperadas:\nNenhuma fonte recuperada.\n\n'
+            'Informe que não há instrução validada no manual do ERP para responder com '
+            'segurança. Não invente passos, permissões ou comportamentos do sistema.'
+        )
+    return (
+        f'Pergunta do usuário:\n{question}\n\n'
+        f'Contexto do manual:\n{context_text}\n\n'
+        'Responda somente com base no contexto. Forneça passos numerados quando aplicável e '
+        'não proponha nem confirme alteração de dados.'
+    )
+
+
+def local_answer(question, context, provider_fallback=False):
+    if not context:
+        lines = [
+            'Não encontrei uma instrução validada no manual do ERP para essa pergunta.',
+            'Refine a pergunta informando o módulo e a operação desejada ou procure o '
+            'responsável pelo processo.',
+        ]
+    else:
+        lines = ['Com base no manual do ERP, estes são os pontos relevantes:']
+        for index, item in enumerate(context[:3], start=1):
+            excerpt = item['content']
+            if len(excerpt) > 360:
+                excerpt = f'{excerpt[:357]}...'
+            lines.append(f'{index}. {excerpt}')
+        lines.append('Confira abaixo as citações usadas para fundamentar esta orientação.')
+    if provider_fallback:
+        lines.append('A resposta foi produzida em modo local porque o provedor está indisponível.')
+    return '\n'.join(lines)
+
+
+def create_citations(message, context):
+    citations = []
+    for item in context:
+        citation = RAGCitation.objects.create(
+            message=message,
+            source_id=item['source_id'],
+            document_id=item['document_id'],
+            chunk_id=item['chunk_id'],
+            title=item['title'],
+            source_url=item['source_url'],
+            section_reference=item['section_reference'],
+            excerpt=item['content'][:1000],
+            relevance_score=Decimal(str(round(item['score'], 4))),
+        )
+        citations.append(
+            {
+                'title': citation.title,
+                'section_reference': citation.section_reference,
+                'url': citation.source_url,
+                'excerpt': citation.excerpt,
+            }
+        )
+    return citations
+
+
+def _get_or_create_session(user, question, *, session_id=None):
+    if session_id:
+        session = RAGChatSession.objects.filter(
+            created_by=user,
+            pk=session_id,
+            status=RAGChatSession.Status.OPEN,
+        ).first()
+        if session is None:
+            raise InvalidChatSession('A conversa informada não existe ou não está disponível.')
+        return session
+    title = normalize_text(question)[:120] or 'Pergunta RAG'
+    return RAGChatSession.objects.create(created_by=user, title=title)
+
+
+def _context_payload(chunk, score):
+    document = chunk.document
+    source = chunk.source
+    return {
+        'chunk_id': chunk.id,
+        'document_id': document.id,
+        'source_id': source.id,
+        'title': document.title,
+        'source_title': source.title,
+        'source_url': document.source_url or source.url,
+        'section_reference': chunk.section_reference,
+        'page_number': chunk.page_number,
+        'content': chunk.content,
+        'score': round(float(score), 6),
+    }
+
+
+def _cosine_similarity(left, right):
+    if not left or not right or len(left) != len(right):
+        return 0.0
+    return sum(float(a) * float(b) for a, b in zip(left, right))
