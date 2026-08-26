@@ -32,6 +32,11 @@ compatíveis com o estado; o segundo fornece confirmação, CSRF, erros por camp
 e fallback navegável sem JavaScript. O modal nunca é a única forma de concluir
 uma ação.
 
+Campos de formulário são renderizados sem ícones decorativos prefixados. Ícones
+permanecem permitidos em botões, menus, alertas, indicadores e controles
+interativos quando comunicam uma ação ou um estado. A configuração central de
+widgets não publica `data-icon` nem metadados equivalentes de apresentação.
+
 ## Verificação mínima
 
 ```bash
