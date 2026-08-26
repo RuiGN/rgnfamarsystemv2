@@ -990,6 +990,9 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 'production.view_production_maps',
             )
         )
+        context['can_print_labels'] = isinstance(
+            obj, StockLot
+        ) and self.request.user.has_perm('inventory.view_stocklot')
         return context
 
 

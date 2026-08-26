@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ object }} | RGN Farma System{% endblock %}
 
@@ -24,6 +25,20 @@
                 </a>
             </div>
             <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+                {% if can_print_labels %}
+                    <form class="d-inline-flex" data-label-print-form>
+                        {% csrf_token %}
+                        <button
+                            type="button"
+                            class="btn btn-success d-inline-flex align-items-center gap-2"
+                            data-label-print-button
+                            data-label-print-url="{% url 'inventory:lot-print-label' object.pk %}"
+                        >
+                            <i class="feather-printer" aria-hidden="true"></i>
+                            Imprimir etiqueta
+                        </button>
+                    </form>
+                {% endif %}
                 {% if resource.is_executable %}
                     <a href="{% url 'app:resource_execute' module.slug resource.slug object.pk %}" class="btn btn-success d-inline-flex align-items-center gap-2"><i class="feather-play-circle" aria-hidden="true"></i>Executar</a>
                 {% endif %}
@@ -58,6 +73,14 @@
 {% endblock %}
 
 {% block content %}
+{% if can_print_labels %}
+<div
+    class="alert d-none mb-4"
+    data-label-print-status
+    role="status"
+    aria-live="polite"
+></div>
+{% endif %}
 {% include 'app/includes/resource_actions.html' with actions=resource_actions %}
 <section class="card stretch stretch-full">
     <div class="card-body">
@@ -86,5 +109,12 @@
 
 {% if resource.audit_trail %}
     {% include 'app/includes/audit_trail.html' %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+{% if can_print_labels %}
+<script src="{% static 'js/local-printing.js' %}" defer></script>
 {% endif %}
 {% endblock %}

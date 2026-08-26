@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -203,3 +204,36 @@ def test_print_endpoint_normalizes_domain_errors(
 
     assert response.status_code == expected_status
     assert response.data == {'detail': 'mensagem segura'}
+
+
+def test_authorized_lot_detail_renders_print_button(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        username='operador-ui', email='operador-ui@example.com'
+    )
+    user.user_permissions.add(Permission.objects.get(codename='view_stocklot'))
+    client.force_login(user)
+    lot = make_lot()
+
+    response = client.get(
+        reverse(
+            'app:resource_detail',
+            kwargs={'module_slug': 'inventory', 'resource_slug': 'lots', 'pk': lot.pk},
+        )
+    )
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert 'data-label-print-button' in content
+    assert reverse('inventory:lot-print-label', args=(lot.pk,)) in content
+    assert 'js/local-printing.js' in content
+
+
+def test_local_printing_script_has_no_retry_and_uses_safe_feedback():
+    source = Path('static/js/local-printing.js').read_text()
+
+    assert "method: 'POST'" in source
+    assert "'X-CSRFToken'" in source
+    assert 'window.confirm' in source
+    assert 'statusNode.textContent' in source
+    assert 'setInterval' not in source
+    assert 'retry' not in source.lower()
