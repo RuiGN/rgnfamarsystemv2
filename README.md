@@ -181,8 +181,10 @@ APIs iniciais:
 
 ## Assistente RAG do manual
 
-O endpoint `POST /api/knowledge/chat/` e o widget global exigem a permissão
-`knowledge.view_ragchatsession`. As conversas têm isolamento por usuário e o
+O endpoint `POST /api/knowledge/chat/` e o assistente global exigem a permissão
+`knowledge.view_ragchatsession`. O botão flutuante abre o chat em um painel
+lateral pela direita; o módulo técnico **Conhecimento RAG** não aparece no menu
+nem na grade de aplicativos. As conversas têm isolamento por usuário e o
 assistente opera em modo **somente leitura**: consulta o corpus elegível do
 manual, devolve citações e não executa SQL, workflows ou mutações no ERP.
 
