@@ -179,6 +179,26 @@ APIs iniciais:
 - `GET /api/compliance/checklist-items/` consulta checks transversais e `POST /api/compliance/checklist-items/evaluate_module/` avalia permissões, auditoria, status, transação, mensagens, docs, menu, testes e API de um módulo.
 - APIs exigem autenticação e permissões Django nativas; o header de escopo por cliente não é usado no runtime single-instance.
 
+## Assistente RAG do manual
+
+O endpoint `POST /api/knowledge/chat/` e o widget global exigem a permissão
+`knowledge.view_ragchatsession`. As conversas têm isolamento por usuário e o
+assistente opera em modo **somente leitura**: consulta o corpus elegível do
+manual, devolve citações e não executa SQL, workflows ou mutações no ERP.
+
+Preparação básica:
+
+```bash
+.venv/bin/python manage.py migrate
+.venv/bin/python manage.py build_erp_manual_corpus
+.venv/bin/python manage.py rebuild_knowledge_index
+.venv/bin/python manage.py reconcile_knowledge_alias
+```
+
+Redis acelera a recuperação vetorial; quando ele está indisponível, existe
+fallback PostgreSQL lexical. Para operação, segurança, rollout e rollback,
+consulte [docs/architecture/knowledge.md](docs/architecture/knowledge.md).
+
 Carga demo por comando Django:
 
 ```bash

@@ -380,7 +380,8 @@ Critérios de aceite:
 
 - O sistema deve controlar manutenção, treinamentos, workflow e relatórios.
 - O sistema deve registrar integrações e eventos técnicos.
-- O sistema pode oferecer apoio por agentes de IA e chat RAG, sempre sujeito à revisão humana quando a decisão for regulada.
+- O sistema oferece chat RAG somente leitura para consultar o manual ERP, com citações, histórico e revisão humana quando a orientação apoiar uma decisão regulada.
+- O chat exige `knowledge.view_ragchatsession`, mantém isolamento por usuário e não executa SQL, workflows nem alteração de registros.
 
 ## Relatórios e indicadores
 
@@ -478,6 +479,7 @@ As permissões funcionais seguem o modelo:
 | Executar workflow | alterar ou permissão composta |
 | Gerar registros relacionados | alterar origem e adicionar destino |
 | Consultar auditoria | visualizar trilha |
+| Consultar o assistente RAG | `knowledge.view_ragchatsession` |
 | Administrar usuários/grupos | permissões do Django Admin |
 
 Para homologação, recomenda-se validar pelo menos três perfis:
@@ -529,7 +531,7 @@ O comportamento funcional esperado é:
 ## Pendências recomendadas para homologação
 
 - Formalizar matriz de perfis e permissões por área.
-- Definir se `/api/knowledge/chat/` exigirá permissão funcional específica.
+- Validar em homologação os grupos que receberão `knowledge.view_ragchatsession` e o aviso de somente leitura.
 - Definir política de exposição da documentação de API em produção.
 - Validar fluxos com massa de dados representativa.
 - Executar testes de backup/restore com evidência.

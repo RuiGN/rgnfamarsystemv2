@@ -781,7 +781,23 @@ Use para:
 - logs de ingestão;
 - chat RAG.
 
-As respostas do chat devem ser usadas como apoio. Decisões regulatórias devem considerar fontes oficiais, procedimentos internos e revisão humana qualificada.
+O widget do assistente aparece apenas para usuários com a permissão
+`knowledge.view_ragchatsession`. Digite uma pergunta sobre o uso do ERP e use
+“Nova conversa” quando quiser encerrar o contexto atual. As conversas possuem
+isolamento por usuário: você não pode consultar ou continuar a sessão de outra
+pessoa.
+
+O chat funciona em modo **somente leitura**. Ele consulta o manual elegível,
+mantém histórico e apresenta citações quando encontra contexto, mas não altera
+cadastros, não executa SQL e não confirma ações ou workflows. Se a recuperação
+vetorial estiver indisponível, o sistema pode usar fallback PostgreSQL sem
+ampliar o conjunto de fontes permitidas.
+
+As respostas devem ser usadas como apoio. Confira as citações e considere
+fontes oficiais, procedimentos internos e revisão humana qualificada antes de
+qualquer decisão regulatória. Se o widget não estiver visível, solicite ao
+administrador a revisão da permissão funcional; não compartilhe sua sessão ou
+credenciais com outro usuário.
 
 ## Boas práticas de uso
 

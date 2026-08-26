@@ -233,7 +233,7 @@ evidência histórica.
 Alguns endpoints não são recursos de model e usam política própria:
 
 - `/api/accounts/me/`: exige usuário autenticado e retorna o usuário atual.
-- `/api/knowledge/chat/`: exige usuário autenticado; recomenda-se avaliar se a homologação exigirá permissão específica para uso do chat RAG.
+- `/api/knowledge/chat/`: exige autenticação e `knowledge.view_ragchatsession`, aplica isolamento por usuário e oferece somente leitura com citações; quando Redis está indisponível, usa fallback PostgreSQL restrito ao manual elegível.
 - roots dos routers DRF: exigem usuário autenticado e expõem índice da API.
 - `/api/schema/` e `/api/docs/`: atualmente públicos; recomenda-se restringir em produção se a política de segurança exigir ocultar contrato de API.
 
@@ -415,7 +415,7 @@ Antes da homologação, recomenda-se exigir evidência dos seguintes itens:
 |---|---|---|
 | `DEFAULT_PERMISSION_CLASSES` em DRF | ViewSet futuro pode herdar apenas `IsAuthenticated` | Criar teste guardrail ou mudar default com exceções explícitas |
 | `/api/schema/` e `/api/docs/` públicos | Exposição do contrato da API | Restringir por ambiente em produção |
-| `/api/knowledge/chat/` | Chat RAG controlado só por autenticação | Definir permissão funcional específica se necessário |
+| `/api/knowledge/chat/` | Respostas podem ser interpretadas como decisão operacional | Manter `knowledge.view_ragchatsession`, somente leitura, citações, isolamento por usuário e revisão humana |
 | Rotas `/api/*` e `/api/v1/*` | Superfície duplicada | Padronizar `/api/v1/*` como contrato externo |
 | Apps legados `tenants`/`control_plane` instalados | Ruído arquitetural após conversão single-instance | Manter somente se houver justificativa operacional/documental |
 
