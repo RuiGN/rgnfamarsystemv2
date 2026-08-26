@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from workflow.models import (
     ApprovalQueue,
     ApprovalTask,
@@ -29,7 +29,7 @@ class WorkflowNotificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(ApprovalQueue)
-class ApprovalQueueAdmin(admin.ModelAdmin):
+class ApprovalQueueAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'name',
@@ -46,7 +46,7 @@ class ApprovalQueueAdmin(admin.ModelAdmin):
 
 
 @admin.register(ApprovalTask)
-class ApprovalTaskAdmin(admin.ModelAdmin):
+class ApprovalTaskAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'task_number',
         'title',
@@ -102,7 +102,7 @@ class WorkflowAttachmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(AsyncJobStatus)
-class AsyncJobStatusAdmin(admin.ModelAdmin):
+class AsyncJobStatusAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'job_number',
         'title',

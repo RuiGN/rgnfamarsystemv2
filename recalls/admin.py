@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from recalls.models import (
     MarketComplaint,
     ProductReturn,
@@ -10,7 +11,7 @@ from recalls.models import (
 
 
 @admin.register(MarketComplaint)
-class MarketComplaintAdmin(admin.ModelAdmin):
+class MarketComplaintAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'complaint_number',
         'complaint_type',
@@ -71,7 +72,7 @@ class MarketComplaintAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductReturn)
-class ProductReturnAdmin(admin.ModelAdmin):
+class ProductReturnAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'return_number',
         'return_type',
@@ -117,7 +118,7 @@ class ProductReturnAdmin(admin.ModelAdmin):
 
 
 @admin.register(RecallCampaign)
-class RecallCampaignAdmin(admin.ModelAdmin):
+class RecallCampaignAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'campaign_number',
         'campaign_type',

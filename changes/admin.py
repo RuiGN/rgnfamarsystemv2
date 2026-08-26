@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from changes.models import (
     ChangeAction,
     ChangeAffectedItem,
@@ -10,7 +11,7 @@ from changes.models import (
 
 
 @admin.register(ChangeControl)
-class ChangeControlAdmin(admin.ModelAdmin):
+class ChangeControlAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'change_number',
         'change_type',

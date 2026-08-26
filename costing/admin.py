@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from costing.models import (
     CostElement,
     CostReportSnapshot,
@@ -10,7 +11,7 @@ from costing.models import (
 
 
 @admin.register(CostElement)
-class CostElementAdmin(admin.ModelAdmin):
+class CostElementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'category', 'is_active')
     list_filter = ('category', 'is_active')
     search_fields = ('code', 'name')

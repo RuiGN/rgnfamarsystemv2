@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from finance.models import (
     CashFlowEntry,
     ChartOfAccount,
@@ -20,7 +21,7 @@ class ChartOfAccountAdmin(admin.ModelAdmin):
 
 
 @admin.register(FinancialCategory)
-class FinancialCategoryAdmin(admin.ModelAdmin):
+class FinancialCategoryAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'category_type', 'chart_account', 'is_active')
     list_filter = ('category_type', 'is_active')
     search_fields = ('code', 'name', 'chart_account__code', 'chart_account__name')
@@ -29,7 +30,7 @@ class FinancialCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(FinancialAccount)
-class FinancialAccountAdmin(admin.ModelAdmin):
+class FinancialAccountAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'account_type', 'bank_name', 'current_balance', 'is_active')
     list_filter = ('account_type', 'is_active')
     search_fields = ('code', 'name', 'bank_name', 'agency_number', 'account_number')
@@ -38,7 +39,7 @@ class FinancialAccountAdmin(admin.ModelAdmin):
 
 
 @admin.register(FinancialTitle)
-class FinancialTitleAdmin(admin.ModelAdmin):
+class FinancialTitleAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'title_number',
         'title_type',

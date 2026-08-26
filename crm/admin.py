@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from crm.models import (
     Campaign,
     CustomerComplaint,
@@ -18,21 +19,21 @@ from crm.models import (
 
 
 @admin.register(CustomerGroup)
-class CustomerGroupAdmin(admin.ModelAdmin):
+class CustomerGroupAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('code', 'name')
 
 
 @admin.register(SalesChannel)
-class SalesChannelAdmin(admin.ModelAdmin):
+class SalesChannelAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'channel_type', 'is_active')
     list_filter = ('channel_type', 'is_active')
     search_fields = ('code', 'name')
 
 
 @admin.register(SalesRepresentative)
-class SalesRepresentativeAdmin(admin.ModelAdmin):
+class SalesRepresentativeAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'email', 'commission_percent', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('code', 'name', 'email', 'partner__legal_name')
@@ -70,7 +71,7 @@ class CustomerContactAdmin(admin.ModelAdmin):
 
 
 @admin.register(Campaign)
-class CampaignAdmin(admin.ModelAdmin):
+class CampaignAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'channel', 'start_date', 'end_date', 'status', 'budget_amount')
     list_filter = ('status', 'channel', 'start_date')
     search_fields = ('code', 'name')
@@ -100,7 +101,7 @@ class SalesProposalItemInline(admin.TabularInline):
 
 
 @admin.register(SalesProposal)
-class SalesProposalAdmin(admin.ModelAdmin):
+class SalesProposalAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('proposal_number', 'customer', 'status', 'valid_until', 'total_amount')
     list_filter = ('status', 'valid_until')
     search_fields = ('proposal_number', 'customer__legal_name', 'opportunity__title')
@@ -125,7 +126,7 @@ class SalesProposalItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(SalesContract)
-class SalesContractAdmin(admin.ModelAdmin):
+class SalesContractAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'contract_number',
         'customer',
@@ -149,7 +150,7 @@ class SalesOrderItemInline(admin.TabularInline):
 
 
 @admin.register(SalesOrder)
-class SalesOrderAdmin(admin.ModelAdmin):
+class SalesOrderAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'order_number',
         'customer',

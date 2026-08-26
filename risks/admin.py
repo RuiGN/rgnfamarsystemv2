@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from risks.models import (
     RiskAlert,
     RiskAssessment,
@@ -11,7 +12,7 @@ from risks.models import (
 
 
 @admin.register(RiskRecord)
-class RiskRecordAdmin(admin.ModelAdmin):
+class RiskRecordAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'risk_number',
         'risk_category',

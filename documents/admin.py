@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from documents.models import (
     ControlledDocument,
     DocumentApproval,
@@ -11,7 +11,7 @@ from documents.models import (
 
 
 @admin.register(ControlledDocument)
-class ControlledDocumentAdmin(admin.ModelAdmin):
+class ControlledDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'version',

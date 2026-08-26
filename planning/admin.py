@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from planning.models import (
     CapacityLoad,
     CapacityResource,
@@ -57,7 +58,7 @@ class PlanningPolicyAdmin(admin.ModelAdmin):
 
 
 @admin.register(MasterProductionSchedule)
-class MasterProductionScheduleAdmin(admin.ModelAdmin):
+class MasterProductionScheduleAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'period_start', 'period_end', 'status')
     list_filter = ('status', 'period_start')
     search_fields = ('code', 'name')
@@ -131,7 +132,7 @@ class MRPSuggestionAdmin(admin.ModelAdmin):
 
 
 @admin.register(CapacityResource)
-class CapacityResourceAdmin(admin.ModelAdmin):
+class CapacityResourceAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'name',

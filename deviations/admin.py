@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from deviations.models import (
     DeviationApproval,
     DeviationEvidence,
@@ -10,7 +11,7 @@ from deviations.models import (
 
 
 @admin.register(QualityEvent)
-class QualityEventAdmin(admin.ModelAdmin):
+class QualityEventAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'event_number',
         'event_type',

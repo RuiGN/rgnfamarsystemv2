@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from maintenance.models import (
     EquipmentAsset,
     EquipmentDowntime,
@@ -11,7 +11,7 @@ from maintenance.models import (
 
 
 @admin.register(EquipmentAsset)
-class EquipmentAssetAdmin(admin.ModelAdmin):
+class EquipmentAssetAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'asset_code',
         'name',
@@ -58,7 +58,7 @@ class MaintenancePlanAdmin(admin.ModelAdmin):
 
 
 @admin.register(MaintenanceOrder)
-class MaintenanceOrderAdmin(admin.ModelAdmin):
+class MaintenanceOrderAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'order_number',
         'asset',

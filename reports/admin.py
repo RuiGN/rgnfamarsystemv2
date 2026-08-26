@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from reports.models import (
     DashboardWidget,
     DashboardWorkspace,
@@ -27,7 +27,7 @@ class DashboardWidgetInline(admin.TabularInline):
 
 
 @admin.register(DashboardWorkspace)
-class DashboardWorkspaceAdmin(admin.ModelAdmin):
+class DashboardWorkspaceAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'title', 'module', 'profile_role', 'owner', 'is_active')
     list_filter = ('module', 'profile_role', 'is_active')
     search_fields = ('code', 'title', 'owner__email')
@@ -51,7 +51,7 @@ class DashboardWidgetAdmin(admin.ModelAdmin):
 
 
 @admin.register(ReportDefinition)
-class ReportDefinitionAdmin(admin.ModelAdmin):
+class ReportDefinitionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'title', 'module', 'category', 'owner', 'is_active')
     list_filter = ('module', 'category', 'is_active')
     search_fields = ('code', 'title', 'description', 'owner__email')
@@ -59,7 +59,9 @@ class ReportDefinitionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ReportExecution)
-class ReportExecutionAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
+class ReportExecutionAdmin(
+    AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin, admin.ModelAdmin
+):
     list_display = (
         'execution_number',
         'definition',

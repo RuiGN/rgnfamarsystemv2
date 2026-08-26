@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from quality.models import (
     AnalyticalSpecification,
     LaboratoryInvestigation,
@@ -34,7 +35,7 @@ class AnalyticalSpecificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(QualitySample)
-class QualitySampleAdmin(admin.ModelAdmin):
+class QualitySampleAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'sample_number',
         'sample_type',
@@ -78,7 +79,7 @@ class QualitySampleAdmin(admin.ModelAdmin):
 
 
 @admin.register(QualityAnalysis)
-class QualityAnalysisAdmin(admin.ModelAdmin):
+class QualityAnalysisAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'analysis_number',
         'sample',
@@ -130,7 +131,7 @@ class QualityResultAdmin(admin.ModelAdmin):
 
 
 @admin.register(LaboratoryInvestigation)
-class LaboratoryInvestigationAdmin(admin.ModelAdmin):
+class LaboratoryInvestigationAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'investigation_number',
         'sample',
@@ -147,7 +148,7 @@ class LaboratoryInvestigationAdmin(admin.ModelAdmin):
 
 
 @admin.register(QualityDocument)
-class QualityDocumentAdmin(admin.ModelAdmin):
+class QualityDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'document_number',
         'document_type',

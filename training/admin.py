@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from training.models import (
     Competency,
     CriticalActivityRule,
@@ -13,14 +14,14 @@ from training.models import (
 
 
 @admin.register(JobPosition)
-class JobPositionAdmin(admin.ModelAdmin):
+class JobPositionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'title', 'area', 'department', 'is_active')
     list_filter = ('area', 'department', 'is_active')
     search_fields = ('code', 'title', 'area', 'department', 'description')
 
 
 @admin.register(WorkFunction)
-class WorkFunctionAdmin(admin.ModelAdmin):
+class WorkFunctionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'job_position', 'area', 'process', 'is_critical', 'is_active')
     list_filter = ('area', 'process', 'is_critical', 'is_active')
     search_fields = ('code', 'name', 'area', 'process', 'description', 'job_position__title')
@@ -28,14 +29,14 @@ class WorkFunctionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Competency)
-class CompetencyAdmin(admin.ModelAdmin):
+class CompetencyAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'competency_type', 'is_active')
     list_filter = ('competency_type', 'is_active')
     search_fields = ('code', 'name', 'description')
 
 
 @admin.register(TrainingRequirement)
-class TrainingRequirementAdmin(admin.ModelAdmin):
+class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'title',
@@ -89,7 +90,7 @@ class TrainingMatrixRequirementAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrainingSession)
-class TrainingSessionAdmin(admin.ModelAdmin):
+class TrainingSessionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'session_number',
         'requirement',
@@ -123,7 +124,7 @@ class TrainingSessionAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrainingEnrollment)
-class TrainingEnrollmentAdmin(admin.ModelAdmin):
+class TrainingEnrollmentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'enrollment_number',
         'requirement',

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from auxiliary.models import (
     BackupRun,
     BusinessArea,
@@ -25,24 +26,24 @@ class AuxiliaryCatalogAdmin(admin.ModelAdmin):
 
 
 @admin.register(BusinessArea)
-class BusinessAreaAdmin(AuxiliaryCatalogAdmin):
+class BusinessAreaAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     pass
 
 
 @admin.register(BusinessProcess)
-class BusinessProcessAdmin(AuxiliaryCatalogAdmin):
+class BusinessProcessAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'area', 'is_active')
     list_filter = ('area', 'is_active')
 
 
 @admin.register(Department)
-class DepartmentAdmin(AuxiliaryCatalogAdmin):
+class DepartmentAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'area', 'is_active')
     list_filter = ('area', 'is_active')
 
 
 @admin.register(OrganizationalRole)
-class OrganizationalRoleAdmin(AuxiliaryCatalogAdmin):
+class OrganizationalRoleAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     pass
 
 
@@ -72,35 +73,35 @@ class CurrencyAdmin(AuxiliaryCatalogAdmin):
 
 
 @admin.register(CommercialTerm)
-class CommercialTermAdmin(AuxiliaryCatalogAdmin):
+class CommercialTermAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'term_type', 'days', 'is_active')
     list_filter = ('term_type', 'is_active')
 
 
 @admin.register(SystemModule)
-class SystemModuleAdmin(AuxiliaryCatalogAdmin):
+class SystemModuleAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'app_label', 'menu_label', 'is_active')
 
 
 @admin.register(SystemModel)
-class SystemModelAdmin(AuxiliaryCatalogAdmin):
+class SystemModelAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'module', 'app_label', 'model_name', 'is_active')
     list_filter = ('module', 'is_active')
 
 
 @admin.register(ImpactLevel)
-class ImpactLevelAdmin(AuxiliaryCatalogAdmin):
+class ImpactLevelAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'level_type', 'weight', 'color', 'is_active')
     list_filter = ('level_type', 'is_active')
 
 
 @admin.register(CatalogType)
-class CatalogTypeAdmin(AuxiliaryCatalogAdmin):
+class CatalogTypeAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'target_field', 'is_active')
 
 
 @admin.register(CatalogValue)
-class CatalogValueAdmin(AuxiliaryCatalogAdmin):
+class CatalogValueAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'catalog_type', 'value', 'order', 'is_active')
     list_filter = ('catalog_type', 'is_active')
 

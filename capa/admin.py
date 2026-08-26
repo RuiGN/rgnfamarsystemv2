@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from capa.models import (
     CapaAction,
     CapaApproval,
@@ -10,7 +11,7 @@ from capa.models import (
 
 
 @admin.register(CapaRecord)
-class CapaRecordAdmin(admin.ModelAdmin):
+class CapaRecordAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'capa_number',
         'source_type',

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from qa.models import (
     BatchRecordChecklistItem,
     CriticalActivityRule,
@@ -11,7 +12,7 @@ from qa.models import (
 
 
 @admin.register(QAReview)
-class QAReviewAdmin(admin.ModelAdmin):
+class QAReviewAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('review_number', 'review_type', 'title', 'status', 'approved_by', 'approved_at')
     list_filter = ('review_type', 'status', 'approved_at')
     search_fields = (
@@ -61,7 +62,7 @@ class BatchRecordChecklistItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(LotRelease)
-class LotReleaseAdmin(admin.ModelAdmin):
+class LotReleaseAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'release_number',
         'product',
@@ -116,7 +117,7 @@ class LotReleaseAdmin(admin.ModelAdmin):
 
 
 @admin.register(QualityBlock)
-class QualityBlockAdmin(admin.ModelAdmin):
+class QualityBlockAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'block_number',
         'target_type',
@@ -150,7 +151,7 @@ class QualityBlockAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrainingRequirement)
-class TrainingRequirementAdmin(admin.ModelAdmin):
+class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'title',

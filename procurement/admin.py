@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from procurement.models import (
     PurchaseOrder,
     PurchaseOrderItem,
@@ -20,7 +21,7 @@ class PurchaseRequisitionItemInline(admin.TabularInline):
 
 
 @admin.register(PurchaseRequisition)
-class PurchaseRequisitionAdmin(admin.ModelAdmin):
+class PurchaseRequisitionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('requisition_number', 'source', 'status', 'requested_by', 'approved_at')
     list_filter = ('source', 'status')
     search_fields = ('requisition_number', 'justification')
@@ -53,7 +54,7 @@ class SupplierQuotationInline(admin.TabularInline):
 
 
 @admin.register(QuotationRequest)
-class QuotationRequestAdmin(admin.ModelAdmin):
+class QuotationRequestAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('rfq_number', 'requisition', 'status', 'due_date', 'approved_at')
     list_filter = ('status', 'due_date')
     search_fields = ('rfq_number', 'requisition__requisition_number', 'terms')
@@ -120,7 +121,7 @@ class PurchaseOrderItemInline(admin.TabularInline):
 
 
 @admin.register(PurchaseOrder)
-class PurchaseOrderAdmin(admin.ModelAdmin):
+class PurchaseOrderAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'order_number',
         'supplier',
@@ -194,7 +195,7 @@ class PurchaseReceiptItemInline(admin.TabularInline):
 
 
 @admin.register(PurchaseReceipt)
-class PurchaseReceiptAdmin(admin.ModelAdmin):
+class PurchaseReceiptAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'receipt_number',
         'order',

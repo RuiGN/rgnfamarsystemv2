@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from audits.models import (
     AuditChecklistItem,
     AuditEvidence,
@@ -12,7 +13,7 @@ from audits.models import (
 
 
 @admin.register(AuditProgram)
-class AuditProgramAdmin(admin.ModelAdmin):
+class AuditProgramAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('program_number', 'audit_type', 'title', 'year', 'status', 'owner')
     list_filter = ('audit_type', 'status', 'year')
     search_fields = ('program_number', 'title', 'scope', 'criteria', 'owner__email')
@@ -21,7 +22,7 @@ class AuditProgramAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditPlan)
-class AuditPlanAdmin(admin.ModelAdmin):
+class AuditPlanAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'audit_number',
         'audit_type',

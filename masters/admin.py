@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from masters.models import (
     BusinessPartner,
     MasterCategory,
@@ -18,7 +19,7 @@ class UnitOfMeasureAdmin(admin.ModelAdmin):
 
 
 @admin.register(MasterCategory)
-class MasterCategoryAdmin(admin.ModelAdmin):
+class MasterCategoryAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'kind', 'parent', 'is_active')
     list_filter = ('kind', 'is_active')
     search_fields = ('code', 'name')
@@ -26,7 +27,7 @@ class MasterCategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'description', 'item_type', 'status', 'unit')
     list_filter = ('item_type', 'status', 'requires_quality_release', 'requires_approved_supplier')
     search_fields = ('code', 'description', 'fiscal_ncm')
@@ -40,7 +41,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 @admin.register(BusinessPartner)
-class BusinessPartnerAdmin(admin.ModelAdmin):
+class BusinessPartnerAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'legal_name',
@@ -71,7 +72,7 @@ class BusinessPartnerAdmin(admin.ModelAdmin):
 
 
 @admin.register(Site)
-class SiteAdmin(admin.ModelAdmin):
+class SiteAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'site_type', 'city_ref', 'state_ref', 'is_active')
     list_filter = ('site_type', 'state_ref', 'is_active')
     search_fields = ('code', 'name', 'city_ref__name', 'state_ref__name')
@@ -79,7 +80,7 @@ class SiteAdmin(admin.ModelAdmin):
 
 
 @admin.register(Warehouse)
-class WarehouseAdmin(admin.ModelAdmin):
+class WarehouseAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'warehouse_type', 'site', 'is_active')
     list_filter = ('warehouse_type', 'is_active')
     search_fields = ('code', 'name', 'site__name')
@@ -87,7 +88,7 @@ class WarehouseAdmin(admin.ModelAdmin):
 
 
 @admin.register(StorageLocation)
-class StorageLocationAdmin(admin.ModelAdmin):
+class StorageLocationAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'warehouse', 'is_active')
     list_filter = ('is_active',)
     search_fields = ('code', 'name', 'warehouse__name')

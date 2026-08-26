@@ -1,10 +1,10 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from ai_agents.models import AIAgentProfile, AIAgentRun, AIInsightSuggestion, AIPromptAuditLog
 
 
 @admin.register(AIAgentProfile)
-class AIAgentProfileAdmin(admin.ModelAdmin):
+class AIAgentProfileAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'code',
         'name',
@@ -21,7 +21,7 @@ class AIAgentProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(AIAgentRun)
-class AIAgentRunAdmin(admin.ModelAdmin):
+class AIAgentRunAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'run_number',
         'agent',

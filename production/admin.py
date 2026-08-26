@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from production.models import MaterialConsumption, ProductionOrder
 
 
@@ -20,7 +21,7 @@ class MaterialConsumptionInline(admin.TabularInline):
 
 
 @admin.register(ProductionOrder)
-class ProductionOrderAdmin(admin.ModelAdmin):
+class ProductionOrderAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('order_number', 'batch_number', 'product', 'status', 'planned_quantity', 'unit')
     list_filter = ('status', 'product__item_type')
     search_fields = ('order_number', 'batch_number', 'product__code', 'product__description')

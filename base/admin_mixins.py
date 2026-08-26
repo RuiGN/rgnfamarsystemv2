@@ -1,5 +1,14 @@
 from typing import Any
 
+from base.automatic_fields import automatic_generated_fields
+
+
+class AutomaticGeneratedFieldsAdminMixin:
+    def get_readonly_fields(self, request, obj=None):
+        inherited = tuple(super().get_readonly_fields(request, obj))
+        generated = automatic_generated_fields(self.model)
+        return tuple(dict.fromkeys((*inherited, *generated)))
+
 
 class ImmutableAuditAdminMixin:
     model: Any

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.admin_mixins import ImmutableAuditAdminMixin
+from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from files.models import (
     ProtectedFile,
     ProtectedFileAccessRule,
@@ -9,7 +9,7 @@ from files.models import (
 
 
 @admin.register(ProtectedFile)
-class ProtectedFileAdmin(admin.ModelAdmin):
+class ProtectedFileAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'file_number',
         'title',

@@ -1,4 +1,6 @@
 import pytest
+from django.contrib import admin
+from django.test import RequestFactory
 
 from auxiliary.models import Currency
 from base.automatic_fields import automatic_generated_fields
@@ -63,3 +65,30 @@ def test_disabled_identifier_ignores_forged_posted_value():
 
     assert field.disabled is True
     assert field.bound_data('FORGED-999', None) is None
+
+
+def test_all_registered_automatic_fields_are_readonly_in_admin(django_user_model):
+    request = RequestFactory().get('/admin/')
+    request.user = django_user_model.objects.create_superuser(
+        username='admin-auto-fields', email='admin-auto@example.com', password='master'
+    )
+    covered = 0
+    for model, model_admin in admin.site._registry.items():
+        expected = automatic_generated_fields(model)
+        if not expected:
+            continue
+        covered += 1
+        readonly = model_admin.get_readonly_fields(request)
+        assert set(expected) <= set(readonly), model._meta.label
+
+    assert covered >= 70
+
+
+def test_manual_currency_code_remains_editable_in_admin(django_user_model):
+    request = RequestFactory().get('/admin/')
+    request.user = django_user_model.objects.create_superuser(
+        username='admin-currency', email='currency@example.com', password='master'
+    )
+    model_admin = admin.site._registry[Currency]
+
+    assert 'code' not in model_admin.get_readonly_fields(request)
