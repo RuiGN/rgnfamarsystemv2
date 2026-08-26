@@ -5,6 +5,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db.models import URLField
 
+from base.automatic_fields import automatic_generated_fields
+
 
 SYSTEM_FIELD_NAMES = {
     'id',
@@ -475,6 +477,19 @@ def build_resource_form(resource, *, update=False):
         def __init__(self, *args, request=None, **kwargs):
             super().__init__(*args, **kwargs)
 
+            for field_name in automatic_generated_fields(resource.model):
+                if field_name not in self.fields:
+                    continue
+                field = self.fields[field_name]
+                field.disabled = True
+                if update:
+                    field.help_text = 'Identificador imutável após o cadastro.'
+                else:
+                    field.required = False
+                    field.initial = None
+                    field.help_text = 'Gerado automaticamente pelo sistema ao salvar.'
+                    field.widget.attrs['placeholder'] = 'Gerado automaticamente ao salvar'
+
             for name, field in self.fields.items():
                 _apply_widget_metadata(name, field)
 
@@ -489,6 +504,16 @@ def build_resource_form(resource, *, update=False):
                 model = queryset.model
                 if model is User:
                     field.queryset = queryset.filter(is_active=True)
+
+        def _get_validation_exclusions(self):
+            exclusions = super()._get_validation_exclusions()
+            if not update:
+                exclusions.update(
+                    field_name
+                    for field_name in automatic_generated_fields(resource.model)
+                    if field_name in self.fields
+                )
+            return exclusions
 
         def clean(self):
             cleaned_data = super().clean()

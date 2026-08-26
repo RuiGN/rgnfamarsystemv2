@@ -741,6 +741,7 @@ MODULES = (
                 ('order_number', 'batch_number', 'product__code', 'product__description'),
                 form_fields=(
                     'order_number',
+                    'batch_number',
                     'product',
                     'formula',
                     'route',
