@@ -416,7 +416,7 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             if get_module(option['module']) is None
             or get_module(option['module']).can_view(self.request.user)
         }
-        dashboard_data = self._build_data(slug)
+        dashboard_data = self._build_data(slug, self.request.user)
         chart = dashboard_data['chart']
         context.update(
             {
@@ -430,38 +430,25 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
         )
         return context
 
-    def _build_data(self, slug):
+    def _build_data(self, slug, user):
         empty = {'labels': [], 'series': []}
-        orders = ProductionOrder.objects.all()
-        lots = StockLot.objects.all()
-        samples = QualitySample.objects.all()
-        analyses = QualityAnalysis.objects.all()
-        investigations = LaboratoryInvestigation.objects.all()
-        titles = FinancialTitle.objects.all()
-        active_orders = orders.exclude(
-            status__in=(
-                ProductionOrder.Status.COMPLETED,
-                ProductionOrder.Status.CANCELLED,
-                ProductionOrder.Status.CLOSED,
-            )
-        )
-        active_orders_count = active_orders.count()
-        open_titles = titles.exclude(
-            status__in=(FinancialTitle.Status.SETTLED, FinancialTitle.Status.CANCELLED)
-        )
-        pending_quality = samples.exclude(
-            status__in=(
-                QualitySample.Status.APPROVED,
-                QualitySample.Status.REJECTED,
-                QualitySample.Status.CANCELLED,
-            )
-        ).count()
         data: dict[str, Any] = {
             'kpis': [],
             'chart': empty,
             'table': [],
         }
         if slug == 'operations':
+            if not user.has_perm('production.view_productionorder'):
+                return data
+            orders = ProductionOrder.objects.all()
+            active_orders = orders.exclude(
+                status__in=(
+                    ProductionOrder.Status.COMPLETED,
+                    ProductionOrder.Status.CANCELLED,
+                    ProductionOrder.Status.CLOSED,
+                )
+            )
+            active_orders_count = active_orders.count()
             data['kpis'] = [
                 ProgressMetric(
                     'Ordens ativas',
@@ -498,6 +485,9 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 orders.order_by('-created_at').values('order_number', 'batch_number', 'status')[:8]
             )
         elif slug == 'inventory':
+            if not user.has_perm('inventory.view_stocklot'):
+                return data
+            lots = StockLot.objects.all()
             expiring = lots.filter(
                 expiry_date__isnull=False,
                 expiry_date__lte=timezone.localdate() + timedelta(days=90),
@@ -546,51 +536,76 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 ]
             )
         elif slug == 'quality':
-            data['kpis'] = [
-                ProgressMetric(
-                    'Amostras pendentes',
-                    pending_quality,
-                    'feather-droplet',
-                    'warning',
-                    'Qualidade',
-                    reverse('app:resource_list', args=('quality', 'samples')),
-                    required_permission='quality.view_qualitysample',
-                ),
-                ProgressMetric(
-                    'Análises pendentes',
-                    analyses.filter(status=QualityAnalysis.Status.PENDING).count(),
-                    'feather-search',
-                    'primary',
-                    'Qualidade',
-                    reverse('app:resource_list', args=('quality', 'analyses')),
-                    analyses.exclude(
-                        status__in=(
-                            QualityAnalysis.Status.APPROVED,
-                            QualityAnalysis.Status.REJECTED,
-                        )
-                    ).count(),
-                    required_permission='quality.view_qualityanalysis',
-                ),
-                ProgressMetric(
-                    'Investigações abertas',
-                    investigations.exclude(
-                        status__in=(
-                            LaboratoryInvestigation.Status.CONCLUDED,
-                            LaboratoryInvestigation.Status.CANCELLED,
-                        )
-                    ).count(),
-                    'feather-alert-circle',
-                    'danger',
-                    'Qualidade',
-                    reverse('app:resource_list', args=('quality', 'investigations')),
-                    required_permission='quality.view_laboratoryinvestigation',
-                ),
-            ]
-            data['chart'] = self._status_chart(samples, QualitySample.Status, 'status')
-            data['table'] = list(
-                samples.order_by('-created_at').values('sample_number', 'sample_type', 'status')[:8]
-            )
+            if user.has_perm('quality.view_qualitysample'):
+                samples = QualitySample.objects.all()
+                pending_quality = samples.exclude(
+                    status__in=(
+                        QualitySample.Status.APPROVED,
+                        QualitySample.Status.REJECTED,
+                        QualitySample.Status.CANCELLED,
+                    )
+                ).count()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Amostras pendentes',
+                        pending_quality,
+                        'feather-droplet',
+                        'warning',
+                        'Qualidade',
+                        reverse('app:resource_list', args=('quality', 'samples')),
+                        required_permission='quality.view_qualitysample',
+                    )
+                )
+                data['chart'] = self._status_chart(samples, QualitySample.Status, 'status')
+                data['table'] = list(
+                    samples.order_by('-created_at').values(
+                        'sample_number', 'sample_type', 'status'
+                    )[:8]
+                )
+            if user.has_perm('quality.view_qualityanalysis'):
+                analyses = QualityAnalysis.objects.all()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Análises pendentes',
+                        analyses.filter(status=QualityAnalysis.Status.PENDING).count(),
+                        'feather-search',
+                        'primary',
+                        'Qualidade',
+                        reverse('app:resource_list', args=('quality', 'analyses')),
+                        analyses.exclude(
+                            status__in=(
+                                QualityAnalysis.Status.APPROVED,
+                                QualityAnalysis.Status.REJECTED,
+                            )
+                        ).count(),
+                        required_permission='quality.view_qualityanalysis',
+                    )
+                )
+            if user.has_perm('quality.view_laboratoryinvestigation'):
+                investigations = LaboratoryInvestigation.objects.all()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Investigações abertas',
+                        investigations.exclude(
+                            status__in=(
+                                LaboratoryInvestigation.Status.CONCLUDED,
+                                LaboratoryInvestigation.Status.CANCELLED,
+                            )
+                        ).count(),
+                        'feather-alert-circle',
+                        'danger',
+                        'Qualidade',
+                        reverse('app:resource_list', args=('quality', 'investigations')),
+                        required_permission='quality.view_laboratoryinvestigation',
+                    )
+                )
         elif slug == 'finance':
+            if not user.has_perm('finance.view_financialtitle'):
+                return data
+            titles = FinancialTitle.objects.all()
+            open_titles = titles.exclude(
+                status__in=(FinancialTitle.Status.SETTLED, FinancialTitle.Status.CANCELLED)
+            )
             data['kpis'] = [
                 ProgressMetric(
                     'Títulos em aberto',
@@ -629,10 +644,13 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             data['chart'] = {
                 'labels': ['A pagar', 'A receber'],
                 'series': [
-                    titles.filter(title_type=s)
+                    titles.filter(title_type=title_type)
                     .exclude(status=FinancialTitle.Status.SETTLED)
                     .count()
-                    for s in (FinancialTitle.TitleType.PAYABLE, FinancialTitle.TitleType.RECEIVABLE)
+                    for title_type in (
+                        FinancialTitle.TitleType.PAYABLE,
+                        FinancialTitle.TitleType.RECEIVABLE,
+                    )
                 ],
             }
             data['table'] = list(
@@ -641,64 +659,92 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 )[:8]
             )
         else:
-            data['kpis'] = [
-                ProgressMetric(
-                    'Ordens ativas',
-                    active_orders_count,
-                    'feather-play-circle',
-                    'primary',
-                    'Produção',
-                    reverse('app:resource_list', args=('production', 'orders')),
-                    required_permission='production.view_productionorder',
-                ),
-                ProgressMetric(
-                    'Lotes em estoque',
-                    lots.count(),
-                    'feather-archive',
-                    'success',
-                    'Estoque',
-                    reverse('app:resource_list', args=('inventory', 'lots')),
-                    required_permission='inventory.view_stocklot',
-                ),
-                ProgressMetric(
-                    'Pendências de qualidade',
-                    pending_quality,
-                    'feather-check-square',
-                    'warning',
-                    'Qualidade',
-                    reverse('app:resource_list', args=('quality', 'samples')),
-                    required_permission='quality.view_qualitysample',
-                ),
-                ProgressMetric(
-                    'Investigações abertas',
-                    investigations.exclude(
+            chart_labels = []
+            chart_series = []
+            if user.has_perm('production.view_productionorder'):
+                active_orders = ProductionOrder.objects.exclude(
+                    status__in=(
+                        ProductionOrder.Status.COMPLETED,
+                        ProductionOrder.Status.CANCELLED,
+                        ProductionOrder.Status.CLOSED,
+                    )
+                )
+                active_orders_count = active_orders.count()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Ordens ativas',
+                        active_orders_count,
+                        'feather-play-circle',
+                        'primary',
+                        'Produção',
+                        reverse('app:resource_list', args=('production', 'orders')),
+                        required_permission='production.view_productionorder',
+                    )
+                )
+                chart_labels.append('Produção')
+                chart_series.append(active_orders_count)
+                data['table'].append({'item': 'Ordens ativas', 'value': active_orders_count})
+            if user.has_perm('inventory.view_stocklot'):
+                lots_count = StockLot.objects.count()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Lotes em estoque',
+                        lots_count,
+                        'feather-archive',
+                        'success',
+                        'Estoque',
+                        reverse('app:resource_list', args=('inventory', 'lots')),
+                        required_permission='inventory.view_stocklot',
+                    )
+                )
+                chart_labels.append('Estoque')
+                chart_series.append(lots_count)
+                data['table'].append({'item': 'Lotes cadastrados', 'value': lots_count})
+            if user.has_perm('quality.view_qualitysample'):
+                pending_quality = QualitySample.objects.exclude(
+                    status__in=(
+                        QualitySample.Status.APPROVED,
+                        QualitySample.Status.REJECTED,
+                        QualitySample.Status.CANCELLED,
+                    )
+                ).count()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Pendências de qualidade',
+                        pending_quality,
+                        'feather-check-square',
+                        'warning',
+                        'Qualidade',
+                        reverse('app:resource_list', args=('quality', 'samples')),
+                        required_permission='quality.view_qualitysample',
+                    )
+                )
+                chart_labels.append('Qualidade')
+                chart_series.append(pending_quality)
+                data['table'].append(
+                    {'item': 'Amostras pendentes', 'value': pending_quality}
+                )
+            if user.has_perm('quality.view_laboratoryinvestigation'):
+                investigations_count = LaboratoryInvestigation.objects.exclude(
                         status__in=(
                             LaboratoryInvestigation.Status.CONCLUDED,
                             LaboratoryInvestigation.Status.CANCELLED,
                         )
-                    ).count(),
-                    'feather-award',
-                    'danger',
-                    'Qualidade',
-                    reverse('app:resource_list', args=('quality', 'investigations')),
-                    required_permission='quality.view_laboratoryinvestigation',
-                ),
-            ]
-            data['chart'] = {
-                'labels': ['Produção', 'Estoque', 'Qualidade', 'Investigações'],
-                'series': [
-                    active_orders.count(),
-                    lots.count(),
-                    pending_quality,
-                    investigations.count(),
-                ],
-            }
-            data['table'] = [
-                {'item': 'Ordens ativas', 'value': active_orders.count()},
-                {'item': 'Lotes cadastrados', 'value': lots.count()},
-                {'item': 'Amostras pendentes', 'value': pending_quality},
-            ]
-        data['kpis'] = [metric for metric in data['kpis'] if metric.can_view(self.request.user)]
+                    ).count()
+                data['kpis'].append(
+                    ProgressMetric(
+                        'Investigações abertas',
+                        investigations_count,
+                        'feather-award',
+                        'danger',
+                        'Qualidade',
+                        reverse('app:resource_list', args=('quality', 'investigations')),
+                        required_permission='quality.view_laboratoryinvestigation',
+                    )
+                )
+                chart_labels.append('Investigações')
+                chart_series.append(investigations_count)
+            data['chart'] = {'labels': chart_labels, 'series': chart_series}
         return data
 
     @staticmethod

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, replace
-from typing import Callable
+from typing import Any, Callable
 
-from django.db.models import Model
+from django.db.models import Model, QuerySet
 
 from auxiliary.models import (
     BackupRun,
@@ -317,6 +317,25 @@ class InlineResourceConfig:
         return _user_has_model_permission(user, self.child_model, 'delete')
 
 
+ResourceQuerysetScope = Callable[[Any, QuerySet], QuerySet]
+
+
+def _unscoped_resource_queryset(request: Any, queryset: QuerySet) -> QuerySet:
+    """Mantém o comportamento padrão para recursos sem escopo por usuário."""
+
+    del request
+    return queryset
+
+
+def _workflow_notification_recipient_scope(
+    request: Any,
+    queryset: QuerySet,
+) -> QuerySet:
+    """Restringe notificações de workflow ao destinatário autenticado."""
+
+    return queryset.filter(recipient=request.user)
+
+
 @dataclass(frozen=True)
 class ResourceConfig:
     slug: str
@@ -338,6 +357,7 @@ class ResourceConfig:
     update_form_fields: tuple[str, ...] | None = None
     view_permission_action: str = 'view'
     advanced_filter_fields: tuple[str, ...] = field(default_factory=tuple)
+    queryset_scope: ResourceQuerysetScope = _unscoped_resource_queryset
 
     @property
     def app_label(self):
@@ -375,7 +395,8 @@ class ResourceConfig:
         return _user_has_model_permission(user, self.model, action)
 
     def get_queryset(self, request):
-        return self.model._default_manager.all()
+        queryset = self.model._default_manager.all()
+        return self.queryset_scope(request, queryset)
 
 
 @dataclass(frozen=True)
@@ -3949,6 +3970,7 @@ MODULES = (
                     'error_message',
                 ),
                 read_only=True,
+                queryset_scope=_workflow_notification_recipient_scope,
             ),
             ResourceConfig(
                 'approval-queues',

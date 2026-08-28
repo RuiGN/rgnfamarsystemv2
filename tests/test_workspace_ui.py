@@ -5,8 +5,10 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
+from django.db import connection
 from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
@@ -15,10 +17,12 @@ from base.ui.deadlines import build_workspace_deadlines
 from base.ui.presentation import NotificationPreview, ProgressMetric
 from base.ui.views import WorkspaceView
 from base.ui.workspaces import WORKSPACES, WorkspaceConfig, WorkspaceContent, get_workspace
+from inventory.models import StockLot
 from production.models import ProductionOrder
 from qa.models import BatchRecordChecklistItem, QAReview
+from quality.models import LaboratoryInvestigation, QualityAnalysis, QualitySample
 from tests.test_production import create_released_manufacturing_set
-from workflow.models import ApprovalQueue, ApprovalTask, WorkflowNotification
+from workflow.models import ApprovalQueue, ApprovalTask, AsyncJobStatus, WorkflowNotification
 
 
 def grant_view_permission(user, model):
@@ -166,6 +170,48 @@ class WorkspaceContentBuilderTests(TestCase):
         )
 
         self.assertEqual(metric.value, 1)
+
+    def test_builders_query_only_models_with_exact_view_permission(self):
+        cases = (
+            (
+                'operations',
+                ProductionOrder,
+                ('Ordens em execução',),
+                (StockLot, QualitySample),
+            ),
+            (
+                'quality',
+                QualitySample,
+                ('Amostras em análise',),
+                (QualityAnalysis, LaboratoryInvestigation),
+            ),
+            (
+                'workflow',
+                ApprovalTask,
+                ('Aprovações pendentes',),
+                (WorkflowNotification, AsyncJobStatus),
+            ),
+        )
+
+        for slug, allowed_model, expected_labels, forbidden_models in cases:
+            with self.subTest(slug=slug):
+                user = get_user_model().objects.create_user(
+                    username=f'escopo-{slug}@example.com',
+                    email=f'escopo-{slug}@example.com',
+                    password='WorkspaceSecure!123',
+                )
+                grant_view_permission(user, allowed_model)
+                request = self.request_for(user)
+                with CaptureQueriesContext(connection) as queries:
+                    content = get_workspace(slug).build_content(request)
+
+                self.assertEqual(
+                    tuple(metric.label for metric in content.metrics),
+                    expected_labels,
+                )
+                sql = '\n'.join(query['sql'].lower() for query in queries)
+                for model in forbidden_models:
+                    self.assertNotIn(model._meta.db_table.lower(), sql)
 
 
 class WorkspaceAccessTests(TestCase):
@@ -614,11 +660,13 @@ class WorkspaceDeadlineBuilderTests(TestCase):
             due_date=timezone.localdate() + timedelta(days=1),
         )
 
-        with patch('base.ui.deadlines.BatchRecordChecklistItem.objects.filter') as queryset:
+        with CaptureQueriesContext(connection) as queries:
             deadlines = build_workspace_deadlines(self.request_for(), 'quality')
 
-        queryset.assert_not_called()
         assert deadlines == ()
+        assert BatchRecordChecklistItem._meta.db_table.lower() not in '\n'.join(
+            query['sql'].lower() for query in queries
+        )
 
     def test_workspace_view_exposes_and_renders_deadlines(self):
         grant_view_permission(self.user, ProductionOrder)

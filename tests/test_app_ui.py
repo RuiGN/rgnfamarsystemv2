@@ -911,6 +911,61 @@ class AppUiPermissionTests(TestCase):
         assert DocumentAuditTrail.objects.filter(pk=audit_trail.pk).exists()
 
 
+class WorkflowNotificationResourceScopeTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='notificacao.escopo@example.com',
+            email='notificacao.escopo@example.com',
+            password='S3curePass!123',
+        )
+        self.other_user = get_user_model().objects.create_user(
+            username='notificacao.terceiro@example.com',
+            email='notificacao.terceiro@example.com',
+            password='S3curePass!123',
+        )
+        grant_model_perm(self.user, WorkflowNotification, 'view')
+        self.own_notification = self._create_notification(
+            self.user,
+            'Notificação exclusiva da usuária autenticada',
+        )
+        self.other_notification = self._create_notification(
+            self.other_user,
+            'Notificação sigilosa de outra usuária',
+        )
+        self.client.force_login(self.user)
+
+    @staticmethod
+    def _create_notification(recipient, title):
+        return WorkflowNotification.objects.create(
+            category=WorkflowNotification.Category.ALERT,
+            recipient=recipient,
+            title=title,
+            message='Mensagem operacional com destinatário definido.',
+            source_module=WorkflowNotification.SourceModule.QUALITY,
+        )
+
+    def test_global_view_permission_still_scopes_list_detail_and_export_to_recipient(self):
+        list_response = self.client.get('/app/workflow/notifications/')
+        own_detail = self.client.get(
+            f'/app/workflow/notifications/{self.own_notification.pk}/'
+        )
+        other_detail = self.client.get(
+            f'/app/workflow/notifications/{self.other_notification.pk}/'
+        )
+        export_response = self.client.get('/app/workflow/notifications/export/')
+
+        assert list_response.status_code == 200
+        assert self.own_notification.title in list_response.content.decode()
+        assert self.other_notification.title not in list_response.content.decode()
+        assert own_detail.status_code == 200
+        assert self.own_notification.title in own_detail.content.decode()
+        assert other_detail.status_code == 404
+        assert export_response.status_code == 200
+        exported = export_response.content.decode()
+        assert self.own_notification.title in exported
+        assert self.other_notification.title not in exported
+
+
 class AppUiPersistedAuditTests(TestCase):
     def setUp(self):
         self.User = get_user_model()

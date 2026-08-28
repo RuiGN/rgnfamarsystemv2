@@ -103,9 +103,9 @@ def _module_url(module_slug: str) -> str:
 
 
 def build_operations_content(request: Any) -> WorkspaceContent:
-    del request
-    return WorkspaceContent(
-        metrics=(
+    metrics = []
+    if request.user.has_perm('production.view_productionorder'):
+        metrics.append(
             WorkspaceMetric(
                 label='Ordens em execução',
                 value=ProductionOrder.objects.filter(
@@ -123,7 +123,10 @@ def build_operations_content(request: Any) -> WorkspaceContent:
                     )
                 ).count(),
                 required_permission='production.view_productionorder',
-            ),
+            )
+        )
+    if request.user.has_perm('inventory.view_stocklot'):
+        metrics.append(
             WorkspaceMetric(
                 label='Lotes em estoque',
                 value=StockLot.objects.count(),
@@ -132,7 +135,10 @@ def build_operations_content(request: Any) -> WorkspaceContent:
                 badge='Estoque',
                 url=_resource_url('inventory', 'lots'),
                 required_permission='inventory.view_stocklot',
-            ),
+            )
+        )
+    if request.user.has_perm('quality.view_qualitysample'):
+        metrics.append(
             WorkspaceMetric(
                 label='Amostras pendentes',
                 value=QualitySample.objects.exclude(
@@ -147,8 +153,10 @@ def build_operations_content(request: Any) -> WorkspaceContent:
                 badge='Qualidade',
                 url=_resource_url('quality', 'samples'),
                 required_permission='quality.view_qualitysample',
-            ),
-        ),
+            )
+        )
+    return WorkspaceContent(
+        metrics=tuple(metrics),
         quick_links=(
             WorkspaceLink(
                 label='Planejamento',
@@ -173,12 +181,14 @@ def build_operations_content(request: Any) -> WorkspaceContent:
 
 
 def build_quality_content(request: Any) -> WorkspaceContent:
-    del request
-    return WorkspaceContent(
-        metrics=(
+    metrics = []
+    if request.user.has_perm('quality.view_qualitysample'):
+        metrics.append(
             WorkspaceMetric(
                 label='Amostras em análise',
-                value=QualitySample.objects.filter(status=QualitySample.Status.IN_ANALYSIS).count(),
+                value=QualitySample.objects.filter(
+                    status=QualitySample.Status.IN_ANALYSIS
+                ).count(),
                 icon='feather-droplet',
                 tone='warning',
                 badge='Amostragem',
@@ -191,16 +201,24 @@ def build_quality_content(request: Any) -> WorkspaceContent:
                     )
                 ).count(),
                 required_permission='quality.view_qualitysample',
-            ),
+            )
+        )
+    if request.user.has_perm('quality.view_qualityanalysis'):
+        metrics.append(
             WorkspaceMetric(
                 label='Análises pendentes',
-                value=QualityAnalysis.objects.filter(status=QualityAnalysis.Status.PENDING).count(),
+                value=QualityAnalysis.objects.filter(
+                    status=QualityAnalysis.Status.PENDING
+                ).count(),
                 icon='feather-activity',
                 tone='primary',
                 badge='Laboratório',
                 url=_resource_url('quality', 'analyses'),
                 required_permission='quality.view_qualityanalysis',
-            ),
+            )
+        )
+    if request.user.has_perm('quality.view_laboratoryinvestigation'):
+        metrics.append(
             WorkspaceMetric(
                 label='Investigações abertas',
                 value=LaboratoryInvestigation.objects.exclude(
@@ -214,8 +232,10 @@ def build_quality_content(request: Any) -> WorkspaceContent:
                 badge='Investigação',
                 url=_resource_url('quality', 'investigations'),
                 required_permission='quality.view_laboratoryinvestigation',
-            ),
-        ),
+            )
+        )
+    return WorkspaceContent(
+        metrics=tuple(metrics),
         quick_links=(
             WorkspaceLink(
                 label='Garantia da qualidade',
@@ -246,8 +266,9 @@ def build_quality_content(request: Any) -> WorkspaceContent:
 
 
 def build_workflow_content(request: Any) -> WorkspaceContent:
-    return WorkspaceContent(
-        metrics=(
+    metrics = []
+    if request.user.has_perm('workflow.view_approvaltask'):
+        metrics.append(
             WorkspaceMetric(
                 label='Aprovações pendentes',
                 value=ApprovalTask.objects.filter(status=ApprovalTask.Status.PENDING).count(),
@@ -256,7 +277,10 @@ def build_workflow_content(request: Any) -> WorkspaceContent:
                 badge='Aprovações',
                 url=_resource_url('workflow', 'tasks'),
                 required_permission='workflow.view_approvaltask',
-            ),
+            )
+        )
+    if request.user.has_perm('workflow.view_workflownotification'):
+        metrics.append(
             WorkspaceMetric(
                 label='Notificações não lidas',
                 value=WorkflowNotification.objects.filter(
@@ -271,7 +295,10 @@ def build_workflow_content(request: Any) -> WorkspaceContent:
                 .exclude(status=WorkflowNotification.Status.ARCHIVED)
                 .count(),
                 required_permission='workflow.view_workflownotification',
-            ),
+            )
+        )
+    if request.user.has_perm('workflow.view_asyncjobstatus'):
+        metrics.append(
             WorkspaceMetric(
                 label='Jobs em execução',
                 value=AsyncJobStatus.objects.filter(
@@ -282,8 +309,10 @@ def build_workflow_content(request: Any) -> WorkspaceContent:
                 badge='Processamento',
                 url=_resource_url('workflow', 'async-jobs'),
                 required_permission='workflow.view_asyncjobstatus',
-            ),
-        ),
+            )
+        )
+    return WorkspaceContent(
+        metrics=tuple(metrics),
         quick_links=(
             WorkspaceLink(
                 label='Todos os recursos',

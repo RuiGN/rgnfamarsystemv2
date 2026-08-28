@@ -3,7 +3,9 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.db import connection
 from django.test import SimpleTestCase, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
@@ -11,6 +13,10 @@ from django.utils import timezone
 from base.ui.presentation import ProgressMetric
 from base.ui.views import DashboardHubView
 from base.ui.registry import get_module
+from finance.models import FinancialTitle
+from inventory.models import StockLot
+from production.models import ProductionOrder
+from quality.models import LaboratoryInvestigation, QualityAnalysis, QualitySample
 
 
 def grant_module_view(user, module_slug):
@@ -121,10 +127,44 @@ class DashboardHubAccessTests(TestCase):
         self.assertTrue(timezone.is_aware(response.context['generated_at']))
 
     def test_dashboard_filters_kpis_without_model_view_permission(self):
-        response = self.client.get(reverse('app:dashboard_hub', args=['executive']))
+        forbidden_models = (StockLot, QualitySample, LaboratoryInvestigation)
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(reverse('app:dashboard_hub', args=['executive']))
 
         self.assertContains(response, 'Ordens ativas')
         self.assertNotContains(response, 'Lotes em estoque')
+        self.assertNotContains(response, 'Pendências de qualidade')
+        self.assertNotContains(response, 'Investigações abertas')
+        sql = '\n'.join(query['sql'].lower() for query in queries)
+        for model in forbidden_models:
+            with self.subTest(model=model.__name__):
+                self.assertNotIn(model._meta.db_table.lower(), sql)
+
+    def test_dashboard_builders_do_not_query_any_domain_model_without_exact_permission(self):
+        user = get_user_model().objects.create_user(
+            username='dashboard-sem-escopo@example.com',
+            email='dashboard-sem-escopo@example.com',
+            password='DashboardSecure!123',
+        )
+        models = (
+            ProductionOrder,
+            StockLot,
+            QualitySample,
+            QualityAnalysis,
+            LaboratoryInvestigation,
+            FinancialTitle,
+        )
+        view = DashboardHubView()
+
+        with CaptureQueriesContext(connection) as queries:
+            for slug in DashboardHubView.dashboards:
+                data = view._build_data(slug, user)
+                self.assertEqual(data, {'kpis': [], 'chart': {'labels': [], 'series': []}, 'table': []})
+
+        sql = '\n'.join(query['sql'].lower() for query in queries)
+        for model in models:
+            with self.subTest(model=model.__name__):
+                self.assertNotIn(model._meta.db_table.lower(), sql)
 
     def test_navigation_lists_dashboards_by_django_permissions(self):
         response = self.client.get(reverse('app:index'))
