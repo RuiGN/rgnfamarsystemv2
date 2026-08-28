@@ -1,11 +1,13 @@
 from dataclasses import FrozenInstanceError
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import AnonymousUser, Permission
 from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
+from base.ui.context_processors import sidebar_menu
 from base.ui.views import WorkspaceView
 from base.ui.workspaces import WORKSPACES, get_workspace
 from production.models import ProductionOrder
@@ -161,6 +163,51 @@ class WorkspaceAccessTests(TestCase):
             email='workspace-admin@example.com',
             password='WorkspaceSecure!123',
         )
+
+    def navigation_context_for(self, user):
+        request = RequestFactory().get('/app/')
+        request.user = user
+        return sidebar_menu(request)
+
+    def test_context_exposes_only_authorized_workspaces_in_configured_order(self):
+        context = self.navigation_context_for(self.user)
+        self.assertEqual(context['sidebar_workspaces'], ())
+
+        grant_view_permission(self.user, ProductionOrder)
+        self.user = get_user_model().objects.get(pk=self.user.pk)
+        context = self.navigation_context_for(self.user)
+        self.assertEqual(
+            tuple(workspace.slug for workspace in context['sidebar_workspaces']),
+            ('operations',),
+        )
+
+        admin_context = self.navigation_context_for(self.admin)
+        self.assertEqual(
+            tuple(workspace.slug for workspace in admin_context['sidebar_workspaces']),
+            ('operations', 'quality', 'workflow'),
+        )
+
+    def test_notification_query_is_skipped_without_workflow_access(self):
+        grant_view_permission(self.user, ProductionOrder)
+
+        with patch(
+            'base.ui.context_processors.WorkflowNotification.objects.filter'
+        ) as notification_filter:
+            context = self.navigation_context_for(self.user)
+
+        notification_filter.assert_not_called()
+        self.assertFalse(context['can_view_workflow_workspace'])
+        self.assertEqual(context['unread_workflow_notifications'], 0)
+
+    def test_anonymous_navigation_context_exposes_safe_empty_defaults(self):
+        request = RequestFactory().get('/accounts/login/')
+        request.user = AnonymousUser()
+
+        context = sidebar_menu(request)
+
+        self.assertEqual(context['sidebar_workspaces'], ())
+        self.assertFalse(context['show_dashboard_navigation'])
+        self.assertFalse(context['can_view_workflow_workspace'])
 
     def test_existing_route_names_and_paths_are_preserved(self):
         self.assertEqual(reverse('app:operations_workspace'), '/app/workspaces/operations/')

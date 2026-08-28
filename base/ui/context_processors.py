@@ -1,6 +1,7 @@
 from django.db import OperationalError, ProgrammingError
 
 from base.ui.registry import get_visible_modules
+from base.ui.workspaces import WORKSPACES
 from governance.models import InstitutionSettings
 from workflow.models import WorkflowNotification
 
@@ -50,7 +51,10 @@ def sidebar_menu(request):
     if not getattr(user, 'is_authenticated', False):
         return {
             'sidebar_modules': (),
+            'sidebar_workspaces': (),
             'dashboard_navigation': (),
+            'show_dashboard_navigation': False,
+            'can_view_workflow_workspace': False,
             'sidebar_admin_links': (),
             'unread_workflow_notifications': 0,
             **navigation_context,
@@ -59,17 +63,37 @@ def sidebar_menu(request):
 
     modules = get_visible_modules(user)
     visible_module_slugs = {module.slug for module in modules}
-    unread_notifications = WorkflowNotification.objects.filter(
-        recipient=user,
-        status=WorkflowNotification.Status.UNREAD,
-    ).count()
+    sidebar_workspaces = tuple(
+        sorted(
+            (
+                workspace
+                for workspace in WORKSPACES.values()
+                if workspace.module_slug in visible_module_slugs
+            ),
+            key=lambda workspace: workspace.order,
+        )
+    )
+    dashboard_navigation = tuple(
+        (slug, label)
+        for slug, label, module_slug in DASHBOARD_NAVIGATION
+        if module_slug in visible_module_slugs
+    )
+    can_view_workflow_workspace = any(
+        workspace.slug == 'workflow' for workspace in sidebar_workspaces
+    )
+    unread_notifications = 0
+    if can_view_workflow_workspace:
+        unread_notifications = WorkflowNotification.objects.filter(
+            recipient=user,
+            status=WorkflowNotification.Status.UNREAD,
+        ).count()
+
     return {
         'sidebar_modules': modules,
-        'dashboard_navigation': tuple(
-            (slug, label)
-            for slug, label, module_slug in DASHBOARD_NAVIGATION
-            if module_slug in visible_module_slugs
-        ),
+        'sidebar_workspaces': sidebar_workspaces,
+        'dashboard_navigation': dashboard_navigation,
+        'show_dashboard_navigation': bool(dashboard_navigation),
+        'can_view_workflow_workspace': can_view_workflow_workspace,
         'sidebar_admin_links': (),
         'unread_workflow_notifications': unread_notifications,
         **navigation_context,
