@@ -53,13 +53,15 @@ def without_accents(value):
     )
 
 
-def assert_executed_sql_orders_newest_then_pk(sql, timestamp_column):
+def assert_executed_sql_orders_newest_then_pk(sql, model, timestamp_column):
     normalized = ' '.join(
         str(sql).lower().translate(str.maketrans('', '', '"`[]')).split()
     )
+    expected_table = re.escape(model._meta.db_table.lower())
+    expected_pk_column = re.escape(model._meta.pk.column.lower())
     order_pattern = (
-        rf'\border by\s+[\w.]+\.{re.escape(timestamp_column)}\s+desc\s*,\s*'
-        r'[\w.]+\.(?:id|pk)\s+desc\b'
+        rf'\border by\s+{expected_table}\.{re.escape(timestamp_column)}\s+desc\s*,\s*'
+        rf'{expected_table}\.{expected_pk_column}\s+desc\b'
     )
     assert re.search(order_pattern, normalized), normalized
     return normalized
@@ -1152,7 +1154,7 @@ class AppUiPersistedAuditTests(TestCase):
         assert len(entries) == 2
         assert len(queries) == 1
         executed_sql = assert_executed_sql_orders_newest_then_pk(
-            queries[0]['sql'], 'occurred_at'
+            queries[0]['sql'], RecordStatusHistory, 'occurred_at'
         )
         assert re.search(r'\blimit\s+2\b', executed_sql), executed_sql
         assert [entry.action_label for entry in entries] == [
