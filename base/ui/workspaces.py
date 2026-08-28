@@ -60,7 +60,15 @@ class WorkspaceConfig:
     breadcrumb_label: str
     module_slug: str
     quick_links_title: str
+    route_name: str
+    navigation_label: str
+    icon: str
+    order: int
     builder: Callable[[Any], WorkspaceContent]
+
+    @property
+    def navigation_url(self) -> str:
+        return reverse(self.route_name)
 
     def build_content(self, request: Any) -> WorkspaceContent:
         return self.builder(request).visible_to(request.user)
@@ -274,6 +282,10 @@ WORKSPACES = {
         breadcrumb_label='Operação',
         module_slug='production',
         quick_links_title='Acessos rápidos',
+        route_name='app:operations_workspace',
+        navigation_label='Cockpit operacional',
+        icon='feather-activity',
+        order=10,
         builder=build_operations_content,
     ),
     'quality': WorkspaceConfig(
@@ -283,6 +295,10 @@ WORKSPACES = {
         breadcrumb_label='Qualidade',
         module_slug='quality',
         quick_links_title='Fluxos de qualidade',
+        route_name='app:quality_workspace',
+        navigation_label='Cockpit de qualidade',
+        icon='feather-check-square',
+        order=20,
         builder=build_quality_content,
     ),
     'workflow': WorkspaceConfig(
@@ -292,6 +308,10 @@ WORKSPACES = {
         breadcrumb_label='Fluxo de trabalho',
         module_slug='workflow',
         quick_links_title='Governança operacional',
+        route_name='app:workflow_workspace',
+        navigation_label='Central de workflow',
+        icon='feather-git-pull-request',
+        order=30,
         builder=build_workflow_content,
     ),
 }

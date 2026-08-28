@@ -38,6 +38,43 @@ class WorkspaceConfigurationTests(SimpleTestCase):
         with self.assertRaises(FrozenInstanceError):
             workspace.title = 'Alterado'
 
+    def test_workspace_navigation_metadata_and_urls_are_centralized(self):
+        expectations = {
+            'operations': (
+                'app:operations_workspace',
+                'Cockpit operacional',
+                'feather-activity',
+                10,
+                '/app/workspaces/operations/',
+            ),
+            'quality': (
+                'app:quality_workspace',
+                'Cockpit de qualidade',
+                'feather-check-square',
+                20,
+                '/app/workspaces/quality/',
+            ),
+            'workflow': (
+                'app:workflow_workspace',
+                'Central de workflow',
+                'feather-git-pull-request',
+                30,
+                '/app/workspaces/workflow/',
+            ),
+        }
+
+        for slug, expected in expectations.items():
+            with self.subTest(slug=slug):
+                workspace = get_workspace(slug)
+                actual = (
+                    workspace.route_name,
+                    workspace.navigation_label,
+                    workspace.icon,
+                    workspace.order,
+                    workspace.navigation_url,
+                )
+                self.assertEqual(actual, expected)
+
     def test_legacy_workspace_templates_are_removed_and_contract_is_documented(self):
         from pathlib import Path
 
