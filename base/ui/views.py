@@ -666,6 +666,7 @@ class WorkspaceView(LoginRequiredMixin, TemplateView):
                 'workspace': workspace,
                 'metrics': content.metrics,
                 'quick_links': content.quick_links,
+                'deadlines': workspace.build_deadlines(self.request),
             }
         )
         return context

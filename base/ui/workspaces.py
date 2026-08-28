@@ -88,6 +88,11 @@ class WorkspaceConfig:
     def build_content(self, request: Any) -> WorkspaceContent:
         return self.builder(request).visible_to(request.user)
 
+    def build_deadlines(self, request: Any, limit: int = 5):
+        from .deadlines import build_workspace_deadlines
+
+        return build_workspace_deadlines(request, self.slug, limit=limit)
+
 
 def _resource_url(module_slug: str, resource_slug: str) -> str:
     return reverse('app:resource_list', args=(module_slug, resource_slug))

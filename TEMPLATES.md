@@ -17,6 +17,13 @@ Os cockpits de operação, qualidade e workflow usam configurações imutáveis
 métricas, tons, ícones e URLs já resolvidas. A view filtra módulos, cartões e
 atalhos no servidor antes da renderização.
 
+O mesmo template inclui `deadline_list.html`, alimentado por `DeadlineItem` e
+`build_workspace_deadlines`. Cada fonte é consultada somente após a permissão
+`view` correspondente: ordens de produção ativas, itens pendentes de checklist
+QA e, no workflow, tarefas atribuídas ao usuário e notificações não arquivadas.
+Os prazos são ordenados por vencimento antes do limite e apontam para detalhes
+reais autorizados.
+
 As rotas nomeadas `app:operations_workspace`, `app:quality_workspace` e
 `app:workflow_workspace` permanecem estáveis. Novos workspaces devem ser
 registrados no mesmo contrato, com teste de acesso ao módulo, visibilidade dos

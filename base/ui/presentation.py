@@ -1,5 +1,9 @@
 from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Any
+
+from django.utils import timezone
+from django.utils.formats import date_format
 
 
 @dataclass(frozen=True)
@@ -26,3 +30,25 @@ class ProgressMetric:
 
     def can_view(self, user: Any) -> bool:
         return not self.required_permission or user.has_perm(self.required_permission)
+
+
+@dataclass(frozen=True)
+class DeadlineItem:
+    """Representa um prazo operacional que pode ser exibido no workspace."""
+
+    title: str
+    description: str
+    due_at: date | datetime
+    tone: str
+    icon: str
+    url: str
+
+    @property
+    def temporal_label(self) -> str:
+        due_date = self.due_at.date() if isinstance(self.due_at, datetime) else self.due_at
+        today = timezone.localdate()
+        if due_date < today:
+            return 'Vencido'
+        if due_date == today:
+            return 'Vence hoje'
+        return f'Vence em {date_format(due_date, "d/m/Y")}'

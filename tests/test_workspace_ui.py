@@ -1,4 +1,6 @@
 from dataclasses import FrozenInstanceError
+from datetime import timedelta
+from decimal import Decimal
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -6,13 +8,17 @@ from django.contrib.auth.models import AnonymousUser, Permission
 from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from base.ui.context_processors import sidebar_menu
+from base.ui.deadlines import build_workspace_deadlines
 from base.ui.presentation import ProgressMetric
 from base.ui.views import WorkspaceView
 from base.ui.workspaces import WORKSPACES, WorkspaceConfig, WorkspaceContent, get_workspace
 from production.models import ProductionOrder
-from workflow.models import WorkflowNotification
+from qa.models import BatchRecordChecklistItem, QAReview
+from tests.test_production import create_released_manufacturing_set
+from workflow.models import ApprovalQueue, ApprovalTask, WorkflowNotification
 
 
 def grant_view_permission(user, model):
@@ -331,3 +337,181 @@ class WorkspaceAccessTests(TestCase):
             'aria-current="page"',
             html=False,
         )
+
+
+class WorkspaceDeadlineBuilderTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='workspace-deadlines@example.com',
+            email='workspace-deadlines@example.com',
+            password='WorkspaceSecure!123',
+        )
+        self.other_user = get_user_model().objects.create_user(
+            username='workspace-deadlines-other@example.com',
+            email='workspace-deadlines-other@example.com',
+            password='WorkspaceSecure!123',
+        )
+
+    def request_for(self, user=None):
+        request = RequestFactory().get('/app/workspaces/')
+        request.user = user or self.user
+        return request
+
+    def create_order(self, order_number, due_date, status=ProductionOrder.Status.RELEASED):
+        unit, product, _material, formula, _component, route = create_released_manufacturing_set(
+            suffix=order_number
+        )
+        return ProductionOrder.objects.create(
+            order_number=order_number,
+            product=product,
+            formula=formula,
+            route=route,
+            planned_quantity=Decimal('100.0000'),
+            unit=unit,
+            status=status,
+            scheduled_end=due_date,
+        )
+
+    def create_approval_task(self, *, assigned_to, due_at, title):
+        queue = ApprovalQueue.objects.create(
+            code=f'APV-{title}',
+            name=f'Fila {title}',
+            module=WorkflowNotification.SourceModule.QUALITY,
+            profile_role='quality',
+        )
+        task = ApprovalTask.objects.create(
+            queue=queue,
+            title=title,
+            description=f'Descrição de {title}.',
+            source_module=WorkflowNotification.SourceModule.QUALITY,
+            source_model='QualityEvent',
+            source_record_id=f'REF-{title}',
+            assigned_to=assigned_to,
+            due_at=due_at,
+        )
+        generated_notification = WorkflowNotification.objects.get(
+            recipient=assigned_to,
+            title=f'Aprovação pendente: {title}',
+        )
+        generated_notification.status = WorkflowNotification.Status.ARCHIVED
+        generated_notification.archived_at = timezone.now()
+        generated_notification.save(update_fields=['status', 'archived_at', 'updated_at'])
+        return task
+
+    def test_builder_orders_authorized_items_and_excludes_terminal_or_foreign_records(self):
+        grant_view_permission(self.user, ProductionOrder)
+        grant_view_permission(self.user, ApprovalTask)
+        grant_view_permission(self.user, WorkflowNotification)
+        now = timezone.now()
+        active_order = self.create_order('OP-ATIVA', timezone.localdate() + timedelta(days=3))
+        self.create_order(
+            'OP-ENCERRADA',
+            timezone.localdate() - timedelta(days=2),
+            status=ProductionOrder.Status.CLOSED,
+        )
+        approval = self.create_approval_task(
+            assigned_to=self.user,
+            due_at=now - timedelta(days=1),
+            title='Aprovação vencida',
+        )
+        self.create_approval_task(
+            assigned_to=self.other_user,
+            due_at=now - timedelta(days=1),
+            title='Aprovação de outro usuário',
+        )
+        notification = WorkflowNotification.objects.create(
+            category=WorkflowNotification.Category.DUE_DATE,
+            recipient=self.user,
+            title='Notificação futura',
+            message='Acompanhe o prazo informado.',
+            source_module=WorkflowNotification.SourceModule.QUALITY,
+            due_at=now + timedelta(days=1),
+        )
+        WorkflowNotification.objects.create(
+            category=WorkflowNotification.Category.DUE_DATE,
+            recipient=self.user,
+            title='Notificação arquivada',
+            message='Não deve aparecer.',
+            source_module=WorkflowNotification.SourceModule.QUALITY,
+            due_at=now - timedelta(days=2),
+            status=WorkflowNotification.Status.ARCHIVED,
+            archived_at=now,
+        )
+
+        operations = build_workspace_deadlines(self.request_for(), 'operations')
+        workflow = build_workspace_deadlines(self.request_for(), 'workflow')
+
+        assert tuple(item.title for item in operations) == ('OP-ATIVA',)
+        assert operations[0].url == reverse(
+            'app:resource_detail', args=('production', 'orders', active_order.pk)
+        )
+        assert tuple(item.title for item in workflow) == (
+            'Aprovação vencida',
+            'Notificação futura',
+        )
+        assert workflow[0].url == reverse(
+            'app:resource_detail', args=('workflow', 'tasks', approval.pk)
+        )
+        assert workflow[1].url == reverse(
+            'app:resource_detail', args=('workflow', 'notifications', notification.pk)
+        )
+        assert workflow[0].temporal_label == 'Vencido'
+        assert build_workspace_deadlines(self.request_for(), 'workflow', limit=1) == (
+            workflow[0],
+        )
+
+    def test_builder_uses_quality_checklist_due_date_only_with_permission(self):
+        grant_view_permission(self.user, BatchRecordChecklistItem)
+        review = QAReview.objects.create(
+            review_type=QAReview.ReviewType.PRODUCTION_ORDER,
+            title='Revisão de prazo de checklist',
+        )
+        pending = BatchRecordChecklistItem.objects.create(
+            review=review,
+            title='Conferir reconciliação',
+            due_date=timezone.localdate() + timedelta(days=1),
+        )
+        BatchRecordChecklistItem.objects.create(
+            review=review,
+            title='Checklist concluído',
+            status=BatchRecordChecklistItem.Status.COMPLETED,
+            due_date=timezone.localdate() - timedelta(days=1),
+            evidence_reference='evidências/checklist.pdf',
+            completed_by=self.user,
+            completed_at=timezone.now(),
+        )
+
+        deadlines = build_workspace_deadlines(self.request_for(), 'quality')
+
+        assert tuple(item.title for item in deadlines) == ('Conferir reconciliação',)
+        assert deadlines[0].url == reverse(
+            'app:resource_detail', args=('qa', 'checklist-items', pending.pk)
+        )
+
+    def test_builder_does_not_query_or_expose_unauthorized_source(self):
+        review = QAReview.objects.create(
+            review_type=QAReview.ReviewType.PRODUCTION_ORDER,
+            title='Revisão para prazo de checklist',
+        )
+        BatchRecordChecklistItem.objects.create(
+            review=review,
+            title='Conferir reconciliação',
+            due_date=timezone.localdate() + timedelta(days=1),
+        )
+
+        with patch('base.ui.deadlines.BatchRecordChecklistItem.objects.filter') as queryset:
+            deadlines = build_workspace_deadlines(self.request_for(), 'quality')
+
+        queryset.assert_not_called()
+        assert deadlines == ()
+
+    def test_workspace_view_exposes_and_renders_deadlines(self):
+        grant_view_permission(self.user, ProductionOrder)
+        self.create_order('OP-RENDER', timezone.localdate())
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:operations_workspace'))
+
+        self.assertContains(response, 'data-ui="operational-deadlines"')
+        self.assertContains(response, 'OP-RENDER')
+        self.assertContains(response, 'Vence hoje')

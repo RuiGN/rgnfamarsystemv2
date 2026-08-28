@@ -1004,6 +1004,74 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     overflow-wrap: anywhere;
 }
 
+/* Prazos operacionais: lista com trilho visual, sem afetar outros cartões. */
+.operational-deadlines__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.operational-deadlines__item {
+    border-left: 3px solid var(--rgn-brand);
+    margin-left: .45rem;
+    padding: 0 0 1rem 1rem;
+}
+
+.operational-deadlines__item:last-child { padding-bottom: 0; }
+.operational-deadlines__item--danger { border-left-color: #d13b4c; }
+.operational-deadlines__item--warning { border-left-color: #d99000; }
+
+.operational-deadlines__link {
+    align-items: flex-start;
+    color: inherit;
+    display: flex;
+    gap: .75rem;
+    text-decoration: none;
+}
+
+.operational-deadlines__link:hover .operational-deadlines__title,
+.operational-deadlines__link:focus-visible .operational-deadlines__title { text-decoration: underline; }
+
+.operational-deadlines__icon {
+    align-items: center;
+    background: var(--rgn-bg);
+    border-radius: 50%;
+    color: var(--rgn-brand);
+    display: inline-flex;
+    flex: 0 0 2rem;
+    height: 2rem;
+    justify-content: center;
+}
+
+.operational-deadlines__item--danger .operational-deadlines__icon { color: #b42318; }
+.operational-deadlines__item--warning .operational-deadlines__icon { color: #9a6700; }
+
+.operational-deadlines__content { display: grid; gap: .2rem; min-width: 0; }
+.operational-deadlines__title { font-weight: 700; }
+.operational-deadlines__description { color: var(--rgn-muted); font-size: .8125rem; }
+
+.operational-deadlines__due {
+    color: var(--rgn-muted);
+    display: grid;
+    font-size: .75rem;
+    gap: .2rem;
+    margin-left: auto;
+    text-align: right;
+}
+
+.operational-deadlines__label { color: var(--rgn-text); font-weight: 700; }
+
+@media (max-width: 575.98px) {
+    .operational-deadlines__link { flex-wrap: wrap; }
+    .operational-deadlines__due { margin-left: 2.75rem; text-align: left; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .operational-deadlines *,
+    .operational-deadlines *::before,
+    .operational-deadlines *::after { transition-duration: .01ms !important; }
+}
+
 @media print {
     .nxl-navigation,
     .nxl-header,

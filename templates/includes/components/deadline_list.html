@@ -1,0 +1,30 @@
+<section class="card stretch stretch-full mt-4 operational-deadlines" data-ui="operational-deadlines" aria-labelledby="operational-deadlines-title">
+    <div class="card-header">
+        <h2 id="operational-deadlines-title" class="card-title h5 mb-0">Prazos operacionais</h2>
+    </div>
+    <div class="card-body">
+        {% if deadlines %}
+        <ol class="operational-deadlines__list">
+            {% for deadline in deadlines %}
+            <li class="operational-deadlines__item operational-deadlines__item--{{ deadline.tone }}">
+                <a class="operational-deadlines__link" href="{{ deadline.url }}">
+                    <span class="operational-deadlines__icon" aria-hidden="true">
+                        <i class="{{ deadline.icon }}"></i>
+                    </span>
+                    <span class="operational-deadlines__content">
+                        <span class="operational-deadlines__title">{{ deadline.title }}</span>
+                        <span class="operational-deadlines__description">{{ deadline.description }}</span>
+                    </span>
+                    <span class="operational-deadlines__due">
+                        <time datetime="{{ deadline.due_at|date:'c' }}">{{ deadline.due_at|date:'d/m/Y' }}</time>
+                        <span class="operational-deadlines__label">{{ deadline.temporal_label }}</span>
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="text-muted mb-0">Nenhum prazo operacional encontrado.</p>
+        {% endif %}
+    </div>
+</section>
