@@ -1,8 +1,12 @@
+import re
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
-from unittest.mock import patch
+from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 
 from base.ui.presentation import ProgressMetric
 from base.ui.views import DashboardHubView
@@ -75,6 +79,46 @@ class DashboardHubAccessTests(TestCase):
         self.assertContains(response, 'role="progressbar"')
         self.assertContains(response, 'aria-valuenow="')
         self.assertContains(response, 'Ver detalhes')
+
+    def test_all_dashboards_render_timestamp_and_complete_accessible_chart_summary(self):
+        chart = {'labels': ['Em análise', 'Aprovado'], 'series': [3, 7]}
+        data = {'kpis': [], 'chart': chart, 'table': []}
+        grant_module_view(self.user, 'inventory')
+
+        for slug, dashboard in DashboardHubView.dashboards.items():
+            with self.subTest(dashboard=slug), patch.object(
+                DashboardHubView, '_build_data', return_value=data
+            ):
+                response = self.client.get(reverse('app:dashboard_hub', args=[slug]))
+
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, '<time datetime=', html=False)
+            self.assertContains(response, 'Atualizado em')
+            self.assertNotContains(response, 'Atualizado agora')
+            timestamp = re.search(r'<time datetime="([^"]+)"', response.content.decode())
+            self.assertIsNotNone(timestamp)
+            self.assertIsNotNone(parse_datetime(timestamp.group(1)))
+            self.assertContains(
+                response,
+                f'aria-label="Gráfico de distribuição dos indicadores do dashboard {dashboard["title"]}"',
+                html=False,
+            )
+            self.assertContains(response, 'role="img"', html=False)
+            self.assertContains(response, 'Resumo textual do gráfico')
+            for label, value in zip(chart['labels'], chart['series'], strict=False):
+                self.assertContains(response, label)
+                self.assertContains(response, f'>{value}<', html=False)
+
+    def test_dashboard_context_exposes_localized_timestamp_and_chart_rows_without_changing_chart(self):
+        chart = {'labels': ['Pendente'], 'series': [4]}
+        data = {'kpis': [], 'chart': chart, 'table': []}
+
+        with patch.object(DashboardHubView, '_build_data', return_value=data):
+            response = self.client.get(reverse('app:dashboard_hub', args=['operations']))
+
+        self.assertEqual(response.context['dashboard_data']['chart'], chart)
+        self.assertEqual(response.context['chart_rows'], (('Pendente', 4),))
+        self.assertTrue(timezone.is_aware(response.context['generated_at']))
 
     def test_dashboard_filters_kpis_without_model_view_permission(self):
         response = self.client.get(reverse('app:dashboard_hub', args=['executive']))

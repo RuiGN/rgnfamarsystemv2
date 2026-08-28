@@ -1135,6 +1135,31 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 .workflow-notification-dropdown__unread i { color: #d13b4c; font-size: .5rem; vertical-align: middle; }
 .workflow-notification-dropdown__empty { color: var(--rgn-muted); margin: 0; padding: 1rem; }
 
+/* Gráfico do dashboard: a tabela é a alternativa textual completa dos mesmos dados. */
+.dashboard-chart__header {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    justify-content: space-between;
+}
+
+.dashboard-chart__summary {
+    border-top: 1px solid var(--rgn-border);
+    margin-top: 1rem;
+    padding-top: .75rem;
+}
+
+.dashboard-chart__summary summary {
+    color: var(--rgn-text);
+    cursor: pointer;
+    font-size: .8125rem;
+    font-weight: 700;
+}
+
+.dashboard-chart__summary table { color: var(--rgn-text); margin-top: .75rem; }
+.dashboard-chart__summary caption { caption-side: top; color: var(--rgn-muted); font-size: .75rem; }
+
 @media (max-width: 575.98px) {
     .operational-deadlines__link { flex-wrap: wrap; }
     .operational-deadlines__due { margin-left: 2.75rem; text-align: left; width: 100%; }

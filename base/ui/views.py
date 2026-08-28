@@ -415,12 +415,16 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             if get_module(option['module']) is None
             or get_module(option['module']).can_view(self.request.user)
         }
+        dashboard_data = self._build_data(slug)
+        chart = dashboard_data['chart']
         context.update(
             {
                 'dashboard_slug': slug,
                 'dashboard': config,
                 'dashboard_options': dashboard_options,
-                'dashboard_data': self._build_data(slug),
+                'dashboard_data': dashboard_data,
+                'generated_at': timezone.localtime(),
+                'chart_rows': tuple(zip(chart['labels'], chart['series'], strict=False)),
             }
         )
         return context

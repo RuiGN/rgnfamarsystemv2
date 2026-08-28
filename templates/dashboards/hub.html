@@ -39,7 +39,32 @@
     </div>
     <div class="row g-4">
         <div class="col-12 col-xl-8">
-            <article class="card stretch stretch-full h-100"><div class="card-header"><h5 class="card-title">Distribuição dos indicadores</h5><span class="text-muted fs-12">Atualizado agora</span></div><div class="card-body"><div id="dashboard-main-chart" style="min-height: 300px;" aria-label="Gráfico de distribuição"></div><p id="dashboard-chart-empty" class="p-4 text-muted text-center mb-0" hidden>Não há dados suficientes para exibir este gráfico.</p></div></article>
+            <article class="card stretch stretch-full h-100 dashboard-chart">
+                <div class="card-header dashboard-chart__header">
+                    <h5 class="card-title">Distribuição dos indicadores</h5>
+                    <time datetime="{{ generated_at|date:'c' }}" class="text-muted fs-12">Atualizado em {{ generated_at|date:'d/m/Y H:i' }}</time>
+                </div>
+                <div class="card-body">
+                    <div id="dashboard-main-chart" style="min-height: 300px;" role="img" aria-label="Gráfico de distribuição dos indicadores do dashboard {{ dashboard.title }}"></div>
+                    <p id="dashboard-chart-empty" class="p-4 text-muted text-center mb-0" hidden>Não há dados suficientes para exibir este gráfico.</p>
+                    <details class="dashboard-chart__summary">
+                        <summary>Resumo textual do gráfico</summary>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <caption>Valores do gráfico do dashboard {{ dashboard.title }}</caption>
+                                <thead><tr><th scope="col">Indicador</th><th scope="col">Registros</th></tr></thead>
+                                <tbody>
+                                    {% for label, value in chart_rows %}
+                                    <tr><th scope="row">{{ label }}</th><td>{{ value }}</td></tr>
+                                    {% empty %}
+                                    <tr><td colspan="2" class="text-muted">Não há dados suficientes para exibir este resumo.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </article>
         </div>
         <div class="col-12 col-xl-4">
             <article class="card stretch stretch-full h-100"><div class="card-header"><h5 class="card-title">Itens prioritários</h5></div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><caption class="sr-only">Itens prioritários do dashboard</caption><thead><tr><th>Item</th><th>Status/valor</th></tr></thead><tbody>{% for row in dashboard_data.table %}<tr>{% for value in row.values %}<td>{{ value|default:'—' }}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="2"><div class="p-4 text-muted text-center">Nenhum registro encontrado.</div></td></tr>{% endfor %}</tbody></table></div></div></article>
