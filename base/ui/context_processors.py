@@ -89,14 +89,16 @@ def sidebar_menu(request):
         and user.has_perm('workflow.view_workflownotification')
     )
     workflow_notification_previews = ()
+    unread_notifications = 0
     if can_preview_workflow_notifications:
         notifications = WorkflowNotification.objects.filter(recipient=user).order_by('-created_at')[:5]
         workflow_notification_previews = tuple(
             NotificationPreview.from_model(notification) for notification in notifications
         )
-    unread_notifications = sum(
-        preview.is_unread for preview in workflow_notification_previews
-    )
+        unread_notifications = WorkflowNotification.objects.filter(
+            recipient=user,
+            status=WorkflowNotification.Status.UNREAD,
+        ).count()
 
     return {
         'sidebar_modules': modules,

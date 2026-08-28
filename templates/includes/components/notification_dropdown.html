@@ -16,6 +16,7 @@
                     <span class="workflow-notification-dropdown__title">{{ preview.title }}</span>
                     <span class="workflow-notification-dropdown__meta">
                         <span>{{ preview.criticality_label }}</span>
+                        <span>Origem: {{ preview.source_module_label }}</span>
                         <time datetime="{{ preview.created_at|date:'c' }}">{{ preview.created_at|date:'d/m/Y H:i' }}</time>
                         {% if preview.is_unread %}
                             <span class="workflow-notification-dropdown__unread"><i class="feather-circle" aria-hidden="true"></i> Não lida</span>

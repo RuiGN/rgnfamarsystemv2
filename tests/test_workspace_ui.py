@@ -377,6 +377,7 @@ class WorkflowNotificationPreviewTests(TestCase):
 
         self.assertEqual(preview.title, 'Notificação crítica')
         self.assertEqual(preview.criticality_label, 'Crítica')
+        self.assertEqual(preview.source_module_label, 'Qualidade')
         self.assertEqual(preview.icon, 'feather-alert-octagon')
         self.assertTrue(preview.is_unread)
         self.assertEqual(
@@ -399,11 +400,15 @@ class WorkflowNotificationPreviewTests(TestCase):
             'Notificação de outro usuário',
             now + timedelta(minutes=1),
         )
+        context = sidebar_menu(self.request_for(self.user))
         self.client.force_login(self.user)
 
         response = self.client.get(reverse('app:index'))
 
+        self.assertEqual(len(context['workflow_notification_previews']), 5)
+        self.assertEqual(context['unread_workflow_notifications'], 6)
         self.assertContains(response, 'data-ui="workflow-notifications"')
+        self.assertContains(response, 'aria-label="6 notificações não lidas"')
         self.assertContains(response, 'Ver todas as notificações')
         self.assertContains(response, 'Notificação da usuária 0')
         self.assertContains(response, 'Notificação da usuária 4')
@@ -412,6 +417,7 @@ class WorkflowNotificationPreviewTests(TestCase):
         self.assertContains(response, 'aria-expanded="false"')
         self.assertContains(response, '<time datetime="', html=False)
         self.assertContains(response, 'Não lida')
+        self.assertContains(response, 'Qualidade')
         content = response.content.decode()
         self.assertLess(
             content.index('Notificação da usuária 0'),

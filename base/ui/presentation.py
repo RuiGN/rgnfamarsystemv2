@@ -149,6 +149,7 @@ class NotificationPreview:
 
     title: str
     criticality_label: str
+    source_module_label: str
     tone: str
     icon: str
     created_at: datetime
@@ -173,6 +174,8 @@ class NotificationPreview:
         return cls(
             title=notification.title,
             criticality_label=label,
+            source_module_label=str(notification.get_source_module_display())
+            or 'Origem não informada',
             tone=tone,
             icon=icon,
             created_at=notification.created_at,
