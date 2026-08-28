@@ -1,7 +1,8 @@
 <ul class="nxl-navbar">
-    <li class="nxl-item nxl-caption"><label>Operação</label></li>
+    <li class="nxl-item nxl-caption"><label>Visão geral</label></li>
+    {% if show_dashboard_navigation %}
     <li class="nxl-item nxl-hasmenu{% if request.resolver_match.url_name == 'dashboard_hub' %} active nxl-trigger{% endif %}">
-        <a href="javascript:void(0);" class="nxl-link" aria-label="Painéis" title="Painéis">
+        <a href="javascript:void(0);" class="nxl-link" aria-label="Painéis" title="Painéis" aria-expanded="{% if request.resolver_match.url_name == 'dashboard_hub' %}true{% else %}false{% endif %}">
             <span class="nxl-micon"><i class="feather-bar-chart-2" aria-hidden="true"></i></span>
             <span class="nxl-mtext">Painéis</span>
             <span class="nxl-arrow"><i class="feather-chevron-right" aria-hidden="true"></i></span>
@@ -12,30 +13,24 @@
             {% endfor %}
         </ul>
     </li>
+    {% endif %}
     <li class="nxl-item{% if request.resolver_match.url_name == 'index' %} active{% endif %}">
-        <a href="{% url 'app:index' %}" class="nxl-link" aria-label="Aplicativos" title="Aplicativos">
+        <a href="{% url 'app:index' %}" class="nxl-link" aria-label="Aplicativos" title="Aplicativos"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>
             <span class="nxl-micon"><i class="feather-grid" aria-hidden="true"></i></span>
             <span class="nxl-mtext">Aplicativos</span>
         </a>
     </li>
-    <li class="nxl-item{% if request.resolver_match.url_name == 'operations_workspace' %} active{% endif %}">
-        <a href="{% url 'app:operations_workspace' %}" class="nxl-link" aria-label="Cockpit operacional" title="Cockpit operacional">
-            <span class="nxl-micon"><i class="feather-activity" aria-hidden="true"></i></span>
-            <span class="nxl-mtext">Cockpit operacional</span>
+    {% for workspace in sidebar_workspaces %}
+    <li class="nxl-item{% if request.resolver_match.view_name == workspace.route_name %} active{% endif %}">
+        <a href="{{ workspace.navigation_url }}" class="nxl-link"{% if request.resolver_match.view_name == workspace.route_name %} aria-current="page"{% endif %} aria-label="{{ workspace.navigation_label }}" title="{{ workspace.navigation_label }}">
+            <span class="nxl-micon"><i class="{{ workspace.icon }}" aria-hidden="true"></i></span>
+            <span class="nxl-mtext">{{ workspace.navigation_label }}</span>
         </a>
     </li>
-    <li class="nxl-item{% if request.resolver_match.url_name == 'quality_workspace' %} active{% endif %}">
-        <a href="{% url 'app:quality_workspace' %}" class="nxl-link" aria-label="Cockpit de qualidade" title="Cockpit de qualidade">
-            <span class="nxl-micon"><i class="feather-check-square" aria-hidden="true"></i></span>
-            <span class="nxl-mtext">Cockpit de qualidade</span>
-        </a>
-    </li>
-    <li class="nxl-item{% if request.resolver_match.url_name == 'workflow_workspace' %} active{% endif %}">
-        <a href="{% url 'app:workflow_workspace' %}" class="nxl-link" aria-label="Central de workflow" title="Central de workflow">
-            <span class="nxl-micon"><i class="feather-git-pull-request" aria-hidden="true"></i></span>
-            <span class="nxl-mtext">Central de workflow</span>
-        </a>
-    </li>
+    {% endfor %}
+    {% if sidebar_modules %}
+    <li class="nxl-item nxl-caption"><label>Módulos</label></li>
+    {% endif %}
     {% for module in sidebar_modules %}
     <li class="nxl-item nxl-menu-group nxl-hasmenu{% if module.slug == active_module_slug %} active nxl-trigger{% endif %}">
         <a href="javascript:void(0);" class="nxl-link" aria-label="{{ module.label }}" title="{{ module.label }}" aria-expanded="{% if module.slug == active_module_slug %}true{% else %}false{% endif %}">

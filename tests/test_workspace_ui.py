@@ -259,3 +259,39 @@ class WorkspaceAccessTests(TestCase):
         self.assertNotContains(response, 'Lotes em estoque')
         self.assertNotContains(response, 'Amostras pendentes')
         self.assertNotContains(response, '>Planejamento<')
+
+    def test_shell_hides_unauthorized_workspaces_and_workflow_bell(self):
+        grant_view_permission(self.user, ProductionOrder)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:index'))
+        navigation = response.content.decode().split('</nav>', 1)[0]
+
+        self.assertContains(response, 'href="/app/workspaces/operations/"')
+        self.assertNotIn('href="/app/workspaces/quality/"', navigation)
+        self.assertNotIn('href="/app/workspaces/workflow/"', navigation)
+        self.assertNotContains(response, 'data-ui="workflow-notifications"')
+
+    def test_superuser_sees_workspaces_in_configured_order(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('app:index'))
+        navigation = response.content.decode().split('</nav>', 1)[0]
+        positions = tuple(
+            navigation.index(f'href="{get_workspace(slug).navigation_url}"')
+            for slug in ('operations', 'quality', 'workflow')
+        )
+
+        self.assertEqual(positions, tuple(sorted(positions)))
+
+    def test_active_workspace_has_accessible_current_state(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('app:operations_workspace'))
+
+        self.assertContains(
+            response,
+            'href="/app/workspaces/operations/" class="nxl-link" '
+            'aria-current="page"',
+            html=False,
+        )

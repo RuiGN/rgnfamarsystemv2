@@ -559,6 +559,15 @@ class AppUiPermissionTests(TestCase):
         assert re.search(r'\.navbar-content\s*\{[^}]*scrollbar-width:\s*thin', css, re.S)
         assert '.nxl-submenu' in css
 
+    def test_dashboard_menu_is_hidden_when_no_dashboard_is_authorized(self):
+        self.add_model_perm(Product, 'view')
+
+        response = self.client.get('/app/')
+        navigation = response.content.decode().split('</nav>', 1)[0]
+
+        assert '>Painéis<' not in navigation
+        assert '>Módulos<' in navigation
+
     def test_create_change_and_delete_follow_django_model_permissions(self):
         self.add_model_perm(Product, 'view')
 
@@ -1302,14 +1311,10 @@ class AppUiSprint43ReadinessTests(TestCase):
     def test_collapsed_sidebar_controls_keep_accessible_names(self):
         template = Path('templates/includes/sidebar.html').read_text()
 
-        for label in (
-            'Aplicativos',
-            'Cockpit operacional',
-            'Cockpit de qualidade',
-            'Central de workflow',
-        ):
-            assert f'aria-label="{label}"' in template
-            assert f'title="{label}"' in template
+        assert 'aria-label="Aplicativos"' in template
+        assert 'title="Aplicativos"' in template
+        assert 'aria-label="{{ workspace.navigation_label }}"' in template
+        assert 'title="{{ workspace.navigation_label }}"' in template
         assert 'aria-label="{{ module.label }}"' in template
         assert 'title="{{ module.label }}"' in template
 
