@@ -85,7 +85,18 @@ def test_deadline_item_uses_ptbr_temporal_labels():
         ('OOS', 'danger', 'feather-alert-triangle'),
         ('Em processamento', 'info', 'feather-loader'),
         ('Em execução', 'info', 'feather-loader'),
+        ('Em revisão', 'warning', 'feather-clock'),
+        ('Revisado', 'success', 'feather-check-circle'),
+        ('Revisada', 'success', 'feather-check-circle'),
+        ('Não enviada', 'danger', 'feather-alert-triangle'),
+        ('Nao enviada', 'danger', 'feather-alert-triangle'),
+        ('Não concluído', 'danger', 'feather-alert-triangle'),
+        ('Nao concluido', 'danger', 'feather-alert-triangle'),
+        ('Não liberado', 'danger', 'feather-alert-triangle'),
+        ('Nao liberado', 'danger', 'feather-alert-triangle'),
+        ('Não lida', 'warning', 'feather-clock'),
         ('Arquivado', 'secondary', 'feather-archive'),
+        ('Estado desconhecido', 'secondary', 'feather-info'),
     ],
 )
 def test_status_resolution_is_accent_insensitive_and_semantic(label, tone, icon):

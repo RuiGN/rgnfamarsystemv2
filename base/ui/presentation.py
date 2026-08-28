@@ -32,6 +32,13 @@ def resolve_status(value: Any) -> StatusPresentation:
     label = str(value or '')
     normalized = _normalize_status(label)
 
+    if 'nao lida' in normalized:
+        return StatusPresentation(label, 'warning', 'feather-clock')
+    if any(
+        token in normalized
+        for token in ('nao enviad', 'nao conclu', 'nao liberad')
+    ):
+        return StatusPresentation(label, 'danger', 'feather-alert-triangle')
     if any(
         token in normalized
         for token in (
@@ -48,7 +55,10 @@ def resolve_status(value: Any) -> StatusPresentation:
         )
     ):
         return StatusPresentation(label, 'danger', 'feather-alert-triangle')
-    if any(token in normalized for token in ('pend', 'analis', 'revis', 'proximo prazo')):
+    if any(
+        token in normalized
+        for token in ('pend', 'analis', 'em revis', 'proximo prazo')
+    ):
         return StatusPresentation(label, 'warning', 'feather-clock')
     if any(token in normalized for token in ('submet', 'process', 'execu')):
         return StatusPresentation(label, 'info', 'feather-loader')
@@ -56,7 +66,17 @@ def resolve_status(value: Any) -> StatusPresentation:
         return StatusPresentation(label, 'secondary', 'feather-archive')
     if any(
         token in normalized
-        for token in ('aprov', 'liberad', 'conclu', 'encerr', 'vigent', 'enviad', 'ativo', 'reconhec')
+        for token in (
+            'aprov',
+            'liberad',
+            'conclu',
+            'encerr',
+            'vigent',
+            'enviad',
+            'revisad',
+            'ativo',
+            'reconhec',
+        )
     ):
         return StatusPresentation(label, 'success', 'feather-check-circle')
     return StatusPresentation(label, 'secondary', 'feather-info')
