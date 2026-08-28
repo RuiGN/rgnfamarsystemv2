@@ -9,8 +9,36 @@ from production.models import ProductionOrder
 from quality.models import LaboratoryInvestigation, QualityAnalysis, QualitySample
 from workflow.models import ApprovalTask, AsyncJobStatus, WorkflowNotification
 
-from .presentation import ProgressMetric as WorkspaceMetric
+from .presentation import ProgressMetric
 from .registry import get_module
+
+
+class WorkspaceMetric(ProgressMetric):
+    """Adapta a assinatura legada dos workspaces ao contrato compartilhado."""
+
+    def __init__(
+        self,
+        label: str,
+        value: int | float,
+        icon: str,
+        tone: str,
+        badge: str,
+        url: str,
+        required_permission: str = '',
+        target: int | float | None = None,
+        helper: str = '',
+    ):
+        super().__init__(
+            label,
+            value,
+            icon,
+            tone,
+            badge,
+            url,
+            target,
+            helper,
+            required_permission,
+        )
 
 
 @dataclass(frozen=True)
