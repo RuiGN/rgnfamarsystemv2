@@ -28,10 +28,9 @@
         </a>
     </li>
     {% endfor %}
-    {% if sidebar_modules %}
-    <li class="nxl-item nxl-caption"><label>Módulos</label></li>
-    {% endif %}
-    {% for module in sidebar_modules %}
+    {% for domain_key, domain_label, domain_modules in sidebar_domains %}
+    <li class="nxl-item nxl-caption" data-sidebar-domain="{{ domain_key }}"><label>{{ domain_label }}</label></li>
+    {% for module in domain_modules %}
     <li class="nxl-item nxl-menu-group nxl-hasmenu{% if module.slug == active_module_slug %} active nxl-trigger{% endif %}">
         <a href="javascript:void(0);" class="nxl-link" aria-label="{{ module.label }}" title="{{ module.label }}" aria-expanded="{% if module.slug == active_module_slug %}true{% else %}false{% endif %}">
             <span class="nxl-micon"><i class="{{ module.icon }}" aria-hidden="true"></i></span>
@@ -54,5 +53,6 @@
             {% endfor %}
         </ul>
     </li>
+    {% endfor %}
     {% endfor %}
 </ul>

@@ -857,7 +857,8 @@ class AppUiPermissionTests(TestCase):
         navigation = response.content.decode().split('</nav>', 1)[0]
 
         assert '>Painéis<' not in navigation
-        assert '>Módulos<' in navigation
+        assert '>Administração<' in navigation
+        assert 'Cadastros mestres' in navigation
 
     def test_create_change_and_delete_follow_django_model_permissions(self):
         self.add_model_perm(Product, 'view')

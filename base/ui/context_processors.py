@@ -15,6 +15,49 @@ DASHBOARD_NAVIGATION = (
     ('finance', 'Financeiro', 'finance'),
 )
 
+SIDEBAR_DOMAINS = (
+    (
+        'operations',
+        'Operações',
+        ('formulations', 'production', 'planning', 'inventory', 'maintenance'),
+    ),
+    (
+        'quality',
+        'Qualidade',
+        ('quality', 'qa', 'deviations', 'capa', 'changes', 'audits', 'risks', 'recalls'),
+    ),
+    ('supply', 'Suprimentos', ('procurement',)),
+    ('commercial', 'Comercial', ('crm',)),
+    ('finance', 'Financeiro e fiscal', ('costing', 'finance', 'fiscal')),
+    (
+        'compliance',
+        'Governança e conformidade',
+        ('documents', 'training', 'files', 'workflow', 'reports', 'governance', 'compliance'),
+    ),
+    ('technology', 'Tecnologia', ('integrations', 'ai_agents', 'knowledge')),
+    ('administration', 'Administração', ('masters', 'auxiliary')),
+)
+
+
+def group_sidebar_modules(modules):
+    modules_by_slug = {module.slug: module for module in modules}
+    grouped = []
+    classified = set()
+    for key, label, slugs in SIDEBAR_DOMAINS:
+        domain_modules = tuple(
+            modules_by_slug[slug]
+            for slug in slugs
+            if slug in modules_by_slug and slug not in classified
+        )
+        if domain_modules:
+            grouped.append((key, label, domain_modules))
+            classified.update(module.slug for module in domain_modules)
+
+    other_modules = tuple(module for module in modules if module.slug not in classified)
+    if other_modules:
+        grouped.append(('other', 'Outros', other_modules))
+    return tuple(grouped)
+
 
 def _institution_brand_context():
     try:
@@ -52,6 +95,7 @@ def sidebar_menu(request):
     if not getattr(user, 'is_authenticated', False):
         return {
             'sidebar_modules': (),
+            'sidebar_domains': (),
             'sidebar_workspaces': (),
             'dashboard_navigation': (),
             'show_dashboard_navigation': False,
@@ -65,6 +109,7 @@ def sidebar_menu(request):
         }
 
     modules = get_visible_modules(user)
+    sidebar_domains = group_sidebar_modules(modules)
     visible_module_slugs = {module.slug for module in modules}
     sidebar_workspaces = tuple(
         sorted(
@@ -102,6 +147,7 @@ def sidebar_menu(request):
 
     return {
         'sidebar_modules': modules,
+        'sidebar_domains': sidebar_domains,
         'sidebar_workspaces': sidebar_workspaces,
         'dashboard_navigation': dashboard_navigation,
         'show_dashboard_navigation': bool(dashboard_navigation),

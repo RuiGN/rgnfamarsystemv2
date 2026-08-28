@@ -41,6 +41,20 @@ fluxo funcional precisam declarar `@pytest.mark.legacy_api_permissions` para
 simular explicitamente um papel de acesso total. Cenários de autorização usam
 `@pytest.mark.permission_strict` e declaram as permissões mínimas necessárias.
 
+## Agrupamento do sidebar por domínio
+
+O context processor obtém primeiro `get_visible_modules(user)` e somente então
+organiza essa coleção nos domínios Operações, Qualidade, Suprimentos,
+Comercial, Financeiro e fiscal, Governança e conformidade, Tecnologia e
+Administração. O agrupamento não concede permissões, não recupera módulos
+ocultos e não substitui as verificações defensivas das views.
+
+`SIDEBAR_DOMAINS` controla apenas rótulo e ordem visual. Um módulo visível que
+ainda não tenha classificação explícita é exibido em “Outros”, evitando que a
+inclusão de um novo módulo o torne inacessível por uma omissão de navegação.
+Cada módulo aparece no máximo uma vez, mesmo se uma configuração futura repetir
+seu slug em mais de um domínio.
+
 ## Verificação mínima
 
 ```bash
