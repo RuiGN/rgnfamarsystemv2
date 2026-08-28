@@ -807,10 +807,11 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 
 @media (max-width: 575.98px) {
     .nxl-container .nxl-content {
-        padding-bottom: 126px;
+        padding-bottom: 0;
     }
 
     .nxl-container .footer {
+        position: static;
         min-height: 104px;
         padding: 14px 20px;
         flex-direction: column;
@@ -824,7 +825,7 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     }
 
     .rag-chat .rag-chat__toggle {
-        bottom: 120px;
+        bottom: 20px;
     }
 }
 

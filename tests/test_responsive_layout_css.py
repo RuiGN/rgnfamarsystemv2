@@ -145,7 +145,7 @@ def test_rag_chat_toggle_stays_above_the_fixed_footer():
     assert chat_z_index > footer_z_index
     assert re.search(r'bottom:\s*90px', chat_block.group('body'))
     assert re.search(
-        r'\.rag-chat \.rag-chat__toggle\s*\{[^}]*bottom:\s*120px',
+        r'\.rag-chat \.rag-chat__toggle\s*\{[^}]*bottom:\s*20px',
         mobile_block.group('body'),
         re.S,
     )
@@ -386,6 +386,29 @@ def test_footer_stays_fixed_to_bottom_without_covering_shell_content():
     assert re.search(
         r'\.nxl-container\s+\.footer\s*\{[^}]*left:\s*0',
         responsive_footer.group('body'),
+        re.S,
+    )
+
+
+def test_mobile_footer_returns_to_document_flow_without_covering_content():
+    css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+
+    mobile_block = re.search(
+        r'@media \(max-width: 575\.98px\)\s*\{(?P<body>.*?)'
+        r'(?=\n@media \(max-width: 360px\))',
+        css,
+        re.S,
+    )
+
+    assert mobile_block is not None
+    assert re.search(
+        r'\.nxl-container\s+\.footer\s*\{[^}]*position:\s*static',
+        mobile_block.group('body'),
+        re.S,
+    )
+    assert re.search(
+        r'\.nxl-container\s+\.nxl-content\s*\{[^}]*padding-bottom:\s*0',
+        mobile_block.group('body'),
         re.S,
     )
 
