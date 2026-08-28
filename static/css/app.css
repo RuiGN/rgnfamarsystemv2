@@ -138,21 +138,13 @@ html.minimenu .nxl-navigation .m-header .b-brand .logo.logo-sm.app-brand-logo {
 }
 
 .nxl-container .nxl-content {
-    padding-bottom: 86px;
+    padding-bottom: 0;
 }
 
 .nxl-container .footer {
-    position: fixed;
-    left: 280px;
-    right: 0;
-    bottom: 0;
-    z-index: 1022;
+    position: static;
     min-height: 66px;
     box-shadow: 0 -6px 18px rgba(40, 60, 80, 0.06);
-}
-
-html.minimenu .nxl-container .footer {
-    left: 100px;
 }
 
 /* Sidebar respeita o tema Duralux; não forçamos cores fixas aqui.
@@ -746,10 +738,6 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     .nxl-container {
         margin-left: 0;
     }
-
-    .nxl-container .footer {
-        left: 0;
-    }
 }
 
 @media (max-width: 1024px) {
@@ -803,6 +791,55 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         grid-column: 1 / -1;
     }
 
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .resource-detail-page-header {
+        height: auto;
+        min-height: 80px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        row-gap: 12px;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+
+    .resource-detail-page-header .page-header-left {
+        width: 100%;
+        min-width: 0;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+
+    .resource-detail-page-header .page-header-title {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .resource-detail-page-header .page-header-title h5 {
+        overflow-wrap: anywhere;
+    }
+
+    .resource-detail-page-header .breadcrumb {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .resource-detail-page-header .page-header-right {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .resource-detail-page-header .page-header-right-items {
+        width: 100%;
+    }
+
+    .resource-detail-page-header .page-header-right-items-wrapper {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
 }
 
 @media (max-width: 575.98px) {

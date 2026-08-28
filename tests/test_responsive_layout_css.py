@@ -120,7 +120,7 @@ def test_rag_chat_component_styles_do_not_leak_into_duralux_resource_templates()
     assert unscoped_selectors == []
 
 
-def test_rag_chat_toggle_stays_above_the_fixed_footer():
+def test_rag_chat_toggle_remains_accessible_with_footer_in_document_flow():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
 
     footer_block = re.search(r'(?m)^\.nxl-container \.footer\s*\{(?P<body>[^}]*)\}', css)
@@ -139,10 +139,11 @@ def test_rag_chat_toggle_stays_above_the_fixed_footer():
     assert chat_block is not None
     assert mobile_block is not None
 
-    footer_z_index = int(re.search(r'z-index:\s*(\d+)', footer_block.group('body')).group(1))
     chat_z_index = int(re.search(r'z-index:\s*(\d+)', chat_block.group('body')).group(1))
 
-    assert chat_z_index > footer_z_index
+    assert chat_z_index > 0
+    assert re.search(r'position:\s*static', footer_block.group('body'))
+    assert 'z-index:' not in footer_block.group('body')
     assert re.search(r'bottom:\s*90px', chat_block.group('body'))
     assert re.search(
         r'\.rag-chat \.rag-chat__toggle\s*\{[^}]*bottom:\s*20px',
@@ -351,7 +352,7 @@ def test_minimenu_brand_header_collapses_with_duralux_sidebar_width():
     assert re.search(r'overflow:\s*hidden', minimenu_brand.group('body'))
 
 
-def test_footer_stays_fixed_to_bottom_without_covering_shell_content():
+def test_footer_follows_document_flow_at_desktop_tablet_and_mobile():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
 
     content_block = re.search(
@@ -359,23 +360,19 @@ def test_footer_stays_fixed_to_bottom_without_covering_shell_content():
         css,
     )
     assert content_block is not None
-    assert re.search(r'padding-bottom:\s*86px', content_block.group('body'))
+    assert re.search(r'padding-bottom:\s*0', content_block.group('body'))
 
     footer_block = re.search(r'(?m)^\.nxl-container\s+\.footer\s*\{(?P<body>[^}]*)\}', css)
     assert footer_block is not None
     footer_body = footer_block.group('body')
-    assert re.search(r'position:\s*fixed', footer_body)
-    assert re.search(r'left:\s*280px', footer_body)
-    assert re.search(r'right:\s*0', footer_body)
-    assert re.search(r'bottom:\s*0', footer_body)
-    assert re.search(r'z-index:\s*1022', footer_body)
+    assert re.search(r'position:\s*static', footer_body)
+    assert not re.search(r'position:\s*fixed', footer_body)
+    assert not re.search(r'(?:left|right|bottom|z-index):', footer_body)
 
-    minimenu_footer = re.search(
-        r'(?m)^html\.minimenu\s+\.nxl-container\s+\.footer\s*\{(?P<body>[^}]*)\}',
+    assert not re.search(
+        r'(?m)^html\.minimenu\s+\.nxl-container\s+\.footer\s*\{',
         css,
     )
-    assert minimenu_footer is not None
-    assert re.search(r'left:\s*100px', minimenu_footer.group('body'))
 
     responsive_footer = re.search(
         r'@media\s+\(max-width:\s*1199\.98px\)\s*\{(?P<body>.*?)\n\}',
@@ -383,11 +380,7 @@ def test_footer_stays_fixed_to_bottom_without_covering_shell_content():
         re.S,
     )
     assert responsive_footer is not None
-    assert re.search(
-        r'\.nxl-container\s+\.footer\s*\{[^}]*left:\s*0',
-        responsive_footer.group('body'),
-        re.S,
-    )
+    assert not re.search(r'\.nxl-container\s+\.footer\s*\{', responsive_footer.group('body'))
 
 
 def test_mobile_footer_returns_to_document_flow_without_covering_content():
@@ -409,6 +402,43 @@ def test_mobile_footer_returns_to_document_flow_without_covering_content():
     assert re.search(
         r'\.nxl-container\s+\.nxl-content\s*\{[^}]*padding-bottom:\s*0',
         mobile_block.group('body'),
+        re.S,
+    )
+
+
+def test_resource_detail_header_wraps_actions_below_title_at_tablet_width():
+    css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+    template = (ROOT / 'templates' / 'app' / 'resource_detail.html').read_text()
+
+    assert 'class="page-header resource-detail-page-header"' in template
+
+    tablet_block = re.search(
+        r'@media \(min-width: 768px\) and \(max-width: 991\.98px\)\s*\{'
+        r'(?P<body>.*?)(?=\n@media|\Z)',
+        css,
+        re.S,
+    )
+    assert tablet_block is not None
+    tablet_css = tablet_block.group('body')
+    assert re.search(
+        r'\.resource-detail-page-header\s*\{[^}]*flex-wrap:\s*wrap',
+        tablet_css,
+        re.S,
+    )
+    assert re.search(
+        r'\.resource-detail-page-header \.page-header-left\s*\{[^}]*width:\s*100%',
+        tablet_css,
+        re.S,
+    )
+    assert re.search(
+        r'\.resource-detail-page-header \.page-header-right\s*\{[^}]*width:\s*100%',
+        tablet_css,
+        re.S,
+    )
+    assert re.search(
+        r'\.resource-detail-page-header \.page-header-right-items-wrapper\s*\{'
+        r'[^}]*flex-wrap:\s*wrap',
+        tablet_css,
         re.S,
     )
 
