@@ -86,6 +86,9 @@ def test_datetime_advanced_filters_emit_safe_range_controls(rf):
     assert due_at['from_name'] == 'due_at_from'
     assert due_at['to_name'] == 'due_at_to'
     assert due_at['to_value'] == '2026-99-99T18:00'
+    assert due_at['from_invalid'] is False
+    assert due_at['to_invalid'] is True
+    assert due_at['has_submitted_value'] is True
     assert [lookup for lookup, _value in due_at['query_filters']] == ['due_at__gte']
     assert due_at['active_count'] == 1
 
@@ -615,7 +618,44 @@ class AppUiFoundationTests(TestCase):
 
         assert filtered.status_code == 200
         assert [row['object'].pk for row in filtered.context['rows']] == [urgent.pk]
+        assert 'resource-advanced-scheduled_end_from-error' not in filtered.content.decode()
         assert {row['object'].pk for row in undeclared.context['rows']} >= {urgent.pk, normal.pk}
+
+    def test_any_submitted_advanced_value_opens_panel_even_when_invalid(self):
+        self.client.force_login(self.admin)
+
+        invalid_choice = self.client.get('/app/production/orders/?priority=desconhecida')
+        invalid_date = self.client.get(
+            '/app/production/orders/?scheduled_end_from=2026-99-99'
+        )
+
+        for response in (invalid_choice, invalid_date):
+            assert response.status_code == 200
+            content = response.content.decode()
+            assert 'aria-expanded="true"' in content
+            assert 'id="filtros-avancados" class="collapse show"' in content
+            assert response.context['active_filter_count'] == 0
+
+    def test_invalid_advanced_date_shows_accessible_feedback_with_raw_value(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            '/app/production/orders/?scheduled_end_from=2026-99-99'
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'value="2026-99-99"' in content
+        assert 'data-submitted-value="2026-99-99"' in content
+        assert 'aria-invalid="true"' in content
+        assert (
+            'aria-describedby="resource-advanced-scheduled_end_from-error"'
+            in content
+        )
+        assert 'id="resource-advanced-scheduled_end_from-error"' in content
+        assert 'Valor informado: 2026-99-99.' in content
+        assert 'Informe uma data válida.' in content
+        assert response.context['active_filter_count'] == 0
 
     def test_invalid_advanced_filter_values_are_preserved_without_filtering(self):
         unit, product, _material, formula, _component, route = (

@@ -65,7 +65,7 @@
         <div class="d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-search" aria-hidden="true"></i>Buscar</button>
             {% if advanced_filters %}
-            <button type="button" class="btn btn-light-brand d-inline-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#filtros-avancados" aria-expanded="{% if has_active_advanced_filters %}true{% else %}false{% endif %}" aria-controls="filtros-avancados">
+            <button type="button" class="btn btn-light-brand d-inline-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#filtros-avancados" aria-expanded="{% if has_submitted_advanced_filters %}true{% else %}false{% endif %}" aria-controls="filtros-avancados">
                 <i class="feather-filter" aria-hidden="true"></i>Filtros avançados
                 {% if active_filter_count %}<span class="badge bg-primary">{{ active_filter_count }}</span>{% endif %}
             </button>
@@ -76,27 +76,31 @@
     </div>
     {% if advanced_filters %}
     <div class="col-12">
-        <div id="filtros-avancados" class="collapse{% if has_active_advanced_filters %} show{% endif %}">
+        <div id="filtros-avancados" class="collapse{% if has_submitted_advanced_filters %} show{% endif %}">
             <div class="row g-3 rounded border bg-light-subtle p-3">
                 {% for filter in advanced_filters %}
                     {% if filter.kind == 'choice' %}
                     <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label" for="resource-advanced-{{ filter.name }}">{{ filter.label }}</label>
-                        <select id="resource-advanced-{{ filter.name }}" name="{{ filter.name }}" class="form-select">
+                        <select id="resource-advanced-{{ filter.name }}" name="{{ filter.name }}" class="form-select" data-submitted-value="{{ filter.value }}"{% if filter.is_invalid %} aria-invalid="true" aria-describedby="resource-advanced-{{ filter.name }}-error"{% endif %}>
                             <option value="">Todos</option>
+                            {% if filter.is_invalid %}<option value="{{ filter.value }}" selected disabled>Valor inválido: {{ filter.value }}</option>{% endif %}
                             {% for value, label in filter.choices %}
                             <option value="{{ value }}"{% if value == filter.value %} selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
+                        {% if filter.is_invalid %}<p id="resource-advanced-{{ filter.name }}-error" class="invalid-feedback d-block mb-0" role="alert">Valor informado: {{ filter.value }}. Selecione uma opção válida.</p>{% endif %}
                     </div>
                     {% else %}
                     <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label" for="resource-advanced-{{ filter.from_name }}">{{ filter.label }} de</label>
-                        <input id="resource-advanced-{{ filter.from_name }}" type="{{ filter.input_type }}" name="{{ filter.from_name }}" value="{{ filter.from_value }}" class="form-control">
+                        <input id="resource-advanced-{{ filter.from_name }}" type="{{ filter.input_type }}" name="{{ filter.from_name }}" value="{{ filter.from_value }}" data-submitted-value="{{ filter.from_value }}" class="form-control"{% if filter.from_invalid %} aria-invalid="true" aria-describedby="resource-advanced-{{ filter.from_name }}-error"{% endif %}>
+                        {% if filter.from_invalid %}<p id="resource-advanced-{{ filter.from_name }}-error" class="invalid-feedback d-block mb-0" role="alert">Valor informado: {{ filter.from_value }}. {% if filter.kind == 'datetime' %}Informe uma data e hora válidas.{% else %}Informe uma data válida.{% endif %}</p>{% endif %}
                     </div>
                     <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label" for="resource-advanced-{{ filter.to_name }}">{{ filter.label }} até</label>
-                        <input id="resource-advanced-{{ filter.to_name }}" type="{{ filter.input_type }}" name="{{ filter.to_name }}" value="{{ filter.to_value }}" class="form-control">
+                        <input id="resource-advanced-{{ filter.to_name }}" type="{{ filter.input_type }}" name="{{ filter.to_name }}" value="{{ filter.to_value }}" data-submitted-value="{{ filter.to_value }}" class="form-control"{% if filter.to_invalid %} aria-invalid="true" aria-describedby="resource-advanced-{{ filter.to_name }}-error"{% endif %}>
+                        {% if filter.to_invalid %}<p id="resource-advanced-{{ filter.to_name }}-error" class="invalid-feedback d-block mb-0" role="alert">Valor informado: {{ filter.to_value }}. {% if filter.kind == 'datetime' %}Informe uma data e hora válidas.{% else %}Informe uma data válida.{% endif %}</p>{% endif %}
                     </div>
                     {% endif %}
                 {% endfor %}

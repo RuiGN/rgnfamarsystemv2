@@ -258,6 +258,7 @@ def build_advanced_filters(resource, params):
         if choices:
             raw_value = params.get(field_name, '').strip()
             allowed_values = {value for value, _label in choices}
+            is_invalid = bool(raw_value and raw_value not in allowed_values)
             definitions.append(
                 {
                     'name': field_name,
@@ -269,6 +270,8 @@ def build_advanced_filters(resource, params):
                         ((field_name, raw_value),) if raw_value in allowed_values else ()
                     ),
                     'active_count': int(raw_value in allowed_values),
+                    'is_invalid': is_invalid,
+                    'has_submitted_value': bool(raw_value),
                 }
             )
             continue
@@ -290,6 +293,8 @@ def build_advanced_filters(resource, params):
         to_value = params.get(to_name, '').strip()
         parsed_from = _parse_filter_value(parser, from_value)
         parsed_to = _parse_filter_value(parser, to_value)
+        from_invalid = bool(from_value and parsed_from is None)
+        to_invalid = bool(to_value and parsed_to is None)
         query_filters = []
         if parsed_from is not None:
             query_filters.append((f'{field_name}__gte', parsed_from))
@@ -305,8 +310,11 @@ def build_advanced_filters(resource, params):
                 'to_name': to_name,
                 'from_value': from_value,
                 'to_value': to_value,
+                'from_invalid': from_invalid,
+                'to_invalid': to_invalid,
                 'query_filters': tuple(query_filters),
                 'active_count': int(bool(query_filters)),
+                'has_submitted_value': bool(from_value or to_value),
             }
         )
     return tuple(definitions)
@@ -1029,6 +1037,10 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         context['active_filter_count'] = self._active_filter_count()
         context['has_active_advanced_filters'] = any(
             definition['active_count']
+            for definition in context['advanced_filters']
+        )
+        context['has_submitted_advanced_filters'] = any(
+            definition['has_submitted_value']
             for definition in context['advanced_filters']
         )
         context['allowed_query_params'] = self._allowed_query_params()
