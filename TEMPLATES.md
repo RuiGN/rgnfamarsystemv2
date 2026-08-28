@@ -5,6 +5,23 @@ escopo por cliente. O objetivo é oferecer navegação por módulo, CRUD HTML,
 permissões Django e testes automatizados sem substituir as APIs REST nem o
 Django Admin.
 
+## Página inicial e workspaces
+
+Usuários autenticados que acessam `/` são redirecionados para `/app/`, o
+catálogo dinâmico de módulos permitido ao perfil. A home não mantém um catálogo
+estático paralelo.
+
+Os cockpits de operação, qualidade e workflow usam configurações imutáveis
+`WorkspaceConfig` em `base.ui.workspaces` e uma única apresentação em
+`templates/workspaces/workspace.html`. As configurações fornecem textos,
+métricas, tons, ícones e URLs já resolvidas. A view filtra módulos, cartões e
+atalhos no servidor antes da renderização.
+
+As rotas nomeadas `app:operations_workspace`, `app:quality_workspace` e
+`app:workflow_workspace` permanecem estáveis. Novos workspaces devem ser
+registrados no mesmo contrato, com teste de acesso ao módulo, visibilidade dos
+itens e escopo das consultas.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

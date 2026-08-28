@@ -38,6 +38,21 @@ class WorkspaceConfigurationTests(SimpleTestCase):
         with self.assertRaises(FrozenInstanceError):
             workspace.title = 'Alterado'
 
+    def test_legacy_workspace_templates_are_removed_and_contract_is_documented(self):
+        from pathlib import Path
+
+        legacy_templates = (
+            Path('templates/workspaces/operations.html'),
+            Path('templates/workspaces/quality.html'),
+            Path('templates/workspaces/workflow.html'),
+        )
+        documentation = Path('TEMPLATES.md').read_text()
+
+        self.assertTrue(all(not path.exists() for path in legacy_templates))
+        self.assertIn('workspaces/workspace.html', documentation)
+        self.assertIn('/app/', documentation)
+        self.assertIn('WorkspaceConfig', documentation)
+
 
 class WorkspaceContentBuilderTests(TestCase):
     def setUp(self):
