@@ -29,7 +29,7 @@ from django.views.generic import TemplateView
 from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.forms import _apply_widget_metadata, build_resource_form
-from base.ui.presentation import ProgressMetric, build_detail_summary
+from base.ui.presentation import ProgressMetric, build_detail_summary, resolve_status
 from base.ui.registry import get_module, get_visible_modules, get_resource
 from base.ui.workspaces import get_workspace
 from base.templatetags.ui_query import build_query_string
@@ -179,30 +179,8 @@ def _annotate_formset_accessibility(formset):
 
 
 def _status_tone(value):
-    normalized = str(value or '').lower()
-    if any(token in normalized for token in ('rejeit', 'cancel', 'falh', 'critical', 'danger')):
-        return 'danger'
-    if any(
-        token in normalized
-        for token in (
-            'pend',
-            'rascunh',
-            'abert',
-            'analis',
-            'execuç',
-            'execu',
-            'submet',
-            'não lida',
-            'nao lida',
-        )
-    ):
-        return 'warning'
-    if any(
-        token in normalized
-        for token in ('aprov', 'conclu', 'encerr', 'revisad', 'enviad', 'ativo', 'reconhec')
-    ):
-        return 'success'
-    return 'primary'
+    """Compatibilidade temporária para consumidores que precisam apenas do tom."""
+    return resolve_status(value).tone
 
 
 def _object_value(obj, field_name):
@@ -1074,7 +1052,11 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
                         'field': field,
                         'value': _object_value(obj, field),
                         'is_status': _is_status_field(field),
-                        'status_tone': _status_tone(_object_value(obj, field)),
+                        'status': (
+                            resolve_status(_object_value(obj, field))
+                            if _is_status_field(field)
+                            else None
+                        ),
                     }
                     for field in resource.list_display
                 ],
@@ -1154,12 +1136,12 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
         try:
             resource.model._meta.get_field('status')
         except Exception:
-            context['detail_status'] = ''
-            context['detail_status_tone'] = 'primary'
+            raw_detail_status = ''
+            context['detail_status'] = None
         else:
-            context['detail_status'] = _object_value(obj, 'status')
-            context['detail_status_tone'] = _status_tone(context['detail_status'])
-        context['detail_summary'] = build_detail_summary(obj, context['detail_status'])
+            raw_detail_status = _object_value(obj, 'status')
+            context['detail_status'] = resolve_status(raw_detail_status)
+        context['detail_summary'] = build_detail_summary(obj, raw_detail_status)
         primary_field_names = {
             field_name.split('__')[0] for field_name in resource.list_display
         }

@@ -462,9 +462,14 @@ class AppUiFoundationTests(TestCase):
 
     def test_resource_lists_define_status_badge_contract(self):
         template = Path('templates/app/resource_list.html').read_text()
+        component = Path('templates/includes/components/status_badge.html').read_text()
 
-        assert 'data-field-status="{{ cell.field }}"' in template
-        assert 'bg-soft-{{ cell.status_tone }}' in template
+        assert "{% include 'includes/components/status_badge.html' with status=cell.status field_name=cell.field %}" in template
+        assert 'status.label' in component
+        assert 'status.icon' in component
+        assert 'aria-hidden="true"' in component
+        assert 'data-field-status="{{ field_name }}"' in component
+        assert 'rounded-circle' not in component
 
     def test_status_resources_expose_choice_filter_and_apply_it(self):
         self.client.force_login(self.admin)
@@ -741,9 +746,10 @@ class AppUiFoundationTests(TestCase):
 
     def test_resource_detail_defines_semantic_status_region(self):
         template = Path('templates/app/resource_detail.html').read_text()
+        summary_template = Path('templates/includes/components/detail_summary.html').read_text()
 
-        assert 'data-ui="resource-status"' in template
-        assert 'detail_status_tone' in template
+        assert "{% include 'includes/components/status_badge.html' with status=detail_status %}" in template
+        assert "{% include 'includes/components/status_badge.html' with status=item.status %}" in summary_template
 
 
 class AppUiPermissionTests(TestCase):

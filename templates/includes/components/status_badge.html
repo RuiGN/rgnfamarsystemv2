@@ -1,0 +1,4 @@
+<span class="badge bg-soft-{{ status.tone }} text-{{ status.tone }}{% if class_name %} {{ class_name }}{% endif %}"{% if field_name %} data-field-status="{{ field_name }}"{% endif %} data-ui="resource-status">
+    <i class="{{ status.icon }}" aria-hidden="true"></i>
+    {{ status.label }}
+</span>

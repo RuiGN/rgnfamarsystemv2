@@ -73,7 +73,7 @@
                         {% for cell in row.cells %}
                             <td>
                                 {% if cell.is_status %}
-                                    <span class="badge bg-soft-{{ cell.status_tone }} text-{{ cell.status_tone }}" data-field-status="{{ cell.field }}">{{ cell.value }}</span>
+                                    {% include 'includes/components/status_badge.html' with status=cell.status field_name=cell.field %}
                                 {% else %}
                                     {{ cell.value }}
                                 {% endif %}

@@ -1,11 +1,65 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
+from unicodedata import combining, normalize
 
 from django.core.exceptions import FieldDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
+
+
+@dataclass(frozen=True)
+class StatusPresentation:
+    """Estado semântico pronto para um componente visual acessível."""
+
+    label: str
+    tone: str
+    icon: str
+
+
+def _normalize_status(value: Any) -> str:
+    return ''.join(
+        character
+        for character in normalize('NFKD', str(value or ''))
+        if not combining(character)
+    ).lower()
+
+
+def resolve_status(value: Any) -> StatusPresentation:
+    """Classifica um estado sem alterar o rótulo visível ao usuário."""
+
+    label = str(value or '')
+    normalized = _normalize_status(label)
+
+    if any(
+        token in normalized
+        for token in (
+            'nao aprov',
+            'reprov',
+            'rejeit',
+            'bloque',
+            'vencid',
+            'oos',
+            'cancel',
+            'critic',
+            'falh',
+            'danger',
+        )
+    ):
+        return StatusPresentation(label, 'danger', 'feather-alert-triangle')
+    if any(token in normalized for token in ('pend', 'analis', 'revis', 'proximo prazo')):
+        return StatusPresentation(label, 'warning', 'feather-clock')
+    if any(token in normalized for token in ('submet', 'process', 'execu')):
+        return StatusPresentation(label, 'info', 'feather-loader')
+    if any(token in normalized for token in ('rascunh', 'arquiv')):
+        return StatusPresentation(label, 'secondary', 'feather-archive')
+    if any(
+        token in normalized
+        for token in ('aprov', 'liberad', 'conclu', 'encerr', 'vigent', 'enviad', 'ativo', 'reconhec')
+    ):
+        return StatusPresentation(label, 'success', 'feather-check-circle')
+    return StatusPresentation(label, 'secondary', 'feather-info')
 
 
 @dataclass(frozen=True)
@@ -17,6 +71,7 @@ class DetailSummaryItem:
     value: str
     icon: str
     is_status: bool = False
+    status: StatusPresentation | None = None
 
 
 _DETAIL_IDENTIFIER_FIELDS = ('code', 'order_number', 'batch_number', 'document_number')
@@ -89,6 +144,7 @@ def build_detail_summary(obj: Any, status: Any) -> tuple[DetailSummaryItem, ...]
                 value=str(status),
                 icon='feather-activity',
                 is_status=True,
+                status=resolve_status(status),
             )
         )
 

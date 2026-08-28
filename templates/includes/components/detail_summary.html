@@ -14,7 +14,7 @@
             </dt>
             <dd class="detail-summary__value mb-0">
                 {% if item.is_status %}
-                <span class="badge bg-soft-{{ detail_status_tone }} text-{{ detail_status_tone }}" data-ui="resource-status">{{ item.value }}</span>
+                {% include 'includes/components/status_badge.html' with status=item.status %}
                 {% else %}
                 {{ item.value }}
                 {% endif %}

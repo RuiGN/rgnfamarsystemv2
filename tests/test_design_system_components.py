@@ -5,7 +5,8 @@ import pytest
 from django.utils import timezone
 
 from base.ui.deadlines import DeadlineItem
-from base.ui.presentation import ProgressMetric
+from base.ui.presentation import ProgressMetric, StatusPresentation, resolve_status
+from base.ui.views import _status_tone
 from base.ui.workspaces import WorkspaceMetric
 
 
@@ -74,3 +75,37 @@ def test_deadline_item_uses_ptbr_temporal_labels():
 
     assert overdue.temporal_label == 'Vencido'
     assert today.temporal_label == 'Vence hoje'
+
+
+@pytest.mark.parametrize(
+    ('label', 'tone', 'icon'),
+    [
+        ('Liberado', 'success', 'feather-check-circle'),
+        ('Em análise', 'warning', 'feather-clock'),
+        ('OOS', 'danger', 'feather-alert-triangle'),
+        ('Em processamento', 'info', 'feather-loader'),
+        ('Em execução', 'info', 'feather-loader'),
+        ('Arquivado', 'secondary', 'feather-archive'),
+    ],
+)
+def test_status_resolution_is_accent_insensitive_and_semantic(label, tone, icon):
+    result = resolve_status(label)
+
+    assert result.label == label
+    assert (result.tone, result.icon) == (tone, icon)
+
+
+def test_status_resolution_prioritizes_danger_over_success_tokens():
+    result = resolve_status('Não aprovado')
+
+    assert result.label == 'Não aprovado'
+    assert (result.tone, result.icon) == ('danger', 'feather-alert-triangle')
+
+
+def test_status_presentation_is_immutable_and_tone_adapter_delegates_to_resolver():
+    presentation = resolve_status('Não aprovado')
+
+    assert isinstance(presentation, StatusPresentation)
+    assert _status_tone('Não aprovado') == presentation.tone
+    with pytest.raises(FrozenInstanceError):
+        presentation.tone = 'success'

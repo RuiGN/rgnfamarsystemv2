@@ -91,7 +91,7 @@
                     <div>
                         <span class="text-muted fs-12">{{ resource.label }}</span>
                         <h2 class="h5 mb-0">{{ object }}</h2>
-                        {% if detail_status and not has_detail_sidebar %}<span class="badge bg-soft-{{ detail_status_tone }} text-{{ detail_status_tone }} mt-2" data-ui="resource-status">{{ detail_status }}</span>{% endif %}
+                        {% if detail_status and not has_detail_sidebar %}{% include 'includes/components/status_badge.html' with status=detail_status %}{% endif %}
                     </div>
                 </div>
                 <div class="table-responsive" data-ui="resource-detail">
