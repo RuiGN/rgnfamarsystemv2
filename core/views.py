@@ -9,7 +9,7 @@ def health_check(request):
 def home(request):
     if not request.user.is_authenticated:
         return redirect('accounts:login')
-    return render(request, 'dashboard/home.html')
+    return redirect('app:index')
 
 
 def permission_denied(request, exception=None):
