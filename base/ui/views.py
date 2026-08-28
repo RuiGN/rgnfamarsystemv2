@@ -30,6 +30,7 @@ from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.audit import get_audit_entries
 from base.ui.forms import _apply_widget_metadata, build_resource_form
+from base.ui.personal_area import build_personal_area
 from base.ui.presentation import ProgressMetric, build_detail_summary, resolve_status
 from base.ui.registry import get_module, get_visible_modules, get_resource
 from base.ui.workspaces import get_workspace
@@ -383,6 +384,15 @@ class AppIndexView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['modules'] = get_visible_modules(self.request.user)
+        return context
+
+
+class PersonalAreaView(LoginRequiredMixin, TemplateView):
+    template_name = 'app/personal_area.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['sections'] = build_personal_area(self.request)
         return context
 
 

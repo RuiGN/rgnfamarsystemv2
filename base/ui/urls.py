@@ -8,6 +8,7 @@ app_name = 'app'
 
 urlpatterns = [
     path('', views.AppIndexView.as_view(), name='index'),
+    path('minha-area/', views.PersonalAreaView.as_view(), name='personal_area'),
     path('cep-lookup/', views.CepLookupView.as_view(), name='cep_lookup'),
     path(
         'dashboards/<slug:dashboard_slug>/', views.DashboardHubView.as_view(), name='dashboard_hub'

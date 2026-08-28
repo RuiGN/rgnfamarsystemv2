@@ -20,6 +20,12 @@
             <span class="nxl-mtext">Aplicativos</span>
         </a>
     </li>
+    <li class="nxl-item{% if request.resolver_match.url_name == 'personal_area' %} active{% endif %}">
+        <a href="{% url 'app:personal_area' %}" class="nxl-link" aria-label="Minha área" title="Minha área"{% if request.resolver_match.url_name == 'personal_area' %} aria-current="page"{% endif %}>
+            <span class="nxl-micon"><i class="feather-user-check" aria-hidden="true"></i></span>
+            <span class="nxl-mtext">Minha área</span>
+        </a>
+    </li>
     {% for workspace in sidebar_workspaces %}
     <li class="nxl-item{% if request.resolver_match.view_name == workspace.route_name %} active{% endif %}">
         <a href="{{ workspace.navigation_url }}" class="nxl-link"{% if request.resolver_match.view_name == workspace.route_name %} aria-current="page"{% endif %} aria-label="{{ workspace.navigation_label }}" title="{{ workspace.navigation_label }}">

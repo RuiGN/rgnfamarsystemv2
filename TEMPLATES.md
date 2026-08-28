@@ -83,6 +83,21 @@ Ao adicionar um workspace, registre esses metadados, associe um `module_slug`
 válido e cubra: URL reversa, ordenação, visibilidade por permissão, estado
 `aria-current` e ausência do item para perfis sem acesso.
 
+### Minha área
+
+A rota nomeada `app:personal_area` (`/app/minha-area/`) apresenta somente filas
+relacionadas explicitamente ao usuário autenticado. `base.ui.personal_area`
+consulta cada fonte depois de confirmar sua permissão `view` e limita os itens
+antes da renderização. Aprovações usam `assigned_to`, notificações usam
+`recipient`, desvios usam `responsible`, CAPAs usam `owner` e treinamentos usam
+`user`.
+
+`templates/app/personal_area.html` recebe apenas `PersonalAreaSection` e
+`PersonalAreaItem`; o template não consulta models, não amplia escopos e não
+oculta exceções. Se uma seção autorizada não tiver registros, exibe seu estado
+vazio específico. Se nenhuma seção estiver autorizada, explica que as
+atividades aparecerão conforme permissões e responsabilidades.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

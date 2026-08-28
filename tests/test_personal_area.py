@@ -1,3 +1,4 @@
+from pathlib import Path
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -5,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.db import connection
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 from django.utils import timezone
 
 from base.ui.personal_area import build_personal_area
@@ -155,3 +157,81 @@ class PersonalAreaServiceTests(TestCase):
             sections[0].empty_message,
             'Nenhuma CAPA sob sua responsabilidade.',
         )
+
+
+class PersonalAreaViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='pagina-minha-area@example.com',
+            email='pagina-minha-area@example.com',
+            password='MinhaAreaSecure!123',
+        )
+
+    def test_requires_authentication(self):
+        response = self.client.get(reverse('app:personal_area'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('accounts:login'), response.url)
+
+    def test_renders_pt_br_empty_state_for_permitted_section(self):
+        grant_view_permission(self.user, CapaRecord)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:personal_area'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'app/personal_area.html')
+        self.assertContains(response, 'Minha área')
+        self.assertContains(response, 'Pendências e atividades sob sua responsabilidade')
+        self.assertContains(response, 'Nenhuma CAPA sob sua responsabilidade.')
+
+    def test_page_does_not_render_another_users_record(self):
+        grant_view_permission(self.user, CapaRecord)
+        own_capa = CapaRecord.objects.create(
+            source_type=CapaRecord.SourceType.IMPROVEMENT,
+            source_reference='MELHORIA-PESSOAL',
+            title='CAPA pessoal autorizada',
+            root_cause='Causa raiz confirmada.',
+            action_plan='Executar o plano aprovado.',
+            owner=self.user,
+            due_date=timezone.localdate() + timedelta(days=5),
+            effectiveness_criteria='Ausência de recorrência.',
+        )
+        other_user = get_user_model().objects.create_user(
+            username='pagina-outra-area@example.com',
+            email='pagina-outra-area@example.com',
+            password='MinhaAreaSecure!123',
+        )
+        CapaRecord.objects.create(
+            source_type=CapaRecord.SourceType.IMPROVEMENT,
+            source_reference='MELHORIA-SIGILOSA',
+            title='CAPA sigilosa de outra pessoa',
+            root_cause='Causa raiz de outro escopo.',
+            action_plan='Plano restrito.',
+            owner=other_user,
+            due_date=timezone.localdate() + timedelta(days=7),
+            effectiveness_criteria='Critério restrito.',
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:personal_area'))
+
+        self.assertContains(response, own_capa.title)
+        self.assertNotContains(response, 'CAPA sigilosa de outra pessoa')
+
+    def test_sidebar_marks_personal_area_as_current_page(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:personal_area'))
+        navigation = response.content.decode().split('</nav>', 1)[0]
+
+        self.assertIn('aria-label="Minha área"', navigation)
+        self.assertIn('aria-current="page"', navigation)
+
+    def test_template_uses_responsive_accessible_contract(self):
+        template = Path('templates/app/personal_area.html').read_text()
+
+        self.assertEqual(template.count('<h1'), 1)
+        self.assertIn('aria-labelledby="personal-area-heading"', template)
+        self.assertIn('class="col-12 col-xl-6"', template)
+        self.assertIn('{% empty %}', template)
