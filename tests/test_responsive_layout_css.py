@@ -11,6 +11,18 @@ from django.test import override_settings
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_advanced_filters_use_accessible_bootstrap_collapse_only_when_configured():
+    template = (ROOT / 'templates' / 'app' / 'includes' / 'search_filters.html').read_text()
+
+    assert '{% if advanced_filters %}' in template
+    assert 'data-bs-toggle="collapse"' in template
+    assert 'aria-controls="filtros-avancados"' in template
+    assert 'aria-expanded=' in template
+    assert 'Filtros avançados' in template
+    assert '{{ active_filter_count }}' in template
+    assert 'id="filtros-avancados"' in template
+
+
 def test_detail_summary_uses_scoped_readable_layout_styles():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
     template = (ROOT / 'templates' / 'app' / 'resource_detail.html').read_text()

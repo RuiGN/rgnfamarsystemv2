@@ -8,14 +8,19 @@ import httpx
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, ValidationError
+from django.core.exceptions import (
+    NON_FIELD_ERRORS,
+    FieldDoesNotExist,
+    PermissionDenied,
+    ValidationError,
+)
 from django.db import models, transaction
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import inlineformset_factory
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date, parse_datetime
 from django.utils import timezone
 from django.urls import reverse
 from django.views import View
@@ -27,6 +32,7 @@ from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.presentation import ProgressMetric, build_detail_summary
 from base.ui.registry import get_module, get_visible_modules, get_resource
 from base.ui.workspaces import get_workspace
+from base.templatetags.ui_query import build_query_string
 from costing.models import ProductionCostCapture
 from documents.models import ControlledDocument, DocumentAuditTrail
 from governance.models import GovernanceAuditLog
@@ -227,6 +233,83 @@ def _field_label(model, field_name):
         return model._meta.get_field(field_root).verbose_name
     except Exception:
         return field_root.replace('_', ' ')
+
+
+def _parse_filter_value(parser, value):
+    if not value:
+        return None
+    try:
+        return parser(value)
+    except ValueError:
+        return None
+
+
+def build_advanced_filters(resource, params):
+    """Build safe controls and ORM lookups exclusively from configured model fields."""
+    definitions = []
+    for field_name in resource.advanced_filter_fields:
+        try:
+            model_field = resource.model._meta.get_field(field_name)
+        except FieldDoesNotExist:
+            continue
+
+        label = str(model_field.verbose_name).capitalize()
+        choices = tuple((str(value), choice_label) for value, choice_label in model_field.flatchoices)
+        if choices:
+            raw_value = params.get(field_name, '').strip()
+            allowed_values = {value for value, _label in choices}
+            definitions.append(
+                {
+                    'name': field_name,
+                    'label': label,
+                    'kind': 'choice',
+                    'value': raw_value,
+                    'choices': choices,
+                    'query_filters': (
+                        ((field_name, raw_value),) if raw_value in allowed_values else ()
+                    ),
+                    'active_count': int(raw_value in allowed_values),
+                }
+            )
+            continue
+
+        if isinstance(model_field, models.DateTimeField):
+            kind = 'datetime'
+            input_type = 'datetime-local'
+            parser = parse_datetime
+        elif isinstance(model_field, models.DateField):
+            kind = 'date'
+            input_type = 'date'
+            parser = parse_date
+        else:
+            continue
+
+        from_name = f'{field_name}_from'
+        to_name = f'{field_name}_to'
+        from_value = params.get(from_name, '').strip()
+        to_value = params.get(to_name, '').strip()
+        parsed_from = _parse_filter_value(parser, from_value)
+        parsed_to = _parse_filter_value(parser, to_value)
+        query_filters = []
+        if parsed_from is not None:
+            query_filters.append((f'{field_name}__gte', parsed_from))
+        if parsed_to is not None:
+            query_filters.append((f'{field_name}__lte', parsed_to))
+        definitions.append(
+            {
+                'name': field_name,
+                'label': label,
+                'kind': kind,
+                'input_type': input_type,
+                'from_name': from_name,
+                'to_name': to_name,
+                'from_value': from_value,
+                'to_value': to_value,
+                'query_filters': tuple(query_filters),
+                'active_count': int(bool(query_filters)),
+            }
+        )
+    return tuple(definitions)
 
 
 def _annotate_form_accessibility(form):
@@ -812,8 +895,12 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         status_filter = self.request.GET.get('status', '').strip()
         active_filter = self.request.GET.get('is_active', '').strip()
         ordering = self.request.GET.get('ordering', '').strip()
-        created_from = parse_date(self.request.GET.get('created_from', '').strip())
-        created_to = parse_date(self.request.GET.get('created_to', '').strip())
+        created_from = _parse_filter_value(
+            parse_date, self.request.GET.get('created_from', '').strip()
+        )
+        created_to = _parse_filter_value(
+            parse_date, self.request.GET.get('created_to', '').strip()
+        )
         if (
             status_filter
             and self._status_choices()
@@ -829,6 +916,9 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
                 queryset = queryset.filter(created_at__date__lte=created_to)
         if ordering in self._ordering_values():
             queryset = queryset.order_by(ordering)
+        for definition in self._advanced_filter_definitions():
+            for lookup, value in definition['query_filters']:
+                queryset = queryset.filter(**{lookup: value})
         if query and resource.search_fields:
             criteria = Q()
             for field in resource.search_fields:
@@ -868,6 +958,56 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
     def _ordering_values(self):
         return {value for value, _ in self._ordering_options()}
 
+    def _advanced_filter_definitions(self):
+        if not hasattr(self, '_cached_advanced_filter_definitions'):
+            self._cached_advanced_filter_definitions = build_advanced_filters(
+                self.get_resource(), self.request.GET
+            )
+        return self._cached_advanced_filter_definitions
+
+    def _allowed_query_params(self):
+        params = [
+            'q',
+            'status',
+            'is_active',
+            'created_from',
+            'created_to',
+            'ordering',
+            'page',
+        ]
+        for definition in self._advanced_filter_definitions():
+            if definition['kind'] == 'choice':
+                params.append(definition['name'])
+            else:
+                params.extend((definition['from_name'], definition['to_name']))
+        return tuple(params)
+
+    def _active_filter_count(self):
+        count = 0
+        status_filter = self.request.GET.get('status', '').strip()
+        if status_filter in {str(value) for value, _label in self._status_choices()}:
+            count += 1
+        if self._has_active_field() and self.request.GET.get('is_active', '').strip() in {
+            '0',
+            '1',
+        }:
+            count += 1
+        if self._has_created_at_field():
+            has_created_range = any(
+                _parse_filter_value(
+                    parse_date,
+                    self.request.GET.get(name, '').strip(),
+                )
+                is not None
+                for name in ('created_from', 'created_to')
+            )
+            count += int(has_created_range)
+        count += sum(
+            definition['active_count']
+            for definition in self._advanced_filter_definitions()
+        )
+        return count
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         resource = self.get_resource()
@@ -885,6 +1025,13 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         context['has_created_at_field'] = self._has_created_at_field()
         context['ordering'] = self.request.GET.get('ordering', '').strip()
         context['ordering_options'] = self._ordering_options()
+        context['advanced_filters'] = self._advanced_filter_definitions()
+        context['active_filter_count'] = self._active_filter_count()
+        context['has_active_advanced_filters'] = any(
+            definition['active_count']
+            for definition in context['advanced_filters']
+        )
+        context['allowed_query_params'] = self._allowed_query_params()
         context['clear_url'] = reverse(
             'app:resource_list',
             kwargs={
@@ -899,7 +1046,10 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
                 'resource_slug': self.get_resource().slug,
             },
         )
-        query_string = self.request.GET.urlencode()
+        export_query_params = tuple(
+            key for key in context['allowed_query_params'] if key != 'page'
+        )
+        query_string = build_query_string(self.request.GET, export_query_params)
         context['export_url'] = (
             f'{export_base_url}?{query_string}' if query_string else export_base_url
         )

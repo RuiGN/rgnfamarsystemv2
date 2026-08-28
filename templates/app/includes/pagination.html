@@ -1,3 +1,4 @@
+{% load ui_query %}
 {% if page_obj.has_other_pages %}
 <div class="card-footer d-flex flex-wrap align-items-center justify-content-between gap-3" data-ui="pagination">
     <p class="fs-12 text-muted mb-0">
@@ -7,7 +8,8 @@
         <ul class="list-unstyled d-flex align-items-center gap-2 mb-0 pagination-common-style">
             {% if page_obj.has_previous %}
             <li>
-                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if active_filter %}&is_active={{ active_filter }}{% endif %}{% if created_from %}&created_from={{ created_from }}{% endif %}{% if created_to %}&created_to={{ created_to }}{% endif %}{% if ordering %}&ordering={{ ordering }}{% endif %}" aria-label="Anterior">
+                {% query_transform page=page_obj.previous_page_number as previous_query %}
+                <a href="?{{ previous_query }}" aria-label="Anterior">
                     <i class="feather-chevron-left"></i>
                 </a>
             </li>
@@ -16,14 +18,17 @@
             {% endif %}
             {% for i in page_obj.paginator.page_range %}
             {% if page_obj.number == i %}
-            <li><a href="javascript:void(0);" class="active" aria-current="page">{{ i }}</a></li>
+            {% query_transform page=i as current_query %}
+            <li><a href="?{{ current_query }}" class="active" aria-current="page">{{ i }}</a></li>
             {% elif i >= page_obj.number|add:'-3' and i <= page_obj.number|add:'3' %}
-            <li><a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if active_filter %}&is_active={{ active_filter }}{% endif %}{% if created_from %}&created_from={{ created_from }}{% endif %}{% if created_to %}&created_to={{ created_to }}{% endif %}{% if ordering %}&ordering={{ ordering }}{% endif %}">{{ i }}</a></li>
+            {% query_transform page=i as page_query %}
+            <li><a href="?{{ page_query }}">{{ i }}</a></li>
             {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
             <li>
-                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if active_filter %}&is_active={{ active_filter }}{% endif %}{% if created_from %}&created_from={{ created_from }}{% endif %}{% if created_to %}&created_to={{ created_to }}{% endif %}{% if ordering %}&ordering={{ ordering }}{% endif %}" aria-label="Próximo">
+                {% query_transform page=page_obj.next_page_number as next_query %}
+                <a href="?{{ next_query }}" aria-label="Próximo">
                     <i class="feather-chevron-right"></i>
                 </a>
             </li>

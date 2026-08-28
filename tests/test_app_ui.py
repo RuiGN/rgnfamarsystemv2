@@ -6,6 +6,7 @@ import re
 import tempfile
 import unicodedata
 
+import pytest
 from django import forms
 from django.contrib.auth.models import Permission
 from django.contrib.auth import get_user_model
@@ -18,7 +19,7 @@ from django.utils import timezone
 from audits.models import AuditProgram
 from auxiliary.models import City, StateProvince
 from base.ui.forms import _apply_widget_metadata
-from base.ui.registry import get_modules
+from base.ui.registry import get_modules, get_resource
 from documents.models import DocumentAuditTrail
 from documents.models import ControlledDocument
 from files.models import ProtectedFile
@@ -46,6 +47,47 @@ def without_accents(value):
         for character in unicodedata.normalize('NFKD', value)
         if not unicodedata.combining(character)
     )
+
+
+def test_query_transform_replaces_page_and_keeps_authorized_filter_multivalues(rf):
+    try:
+        from base.templatetags.ui_query import query_transform
+    except ModuleNotFoundError:
+        pytest.fail('A tag query_transform ainda não foi implementada.')
+
+    request = rf.get(
+        '/app/?status=pending&priority=urgent&priority=high&page=2&lookup__icontains=x'
+    )
+    context = {
+        'request': request,
+        'allowed_query_params': ('status', 'priority', 'page'),
+    }
+
+    assert query_transform(context, page=3) == (
+        'status=pending&priority=urgent&priority=high&page=3'
+    )
+
+
+def test_datetime_advanced_filters_emit_safe_range_controls(rf):
+    from base.ui.views import build_advanced_filters
+
+    request = rf.get(
+        '/app/workflow/tasks/?due_at_from=2026-08-28T09:30'
+        '&due_at_to=2026-99-99T18:00'
+    )
+
+    definitions = build_advanced_filters(
+        get_resource('workflow', 'tasks'),
+        request.GET,
+    )
+    due_at = next(item for item in definitions if item['name'] == 'due_at')
+
+    assert due_at['kind'] == 'datetime'
+    assert due_at['from_name'] == 'due_at_from'
+    assert due_at['to_name'] == 'due_at_to'
+    assert due_at['to_value'] == '2026-99-99T18:00'
+    assert [lookup for lookup, _value in due_at['query_filters']] == ['due_at__gte']
+    assert due_at['active_count'] == 1
 
 
 class AppUiFoundationTests(TestCase):
@@ -433,11 +475,14 @@ class AppUiFoundationTests(TestCase):
         assert 'value="pending"' in content
         assert 'selected' in content
 
-    def test_pagination_preserves_search_and_status_filters(self):
+    def test_pagination_uses_authorized_query_transform(self):
         template = Path('templates/app/includes/pagination.html').read_text()
 
-        assert 'status_filter' in template
-        assert 'status={{ status_filter }}' in template
+        assert '{% load ui_query %}' in template
+        assert '{% query_transform page=page_obj.previous_page_number as previous_query %}' in template
+        assert '{% query_transform page=i as page_query %}' in template
+        assert '{% query_transform page=page_obj.next_page_number as next_query %}' in template
+        assert 'status={{ status_filter }}' not in template
 
     def test_active_resources_expose_boolean_filter_and_apply_it(self):
         self.client.force_login(self.admin)
@@ -470,12 +515,6 @@ class AppUiFoundationTests(TestCase):
         assert re.search(r'<td>\s*Não\s*</td>', content)
         assert re.search(r'<td>\s*True\s*</td>', content) is None
         assert re.search(r'<td>\s*False\s*</td>', content) is None
-
-    def test_pagination_preserves_active_filter(self):
-        template = Path('templates/app/includes/pagination.html').read_text()
-
-        assert 'active_filter' in template
-        assert 'is_active={{ active_filter }}' in template
 
     def test_created_at_resources_expose_date_range_filters(self):
         self.client.force_login(self.admin)
@@ -527,6 +566,138 @@ class AppUiFoundationTests(TestCase):
         assert 'Nome' in content
         assert 'Quilograma Recife' in content
         assert 'Quilograma Goiania' not in content
+
+    def test_advanced_filter_registry_uses_only_declared_model_fields(self):
+        assert get_resource('production', 'orders').advanced_filter_fields == (
+            'priority',
+            'scheduled_end',
+        )
+        assert get_resource('deviations', 'events').advanced_filter_fields == (
+            'severity',
+            'criticality',
+        )
+        assert get_resource('capa', 'records').advanced_filter_fields == ('due_date',)
+        assert get_resource('workflow', 'tasks').advanced_filter_fields == (
+            'criticality',
+            'due_at',
+        )
+
+    def test_advanced_filters_apply_choices_and_dates_but_ignore_undeclared_lookups(self):
+        unit, product, _material, formula, _component, route = (
+            create_released_manufacturing_set('advanced-filter')
+        )
+        urgent = ProductionOrder.objects.create(
+            order_number='OP-FILTRO-URGENTE',
+            product=product,
+            formula=formula,
+            route=route,
+            planned_quantity=Decimal('10.0000'),
+            unit=unit,
+            priority=ProductionOrder.Priority.URGENT,
+            scheduled_end=date(2026, 9, 15),
+        )
+        normal = ProductionOrder.objects.create(
+            order_number='OP-FILTRO-NORMAL',
+            product=product,
+            formula=formula,
+            route=route,
+            planned_quantity=Decimal('20.0000'),
+            unit=unit,
+            priority=ProductionOrder.Priority.NORMAL,
+            scheduled_end=date(2026, 8, 10),
+        )
+        self.client.force_login(self.admin)
+
+        filtered = self.client.get(
+            '/app/production/orders/?priority=urgent&scheduled_end_from=2026-09-01'
+        )
+        undeclared = self.client.get('/app/production/orders/?priority__icontains=urg')
+
+        assert filtered.status_code == 200
+        assert [row['object'].pk for row in filtered.context['rows']] == [urgent.pk]
+        assert {row['object'].pk for row in undeclared.context['rows']} >= {urgent.pk, normal.pk}
+
+    def test_invalid_advanced_filter_values_are_preserved_without_filtering(self):
+        unit, product, _material, formula, _component, route = (
+            create_released_manufacturing_set('invalid-filter')
+        )
+        orders = {
+            ProductionOrder.objects.create(
+                order_number=f'OP-INVALIDO-{number}',
+                product=product,
+                formula=formula,
+                route=route,
+                planned_quantity=Decimal('10.0000'),
+                unit=unit,
+                priority=priority,
+                scheduled_end=date(2026, 9, number),
+            ).pk
+            for number, priority in (
+                (1, ProductionOrder.Priority.URGENT),
+                (2, ProductionOrder.Priority.NORMAL),
+            )
+        }
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            '/app/production/orders/?priority=desconhecida&scheduled_end_from=2026-99-99'
+        )
+
+        assert response.status_code == 200
+        assert {row['object'].pk for row in response.context['rows']} >= orders
+        assert response.context['active_filter_count'] == 0
+        controls = {item['name']: item for item in response.context['advanced_filters']}
+        assert controls['priority']['value'] == 'desconhecida'
+        assert controls['scheduled_end']['from_value'] == '2026-99-99'
+
+    def test_active_filter_count_excludes_search_ordering_and_page(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            '/app/production/orders/?q=OP&ordering=order_number&page=1'
+            '&status=draft&priority=urgent&scheduled_end_to=2026-12-31'
+        )
+
+        assert response.status_code == 200
+        assert response.context['active_filter_count'] == 3
+
+    def test_allowed_query_params_and_export_url_are_normalized(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            '/app/production/orders/?priority=urgent&priority=high&page=2'
+            '&ordering=-order_number&lookup__icontains=indevido'
+        )
+
+        assert response.status_code == 200
+        assert response.context['allowed_query_params'] == (
+            'q',
+            'status',
+            'is_active',
+            'created_from',
+            'created_to',
+            'ordering',
+            'page',
+            'priority',
+            'scheduled_end_from',
+            'scheduled_end_to',
+        )
+        assert response.context['export_url'].endswith(
+            '?ordering=-order_number&priority=urgent&priority=high'
+        )
+        assert 'page=' not in response.context['export_url']
+        assert 'lookup' not in response.context['export_url']
+
+    def test_advanced_filter_panel_only_appears_for_configured_resources(self):
+        self.client.force_login(self.admin)
+
+        configured = self.client.get('/app/production/orders/')
+        unconfigured = self.client.get('/app/masters/units/')
+
+        assert configured.status_code == 200
+        assert 'Filtros avançados' in configured.content.decode()
+        assert unconfigured.status_code == 200
+        assert 'Filtros avançados' not in unconfigured.content.decode()
 
     def test_resource_detail_defines_semantic_status_region(self):
         template = Path('templates/app/resource_detail.html').read_text()

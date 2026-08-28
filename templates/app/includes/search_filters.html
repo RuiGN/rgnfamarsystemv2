@@ -64,8 +64,44 @@
     <div class="col-12 col-lg-auto">
         <div class="d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2"><i class="feather-search" aria-hidden="true"></i>Buscar</button>
+            {% if advanced_filters %}
+            <button type="button" class="btn btn-light-brand d-inline-flex align-items-center gap-2" data-bs-toggle="collapse" data-bs-target="#filtros-avancados" aria-expanded="{% if has_active_advanced_filters %}true{% else %}false{% endif %}" aria-controls="filtros-avancados">
+                <i class="feather-filter" aria-hidden="true"></i>Filtros avançados
+                {% if active_filter_count %}<span class="badge bg-primary">{{ active_filter_count }}</span>{% endif %}
+            </button>
+            {% endif %}
             <a href="{{ clear_url }}" class="btn btn-icon btn-light-brand" title="Limpar filtros" aria-label="Limpar filtros"><i class="feather-x" aria-hidden="true"></i></a>
             <a href="{{ export_url }}" class="btn btn-icon btn-light-brand" title="Exportar CSV" aria-label="Exportar CSV"><i class="feather-download" aria-hidden="true"></i></a>
         </div>
     </div>
+    {% if advanced_filters %}
+    <div class="col-12">
+        <div id="filtros-avancados" class="collapse{% if has_active_advanced_filters %} show{% endif %}">
+            <div class="row g-3 rounded border bg-light-subtle p-3">
+                {% for filter in advanced_filters %}
+                    {% if filter.kind == 'choice' %}
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label" for="resource-advanced-{{ filter.name }}">{{ filter.label }}</label>
+                        <select id="resource-advanced-{{ filter.name }}" name="{{ filter.name }}" class="form-select">
+                            <option value="">Todos</option>
+                            {% for value, label in filter.choices %}
+                            <option value="{{ value }}"{% if value == filter.value %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label" for="resource-advanced-{{ filter.from_name }}">{{ filter.label }} de</label>
+                        <input id="resource-advanced-{{ filter.from_name }}" type="{{ filter.input_type }}" name="{{ filter.from_name }}" value="{{ filter.from_value }}" class="form-control">
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label" for="resource-advanced-{{ filter.to_name }}">{{ filter.label }} até</label>
+                        <input id="resource-advanced-{{ filter.to_name }}" type="{{ filter.input_type }}" name="{{ filter.to_name }}" value="{{ filter.to_value }}" class="form-control">
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </form>

@@ -337,6 +337,7 @@ class ResourceConfig:
     has_chat_view: bool = False
     update_form_fields: tuple[str, ...] | None = None
     view_permission_action: str = 'view'
+    advanced_filter_fields: tuple[str, ...] = field(default_factory=tuple)
 
     @property
     def app_label(self):
@@ -739,6 +740,7 @@ MODULES = (
                     'unit',
                 ),
                 ('order_number', 'batch_number', 'product__code', 'product__description'),
+                advanced_filter_fields=('priority', 'scheduled_end'),
                 form_fields=(
                     'order_number',
                     'batch_number',
@@ -2406,6 +2408,7 @@ MODULES = (
                     'product__code',
                     'stock_lot__lot_number',
                 ),
+                advanced_filter_fields=('severity', 'criticality'),
                 inlines=(
                     InlineResourceConfig(
                         'investigations',
@@ -2546,6 +2549,7 @@ MODULES = (
                     'source_reference',
                     'closure_summary',
                 ),
+                advanced_filter_fields=('due_date',),
                 inlines=(
                     InlineResourceConfig(
                         'actions',
@@ -3998,6 +4002,7 @@ MODULES = (
                     'assigned_to__email',
                     'decision_comments',
                 ),
+                advanced_filter_fields=('criticality', 'due_at'),
             ),
             ResourceConfig(
                 'delegations',
