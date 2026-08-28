@@ -98,6 +98,25 @@ oculta exceções. Se uma seção autorizada não tiver registros, exibe seu est
 vazio específico. Se nenhuma seção estiver autorizada, explica que as
 atividades aparecerão conforme permissões e responsabilidades.
 
+### Busca global e paleta de comandos
+
+O endpoint nomeado `app:global_search` pesquisa somente recursos presentes em
+`get_visible_modules(user)` e sempre parte de `ResourceConfig.get_queryset`,
+preservando escopos por usuário antes de aplicar os campos declarados em
+`search_fields`. Consultas exigem ao menos três caracteres, retornam no máximo
+vinte itens e limitam cada recurso a cinco resultados.
+
+`static/js/global-search.js` usa debounce, cancela a requisição anterior e
+insere textos com `textContent`. A busca permite setas, Enter e Escape, expõe
+estados de carregamento, vazio e erro em uma região `aria-live` e não exige
+cabeçalho AJAX como controle de acesso.
+
+A paleta `Ctrl+K`/`⌘K` não possui catálogo paralelo. Ela indexa somente links
+com `data-command-label` e `data-command-url` já renderizados pelo sidebar
+permissionado. Assim, a ausência de um link autorizado implica também ausência
+do comando correspondente; as views continuam sendo a fronteira defensiva ao
+receber acesso direto.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

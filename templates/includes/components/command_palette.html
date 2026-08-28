@@ -1,0 +1,32 @@
+<div class="modal fade command-palette" id="command-palette-modal" tabindex="-1" aria-labelledby="command-palette-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered command-palette__dialog">
+        <div class="modal-content">
+            <div class="modal-header align-items-start">
+                <div>
+                    <span class="text-muted fs-12">Navegação rápida</span>
+                    <h2 class="modal-title h5 mt-1" id="command-palette-title">Buscar um destino autorizado</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="command-palette__search">
+                    <i class="feather-search" aria-hidden="true"></i>
+                    <input
+                        type="search"
+                        class="form-control"
+                        placeholder="Digite o nome de um módulo, recurso ou painel"
+                        aria-label="Filtrar comandos"
+                        aria-controls="command-palette-results"
+                        autocomplete="off"
+                        data-command-palette-input
+                    >
+                    <kbd>Esc</kbd>
+                </div>
+                <div id="command-palette-results" class="command-palette__results" role="listbox" aria-live="polite" data-command-palette-results></div>
+            </div>
+            <div class="modal-footer justify-content-start py-2">
+                <span class="text-muted fs-12">Use ↑ ↓ para navegar e Enter para abrir.</span>
+            </div>
+        </div>
+    </div>
+</div>

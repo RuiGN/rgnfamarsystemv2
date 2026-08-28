@@ -1,6 +1,8 @@
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from base.ui.search import search_visible_resources
@@ -133,3 +135,52 @@ class GlobalSearchEndpointTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'results': []})
+
+
+class GlobalSearchShellContractTests(SimpleTestCase):
+    def test_base_template_exposes_accessible_progressive_search(self):
+        template = Path('templates/base.html').read_text()
+
+        self.assertIn('data-ui="global-search-input"', template)
+        self.assertIn('data-search-url="{% url \'app:global_search\' %}"', template)
+        self.assertIn('aria-controls="global-search-results"', template)
+        self.assertIn('aria-live="polite"', template)
+        self.assertIn("{% static 'js/global-search.js' %}", template)
+        self.assertIn("{% static 'js/command-palette.js' %}", template)
+
+    def test_global_search_script_uses_safe_cancelable_keyboard_navigation(self):
+        script = Path('static/js/global-search.js').read_text()
+
+        self.assertIn('AbortController', script)
+        self.assertIn('SEARCH_DELAY_MS = 300', script)
+        self.assertIn('textContent', script)
+        self.assertNotIn('innerHTML', script)
+        for key in ('ArrowDown', 'ArrowUp', 'Escape', 'Enter'):
+            self.assertIn(key, script)
+
+    def test_command_palette_indexes_only_rendered_authorized_links(self):
+        script = Path('static/js/command-palette.js').read_text()
+        sidebar = Path('templates/includes/sidebar.html').read_text()
+        modal = Path('templates/includes/components/command_palette.html').read_text()
+
+        self.assertIn('[data-command-label][data-command-url]', script)
+        self.assertIn('event.ctrlKey', script)
+        self.assertIn('event.metaKey', script)
+        self.assertIn("event.key.toLowerCase() === 'k'", script)
+        self.assertIn('textContent', script)
+        self.assertNotIn('innerHTML', script)
+        self.assertIn('data-command-label=', sidebar)
+        self.assertIn('data-command-url=', sidebar)
+        self.assertIn('id="command-palette-modal"', modal)
+        self.assertIn('aria-live="polite"', modal)
+        self.assertIn('Buscar um destino autorizado', modal)
+
+    def test_search_and_palette_styles_preserve_focus_scroll_and_mobile_width(self):
+        css = Path('static/css/app.css').read_text()
+
+        self.assertIn('.global-search-result.is-active', css)
+        self.assertIn('.command-palette__command:focus-visible', css)
+        self.assertIn('.global-search-results', css)
+        self.assertIn('max-height: 22rem', css)
+        self.assertIn('width: min(42rem, calc(100vw - 2rem))', css)
+        self.assertIn('.global-search-dropdown { width: calc(100vw - 1rem); }', css)

@@ -61,29 +61,51 @@
             </div>
             <div class="header-right ms-auto">
                 <div class="d-flex align-items-center">
-                    <div class="dropdown nxl-h-item nxl-header-search">
-                        <a href="javascript:void(0);" class="nxl-head-link me-0" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-label="Buscar">
-                            <i class="feather-search"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-search-dropdown">
-                            <form method="get" action="{% url 'app:index' %}" class="input-group search-form">
-                                
-                                <input type="text" name="q" class="form-control search-input-field" placeholder="Buscar módulos, recursos ou registros..." aria-label="Buscar">
-                                <span class="input-group-text"><button type="button" class="btn-close" aria-label="Limpar busca"></button></span>
-                            </form>
-                            <div class="dropdown-divider mt-0"></div>
-                            <div class="search-items-wrapper px-4 py-3">
-                                <p class="fs-11 fw-medium text-muted mb-2">Dica: use a listagem de cada recurso para filtros avançados.</p>
-                                {% if sidebar_workspaces %}
-                                <div class="d-flex flex-wrap gap-1">
-                                    {% for workspace in sidebar_workspaces %}
-                                    <a href="{{ workspace.navigation_url }}" class="flex-fill border rounded py-1 px-2 text-center fs-11 fw-semibold">{{ workspace.breadcrumb_label }}</a>
-                                    {% endfor %}
+                    {% if request.user.is_authenticated %}
+                        <div class="dropdown nxl-h-item nxl-header-search">
+                            <button type="button" class="nxl-head-link me-0 border-0 bg-transparent" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-label="Buscar no sistema">
+                                <i class="feather-search" aria-hidden="true"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-search-dropdown global-search-dropdown">
+                                <form class="input-group search-form" role="search" data-ui="global-search-form">
+                                    <input
+                                        id="global-search-input"
+                                        type="search"
+                                        name="q"
+                                        class="form-control search-input-field"
+                                        placeholder="Buscar no sistema..."
+                                        aria-label="Buscar no sistema"
+                                        aria-controls="global-search-results"
+                                        aria-autocomplete="list"
+                                        aria-expanded="false"
+                                        autocomplete="off"
+                                        data-ui="global-search-input"
+                                        data-search-url="{% url 'app:global_search' %}"
+                                    >
+                                    <span class="input-group-text">
+                                        <button type="button" class="btn-close" aria-label="Limpar busca" data-ui="global-search-clear"></button>
+                                    </span>
+                                </form>
+                                <div class="dropdown-divider mt-0"></div>
+                                <div
+                                    id="global-search-results"
+                                    class="global-search-results"
+                                    role="listbox"
+                                    aria-label="Resultados da busca"
+                                    aria-live="polite"
+                                    data-ui="global-search-results"
+                                >
+                                    <p class="global-search-state">Digite ao menos três caracteres para pesquisar.</p>
                                 </div>
-                                {% endif %}
                             </div>
                         </div>
-                    </div>
+                        <div class="nxl-h-item d-none d-md-flex">
+                            <button type="button" class="nxl-head-link me-0 border-0 bg-transparent command-palette-trigger" data-command-palette-open aria-label="Abrir comandos, atalho Control K">
+                                <i class="feather-command" aria-hidden="true"></i>
+                                <span class="command-palette-trigger__shortcut" aria-hidden="true">Ctrl K</span>
+                            </button>
+                        </div>
+                    {% endif %}
                     {% if request.user.is_authenticated and can_view_workflow_workspace %}
                         <div class="dropdown nxl-h-item">
                             {% if can_preview_workflow_notifications %}
@@ -195,6 +217,8 @@
     <script src="{% static 'vendor/duralux/js/common-init.min.js' %}" defer></script>
     <script src="{% static 'js/app-form-enhancements.js' %}" defer></script>
     <script src="{% static 'js/resource-actions.js' %}" defer></script>
+    <script src="{% static 'js/global-search.js' %}" defer></script>
+    <script src="{% static 'js/command-palette.js' %}" defer></script>
     {% block scripts %}{% endblock %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -235,6 +259,9 @@
             }
         });
     </script>
+    {% if request.user.is_authenticated %}
+        {% include 'includes/components/command_palette.html' %}
+    {% endif %}
     {% include 'includes/processing_modal.html' %}
 </body>
 </html>

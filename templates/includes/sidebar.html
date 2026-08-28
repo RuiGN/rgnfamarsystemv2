@@ -9,26 +9,26 @@
         </a>
         <ul class="nxl-submenu">
             {% for slug, label in dashboard_navigation %}
-            <li class="nxl-item"><a href="{% url 'app:dashboard_hub' slug %}" class="nxl-link">{{ label }}</a></li>
+            <li class="nxl-item"><a href="{% url 'app:dashboard_hub' slug %}" class="nxl-link" data-command-label="Painel {{ label }}" data-command-url="{% url 'app:dashboard_hub' slug %}">{{ label }}</a></li>
             {% endfor %}
         </ul>
     </li>
     {% endif %}
     <li class="nxl-item{% if request.resolver_match.url_name == 'index' %} active{% endif %}">
-        <a href="{% url 'app:index' %}" class="nxl-link" aria-label="Aplicativos" title="Aplicativos"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>
+        <a href="{% url 'app:index' %}" class="nxl-link" aria-label="Aplicativos" title="Aplicativos" data-command-label="Aplicativos" data-command-url="{% url 'app:index' %}"{% if request.resolver_match.url_name == 'index' %} aria-current="page"{% endif %}>
             <span class="nxl-micon"><i class="feather-grid" aria-hidden="true"></i></span>
             <span class="nxl-mtext">Aplicativos</span>
         </a>
     </li>
     <li class="nxl-item{% if request.resolver_match.url_name == 'personal_area' %} active{% endif %}">
-        <a href="{% url 'app:personal_area' %}" class="nxl-link" aria-label="Minha área" title="Minha área"{% if request.resolver_match.url_name == 'personal_area' %} aria-current="page"{% endif %}>
+        <a href="{% url 'app:personal_area' %}" class="nxl-link" aria-label="Minha área" title="Minha área" data-command-label="Minha área" data-command-url="{% url 'app:personal_area' %}"{% if request.resolver_match.url_name == 'personal_area' %} aria-current="page"{% endif %}>
             <span class="nxl-micon"><i class="feather-user-check" aria-hidden="true"></i></span>
             <span class="nxl-mtext">Minha área</span>
         </a>
     </li>
     {% for workspace in sidebar_workspaces %}
     <li class="nxl-item{% if request.resolver_match.view_name == workspace.route_name %} active{% endif %}">
-        <a href="{{ workspace.navigation_url }}" class="nxl-link"{% if request.resolver_match.view_name == workspace.route_name %} aria-current="page"{% endif %} aria-label="{{ workspace.navigation_label }}" title="{{ workspace.navigation_label }}">
+        <a href="{{ workspace.navigation_url }}" class="nxl-link"{% if request.resolver_match.view_name == workspace.route_name %} aria-current="page"{% endif %} data-command-label="{{ workspace.navigation_label }}" data-command-url="{{ workspace.navigation_url }}" aria-label="{{ workspace.navigation_label }}" title="{{ workspace.navigation_label }}">
             <span class="nxl-micon"><i class="{{ workspace.icon }}" aria-hidden="true"></i></span>
             <span class="nxl-mtext">{{ workspace.navigation_label }}</span>
         </a>
@@ -45,11 +45,11 @@
         </a>
         <ul class="nxl-submenu">
             <li class="nxl-item{% if module.slug == active_module_slug and not active_resource_slug %} active{% endif %}">
-                <a href="{% url 'app:module' module.slug %}" class="nxl-link"{% if module.slug == active_module_slug and not active_resource_slug %} aria-current="page"{% endif %}>Visão geral</a>
+                <a href="{% url 'app:module' module.slug %}" class="nxl-link" data-command-label="{{ module.label }}: visão geral" data-command-url="{% url 'app:module' module.slug %}"{% if module.slug == active_module_slug and not active_resource_slug %} aria-current="page"{% endif %}>Visão geral</a>
             </li>
             {% for resource in module.resources %}
             <li class="nxl-item{% if module.slug == active_module_slug and resource.slug == active_resource_slug %} active{% endif %}">
-                <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="nxl-link"{% if module.slug == active_module_slug and resource.slug == active_resource_slug %} aria-current="page"{% endif %}>
+                <a href="{% url 'app:resource_list' module.slug resource.slug %}" class="nxl-link" data-command-label="{{ module.label }}: {{ resource.label }}" data-command-url="{% url 'app:resource_list' module.slug resource.slug %}"{% if module.slug == active_module_slug and resource.slug == active_resource_slug %} aria-current="page"{% endif %}>
                     <span>{{ resource.label }}</span>
                     {% if resource.read_only %}
                         <span class="nxl-subbadge badge bg-primary text-white">Consulta</span>
