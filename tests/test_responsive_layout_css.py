@@ -443,6 +443,21 @@ def test_resource_detail_header_wraps_actions_below_title_at_tablet_width():
     )
 
 
+def test_resource_tables_contain_intrinsic_width_without_page_overflow():
+    css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+
+    table_overflow_block = re.search(
+        r'\[data-ui="resource-panel"\] \.table-responsive,\s*'
+        r'\[data-ui="detail-layout"\] \.table-responsive\s*\{(?P<body>[^}]*)\}',
+        css,
+        re.S,
+    )
+
+    assert table_overflow_block is not None
+    assert re.search(r'max-width:\s*100%', table_overflow_block.group('body'))
+    assert re.search(r'overflow-x:\s*auto', table_overflow_block.group('body'))
+
+
 def test_audit_trail_uses_intrinsic_height_inside_responsive_detail_column():
     audit_template = (
         ROOT / 'templates' / 'app' / 'includes' / 'audit_trail.html'

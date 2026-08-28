@@ -334,6 +334,12 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     overflow-x: auto;
 }
 
+[data-ui="resource-panel"] .table-responsive,
+[data-ui="detail-layout"] .table-responsive {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
 .table-link {
     color: var(--rgn-brand);
     font-weight: 700;
