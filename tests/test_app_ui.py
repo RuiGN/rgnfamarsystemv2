@@ -242,9 +242,10 @@ class AppUiFoundationTests(TestCase):
     def test_dashboard_does_not_render_global_rag_chat_widget(self):
         self.client.force_login(self.user)
 
-        response = self.client.get('/')
+        response = self.client.get('/', follow=True)
 
         assert response.status_code == 200
+        assert response.redirect_chain == [('/app/', 302)]
         content = response.content.decode()
         assert 'id="rag-chat-root"' not in content
         assert 'data-tenant-slug=' not in content
