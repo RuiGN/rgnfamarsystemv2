@@ -92,6 +92,16 @@ class WorkspaceConfigurationTests(SimpleTestCase):
         self.assertIn('/app/', documentation)
         self.assertIn('WorkspaceConfig', documentation)
 
+    def test_workspace_navigation_contract_is_documented(self):
+        from pathlib import Path
+
+        documentation = Path('TEMPLATES.md').read_text()
+
+        self.assertIn('sidebar_workspaces', documentation)
+        self.assertIn('route_name', documentation)
+        self.assertIn('navigation_label', documentation)
+        self.assertIn('links não autorizados', documentation)
+
 
 class WorkspaceContentBuilderTests(TestCase):
     def setUp(self):

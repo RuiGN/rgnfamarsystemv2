@@ -22,6 +22,18 @@ As rotas nomeadas `app:operations_workspace`, `app:quality_workspace` e
 registrados no mesmo contrato, com teste de acesso ao módulo, visibilidade dos
 itens e escopo das consultas.
 
+### Navegação de workspaces
+
+`WorkspaceConfig` é também a fonte de verdade para o sidebar e os atalhos do
+cabeçalho. Todo workspace navegável declara `route_name`, `navigation_label`,
+`icon` e `order`. O context processor publica somente configurações autorizadas
+em `sidebar_workspaces`; os templates não mantêm listas paralelas nem exibem
+links não autorizados.
+
+Ao adicionar um workspace, registre esses metadados, associe um `module_slug`
+válido e cubra: URL reversa, ordenação, visibilidade por permissão, estado
+`aria-current` e ausência do item para perfis sem acesso.
+
 ## Regras
 
 - Menus usam permissões `view` dos models.

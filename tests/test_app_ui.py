@@ -220,6 +220,7 @@ class AppUiFoundationTests(TestCase):
         assert 'offcanvas offcanvas-end rag-chat__panel' in content
 
     def test_header_exposes_unread_workflow_notification_count(self):
+        grant_model_perm(self.user, WorkflowNotification, 'view')
         WorkflowNotification.objects.create(
             category=WorkflowNotification.Category.APPROVAL,
             recipient=self.user,
