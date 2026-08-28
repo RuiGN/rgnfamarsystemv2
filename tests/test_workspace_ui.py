@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from base.ui.context_processors import sidebar_menu
 from base.ui.deadlines import build_workspace_deadlines
-from base.ui.presentation import ProgressMetric
+from base.ui.presentation import NotificationPreview, ProgressMetric
 from base.ui.views import WorkspaceView
 from base.ui.workspaces import WORKSPACES, WorkspaceConfig, WorkspaceContent, get_workspace
 from production.models import ProductionOrder
@@ -337,6 +337,115 @@ class WorkspaceAccessTests(TestCase):
             'aria-current="page"',
             html=False,
         )
+
+
+class WorkflowNotificationPreviewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='notification-preview@example.com',
+            email='notification-preview@example.com',
+            password='WorkspaceSecure!123',
+        )
+        self.other_user = get_user_model().objects.create_user(
+            username='notification-preview-other@example.com',
+            email='notification-preview-other@example.com',
+            password='WorkspaceSecure!123',
+        )
+
+    def create_notification(self, recipient, title, created_at, **kwargs):
+        notification = WorkflowNotification.objects.create(
+            category=WorkflowNotification.Category.ALERT,
+            recipient=recipient,
+            title=title,
+            message='Acompanhe esta notificação operacional.',
+            source_module=WorkflowNotification.SourceModule.QUALITY,
+            **kwargs,
+        )
+        WorkflowNotification.objects.filter(pk=notification.pk).update(created_at=created_at)
+        notification.refresh_from_db()
+        return notification
+
+    def test_notification_preview_normalizes_operational_presentation(self):
+        notification = self.create_notification(
+            self.user,
+            'Notificação crítica',
+            timezone.now(),
+            criticality=WorkflowNotification.Criticality.CRITICAL,
+        )
+
+        preview = NotificationPreview.from_model(notification)
+
+        self.assertEqual(preview.title, 'Notificação crítica')
+        self.assertEqual(preview.criticality_label, 'Crítica')
+        self.assertEqual(preview.icon, 'feather-alert-octagon')
+        self.assertTrue(preview.is_unread)
+        self.assertEqual(
+            preview.url,
+            reverse('app:resource_detail', args=('workflow', 'notifications', notification.pk)),
+        )
+
+    def test_dropdown_is_scoped_ordered_limited_and_uses_accessible_content(self):
+        grant_view_permission(self.user, WorkflowNotification)
+        now = timezone.now()
+        for index in range(6):
+            self.create_notification(
+                self.user,
+                f'Notificação da usuária {index}',
+                now - timedelta(minutes=index),
+                criticality=WorkflowNotification.Criticality.HIGH,
+            )
+        self.create_notification(
+            self.other_user,
+            'Notificação de outro usuário',
+            now + timedelta(minutes=1),
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:index'))
+
+        self.assertContains(response, 'data-ui="workflow-notifications"')
+        self.assertContains(response, 'Ver todas as notificações')
+        self.assertContains(response, 'Notificação da usuária 0')
+        self.assertContains(response, 'Notificação da usuária 4')
+        self.assertNotContains(response, 'Notificação da usuária 5')
+        self.assertNotContains(response, 'Notificação de outro usuário')
+        self.assertContains(response, 'aria-expanded="false"')
+        self.assertContains(response, '<time datetime="', html=False)
+        self.assertContains(response, 'Não lida')
+        content = response.content.decode()
+        self.assertLess(
+            content.index('Notificação da usuária 0'),
+            content.index('Notificação da usuária 4'),
+        )
+
+    def test_dropdown_shows_empty_state_when_authorized_user_has_no_notifications(self):
+        grant_view_permission(self.user, WorkflowNotification)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:index'))
+
+        self.assertContains(response, 'Nenhuma notificação recente.')
+        self.assertContains(response, 'Ver todas as notificações')
+
+    def test_notification_query_is_skipped_without_exact_notification_permission(self):
+        grant_view_permission(self.user, ApprovalTask)
+
+        with patch(
+            'base.ui.context_processors.WorkflowNotification.objects.filter'
+        ) as notification_filter:
+            context = sidebar_menu(self.request_for(self.user))
+
+        notification_filter.assert_not_called()
+        self.assertTrue(context['can_view_workflow_workspace'])
+        self.assertFalse(context['can_preview_workflow_notifications'])
+        self.assertEqual(context['workflow_notification_previews'], ())
+        self.assertEqual(context['unread_workflow_notifications'], 0)
+
+    @staticmethod
+    def request_for(user):
+        request = RequestFactory().get('/app/')
+        request.user = user
+        return request
 
 
 class WorkspaceDeadlineBuilderTests(TestCase):

@@ -1086,6 +1086,55 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 
 .detail-summary__value { overflow-wrap: anywhere; }
 
+/* Prévia de notificações: isolada do restante dos menus Duralux. */
+.workflow-notification-dropdown {
+    min-width: min(24rem, calc(100vw - 2rem));
+    padding: 0;
+}
+
+.workflow-notification-dropdown__toggle {
+    background: transparent;
+    border: 0;
+}
+
+.workflow-notification-dropdown__header,
+.workflow-notification-dropdown__footer {
+    padding: .75rem 1rem;
+}
+
+.workflow-notification-dropdown__header { border-bottom: 1px solid var(--rgn-border); }
+.workflow-notification-dropdown__footer { border-top: 1px solid var(--rgn-border); }
+.workflow-notification-dropdown__footer a { display: inline-flex; gap: .45rem; }
+
+.workflow-notification-dropdown__items { max-height: 22rem; overflow-y: auto; }
+
+.workflow-notification-dropdown__item {
+    align-items: flex-start;
+    color: inherit;
+    display: flex;
+    gap: .75rem;
+    padding: .75rem 1rem;
+}
+
+.workflow-notification-dropdown__item:hover,
+.workflow-notification-dropdown__item:focus-visible { background: var(--rgn-bg); }
+
+.workflow-notification-dropdown__icon { display: inline-flex; padding-top: .15rem; }
+.workflow-notification-dropdown__content { display: grid; gap: .2rem; min-width: 0; }
+.workflow-notification-dropdown__title { color: var(--rgn-text); font-weight: 700; overflow-wrap: anywhere; }
+
+.workflow-notification-dropdown__meta {
+    color: var(--rgn-muted);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: .75rem;
+    gap: .3rem .6rem;
+}
+
+.workflow-notification-dropdown__unread { color: var(--rgn-text); font-weight: 700; }
+.workflow-notification-dropdown__unread i { color: #d13b4c; font-size: .5rem; vertical-align: middle; }
+.workflow-notification-dropdown__empty { color: var(--rgn-muted); margin: 0; padding: 1rem; }
+
 @media (max-width: 575.98px) {
     .operational-deadlines__link { flex-wrap: wrap; }
     .operational-deadlines__due { margin-left: 2.75rem; text-align: left; width: 100%; }
@@ -1095,6 +1144,10 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
     .operational-deadlines *,
     .operational-deadlines *::before,
     .operational-deadlines *::after { transition-duration: .01ms !important; }
+
+    .workflow-notification-dropdown *,
+    .workflow-notification-dropdown *::before,
+    .workflow-notification-dropdown *::after { transition-duration: .01ms !important; }
 }
 
 @media print {

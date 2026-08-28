@@ -86,12 +86,13 @@
                     </div>
                     {% if request.user.is_authenticated and can_view_workflow_workspace %}
                         <div class="dropdown nxl-h-item">
-                            <a href="{% url 'app:workflow_workspace' %}" class="nxl-head-link me-3 position-relative" data-ui="workflow-notifications" title="Central de workflow" aria-label="Central de workflow">
-                                <i class="feather-bell"></i>
-                                {% if unread_workflow_notifications %}
-                                    <span class="badge bg-danger nxl-h-badge">{{ unread_workflow_notifications }}</span>
-                                {% endif %}
-                            </a>
+                            {% if can_preview_workflow_notifications %}
+                                {% include 'includes/components/notification_dropdown.html' %}
+                            {% else %}
+                                <a href="{% url 'app:workflow_workspace' %}" class="nxl-head-link me-3 position-relative" data-ui="workflow-notifications" title="Central de workflow" aria-label="Central de workflow">
+                                    <i class="feather-bell" aria-hidden="true"></i>
+                                </a>
+                            {% endif %}
                         </div>
                     {% endif %}
                     <div class="nxl-h-item d-none d-sm-flex">

@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Any
 
 from django.core.exceptions import FieldDoesNotExist
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
 
@@ -140,3 +141,43 @@ class DeadlineItem:
         if due_date == today:
             return 'Vence hoje'
         return f'Vence em {date_format(due_date, "d/m/Y")}'
+
+
+@dataclass(frozen=True)
+class NotificationPreview:
+    """Projeção autorizada de uma notificação para o cabeçalho."""
+
+    title: str
+    criticality_label: str
+    tone: str
+    icon: str
+    created_at: datetime
+    is_unread: bool
+    url: str
+
+    @classmethod
+    def from_model(cls, notification: Any) -> 'NotificationPreview':
+        criticality = getattr(notification, 'criticality', '')
+        presentations = {
+            'low': ('Baixa', 'secondary', 'feather-info'),
+            'medium': ('Média', 'primary', 'feather-bell'),
+            'high': ('Alta', 'warning', 'feather-alert-triangle'),
+            'critical': ('Crítica', 'danger', 'feather-alert-octagon'),
+        }
+        presentation = presentations.get(criticality)
+        if presentation is None:
+            label = str(notification.get_criticality_display())
+            tone, icon = 'secondary', 'feather-bell'
+        else:
+            label, tone, icon = presentation
+        return cls(
+            title=notification.title,
+            criticality_label=label,
+            tone=tone,
+            icon=icon,
+            created_at=notification.created_at,
+            is_unread=notification.status == 'unread',
+            url=reverse(
+                'app:resource_detail', args=('workflow', 'notifications', notification.pk)
+            ),
+        )

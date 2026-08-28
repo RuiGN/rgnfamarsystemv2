@@ -1,0 +1,33 @@
+<button id="workflow-notification-toggle" type="button" class="nxl-head-link me-3 position-relative workflow-notification-dropdown__toggle" data-ui="workflow-notifications" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="workflow-notification-menu" aria-label="Abrir notificações de workflow">
+    <i class="feather-bell" aria-hidden="true"></i>
+    {% if unread_workflow_notifications %}
+        <span class="badge bg-danger nxl-h-badge" aria-label="{{ unread_workflow_notifications }} notificações não lidas">{{ unread_workflow_notifications }}</span>
+    {% endif %}
+</button>
+<div id="workflow-notification-menu" class="dropdown-menu dropdown-menu-end nxl-h-dropdown workflow-notification-dropdown" aria-labelledby="workflow-notification-toggle">
+    <div class="workflow-notification-dropdown__header">
+        <span class="fw-bold text-dark">Notificações</span>
+    </div>
+    <div class="workflow-notification-dropdown__items">
+        {% for preview in workflow_notification_previews %}
+            <a class="workflow-notification-dropdown__item" href="{{ preview.url }}">
+                <span class="workflow-notification-dropdown__icon text-{{ preview.tone }}" aria-hidden="true"><i class="{{ preview.icon }}"></i></span>
+                <span class="workflow-notification-dropdown__content">
+                    <span class="workflow-notification-dropdown__title">{{ preview.title }}</span>
+                    <span class="workflow-notification-dropdown__meta">
+                        <span>{{ preview.criticality_label }}</span>
+                        <time datetime="{{ preview.created_at|date:'c' }}">{{ preview.created_at|date:'d/m/Y H:i' }}</time>
+                        {% if preview.is_unread %}
+                            <span class="workflow-notification-dropdown__unread"><i class="feather-circle" aria-hidden="true"></i> Não lida</span>
+                        {% endif %}
+                    </span>
+                </span>
+            </a>
+        {% empty %}
+            <p class="workflow-notification-dropdown__empty">Nenhuma notificação recente.</p>
+        {% endfor %}
+    </div>
+    <div class="workflow-notification-dropdown__footer">
+        <a href="{% url 'app:resource_list' 'workflow' 'notifications' %}">Ver todas as notificações <i class="feather-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</div>

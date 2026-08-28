@@ -1,6 +1,7 @@
 from django.db import OperationalError, ProgrammingError
 
 from base.ui.registry import get_visible_modules
+from base.ui.presentation import NotificationPreview
 from base.ui.workspaces import WORKSPACES
 from governance.models import InstitutionSettings
 from workflow.models import WorkflowNotification
@@ -55,8 +56,10 @@ def sidebar_menu(request):
             'dashboard_navigation': (),
             'show_dashboard_navigation': False,
             'can_view_workflow_workspace': False,
+            'can_preview_workflow_notifications': False,
             'sidebar_admin_links': (),
             'unread_workflow_notifications': 0,
+            'workflow_notification_previews': (),
             **navigation_context,
             **brand_context,
         }
@@ -81,12 +84,19 @@ def sidebar_menu(request):
     can_view_workflow_workspace = any(
         workspace.slug == 'workflow' for workspace in sidebar_workspaces
     )
-    unread_notifications = 0
-    if can_view_workflow_workspace:
-        unread_notifications = WorkflowNotification.objects.filter(
-            recipient=user,
-            status=WorkflowNotification.Status.UNREAD,
-        ).count()
+    can_preview_workflow_notifications = (
+        can_view_workflow_workspace
+        and user.has_perm('workflow.view_workflownotification')
+    )
+    workflow_notification_previews = ()
+    if can_preview_workflow_notifications:
+        notifications = WorkflowNotification.objects.filter(recipient=user).order_by('-created_at')[:5]
+        workflow_notification_previews = tuple(
+            NotificationPreview.from_model(notification) for notification in notifications
+        )
+    unread_notifications = sum(
+        preview.is_unread for preview in workflow_notification_previews
+    )
 
     return {
         'sidebar_modules': modules,
@@ -94,8 +104,10 @@ def sidebar_menu(request):
         'dashboard_navigation': dashboard_navigation,
         'show_dashboard_navigation': bool(dashboard_navigation),
         'can_view_workflow_workspace': can_view_workflow_workspace,
+        'can_preview_workflow_notifications': can_preview_workflow_notifications,
         'sidebar_admin_links': (),
         'unread_workflow_notifications': unread_notifications,
+        'workflow_notification_previews': workflow_notification_previews,
         **navigation_context,
         **brand_context,
     }
