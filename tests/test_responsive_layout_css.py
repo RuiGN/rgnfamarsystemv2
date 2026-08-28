@@ -413,6 +413,26 @@ def test_mobile_footer_returns_to_document_flow_without_covering_content():
     )
 
 
+def test_audit_trail_uses_intrinsic_height_inside_responsive_detail_column():
+    audit_template = (
+        ROOT / 'templates' / 'app' / 'includes' / 'audit_trail.html'
+    ).read_text()
+    detail_template = (ROOT / 'templates' / 'app' / 'resource_detail.html').read_text()
+
+    opening_section = re.search(r'<section\s+class="([^"]+)"', audit_template)
+    primary_section = re.search(
+        r'<section\s+class="([^"]+)">\s*<div class="card-body">',
+        detail_template,
+    )
+
+    assert opening_section is not None
+    assert primary_section is not None
+    assert 'stretch' not in opening_section.group(1).split()
+    assert 'stretch-full' not in opening_section.group(1).split()
+    assert 'stretch' not in primary_section.group(1).split()
+    assert 'stretch-full' not in primary_section.group(1).split()
+
+
 def test_resource_filters_and_pagination_use_bootstrap_duralux_controls():
     filters = (ROOT / 'templates' / 'app' / 'includes' / 'search_filters.html').read_text()
     pagination = (ROOT / 'templates' / 'app' / 'includes' / 'pagination.html').read_text()
