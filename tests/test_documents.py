@@ -1,4 +1,5 @@
 from datetime import timedelta
+import re
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -11,6 +12,18 @@ from rest_framework.test import APIClient
 
 
 User = get_user_model()
+
+
+def assert_executed_sql_orders_newest_then_pk(sql, timestamp_column):
+    normalized = ' '.join(
+        str(sql).lower().translate(str.maketrans('', '', '"`[]')).split()
+    )
+    order_pattern = (
+        rf'\border by\s+[\w.]+\.{re.escape(timestamp_column)}\s+desc\s*,\s*'
+        r'[\w.]+\.(?:id|pk)\s+desc\b'
+    )
+    assert re.search(order_pattern, normalized), normalized
+    return normalized
 
 
 def create_document_users(suffix='001'):
@@ -91,8 +104,14 @@ class ControlledDocumentModelTests(TestCase):
         assert custom_entries[1].reason == 'Revisão 28.'
         assert len(queries) == 1
         assert len(custom_limit_queries) == 1
-        assert 'LIMIT 25' in queries[0]['sql'].upper()
-        assert 'LIMIT 3' in custom_limit_queries[0]['sql'].upper()
+        limit_25_sql = assert_executed_sql_orders_newest_then_pk(
+            queries[0]['sql'], 'created_at'
+        )
+        limit_3_sql = assert_executed_sql_orders_newest_then_pk(
+            custom_limit_queries[0]['sql'], 'created_at'
+        )
+        assert re.search(r'\blimit\s+25\b', limit_25_sql), limit_25_sql
+        assert re.search(r'\blimit\s+3\b', limit_3_sql), limit_3_sql
 
     def test_non_positive_audit_limits_return_empty_tuple_without_query(self):
         from base.ui.audit import get_audit_entries

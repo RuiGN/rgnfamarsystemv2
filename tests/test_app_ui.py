@@ -53,6 +53,18 @@ def without_accents(value):
     )
 
 
+def assert_executed_sql_orders_newest_then_pk(sql, timestamp_column):
+    normalized = ' '.join(
+        str(sql).lower().translate(str.maketrans('', '', '"`[]')).split()
+    )
+    order_pattern = (
+        rf'\border by\s+[\w.]+\.{re.escape(timestamp_column)}\s+desc\s*,\s*'
+        r'[\w.]+\.(?:id|pk)\s+desc\b'
+    )
+    assert re.search(order_pattern, normalized), normalized
+    return normalized
+
+
 def test_query_transform_replaces_page_and_keeps_authorized_filter_multivalues(rf):
     try:
         from base.templatetags.ui_query import query_transform
@@ -1134,10 +1146,15 @@ class AppUiPersistedAuditTests(TestCase):
             target_record_id=str(other_capa.pk),
         ).update(occurred_at=contaminant_at)
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(1), CaptureQueriesContext(connection) as queries:
             entries = get_audit_entries(capa, limit=2)
 
         assert len(entries) == 2
+        assert len(queries) == 1
+        executed_sql = assert_executed_sql_orders_newest_then_pk(
+            queries[0]['sql'], 'occurred_at'
+        )
+        assert re.search(r'\blimit\s+2\b', executed_sql), executed_sql
         assert [entry.action_label for entry in entries] == [
             'capa.tie_second',
             'capa.tie_first',
