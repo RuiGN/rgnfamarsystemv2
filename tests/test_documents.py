@@ -60,26 +60,53 @@ class ControlledDocumentModelTests(TestCase):
         owner.last_name = 'Mendes'
         owner.save(update_fields=['first_name', 'last_name'])
         document = create_controlled_document(owner, suffix='audit-adapter')
+        created_rows = []
         for number in range(30):
-            DocumentAuditTrail.objects.create(
-                document=document,
-                action=DocumentAuditTrail.Action.REVIEWED,
-                actor=owner,
-                snapshot=f'{{"sequência": {number}, "status": "reviewed"}}',
-                reason=f'Revisão {number}.',
+            created_rows.append(
+                DocumentAuditTrail.objects.create(
+                    document=document,
+                    action=DocumentAuditTrail.Action.REVIEWED,
+                    actor=owner,
+                    snapshot=f'{{"sequência": {number}, "status": "reviewed"}}',
+                    reason=f'Revisão {number}.',
+                )
             )
+        tied_at = timezone.now() + timedelta(days=1)
+        DocumentAuditTrail.objects.filter(
+            pk__in=(created_rows[-2].pk, created_rows[-1].pk)
+        ).update(created_at=tied_at)
 
         with CaptureQueriesContext(connection) as queries:
             entries = get_audit_entries(document, limit=100)
+        with CaptureQueriesContext(connection) as custom_limit_queries:
+            custom_entries = get_audit_entries(document, limit=3)
 
         assert len(entries) == 25
+        assert len(custom_entries) == 3
         assert all(isinstance(entry, AuditEntry) for entry in entries)
         assert entries[0].occurred_at >= entries[-1].occurred_at
         assert entries[0].actor_label == 'Carla Mendes'
         assert entries[0].details == '{"sequência": 29, "status": "reviewed"}'
         assert entries[0].reason == 'Revisão 29.'
+        assert custom_entries[1].reason == 'Revisão 28.'
         assert len(queries) == 1
+        assert len(custom_limit_queries) == 1
         assert 'LIMIT 25' in queries[0]['sql'].upper()
+        assert 'LIMIT 3' in custom_limit_queries[0]['sql'].upper()
+
+    def test_non_positive_audit_limits_return_empty_tuple_without_query(self):
+        from base.ui.audit import get_audit_entries
+
+        owner, _approver, _reader = create_document_users(suffix='audit-zero')
+        document = create_controlled_document(owner, suffix='audit-zero')
+
+        with CaptureQueriesContext(connection) as queries:
+            zero_entries = get_audit_entries(document, limit=0)
+            negative_entries = get_audit_entries(document, limit=-8)
+
+        assert zero_entries == ()
+        assert negative_entries == ()
+        assert len(queries) == 0
 
     def test_document_workflow_locks_published_document_and_creates_revision_with_audit_trail(self):
         from documents.models import (

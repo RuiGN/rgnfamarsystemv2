@@ -16,6 +16,7 @@ from django.test.utils import CaptureQueriesContext
 from django.db import connection
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import escape
 
 from audits.models import AuditProgram
 from auxiliary.models import City, StateProvince
@@ -968,6 +969,43 @@ class AppUiPersistedAuditTests(TestCase):
         assert '26/08/2026 09:05' in content
         assert 'datetime="2026-08-27T14:30:00' in content
 
+    def test_controlled_document_audit_escapes_all_persisted_xss_payloads(self):
+        document = self.create_document()
+        actor_payload = '<img src=x onerror=alert("ator")>'
+        snapshot_payload = '<script>alert("snapshot")</script>'
+        reason_payload = '<svg onload=alert("motivo")>Motivo</svg>'
+        self.admin.first_name = actor_payload
+        self.admin.last_name = ''
+        self.admin.save(update_fields=['first_name', 'last_name'])
+        event = DocumentAuditTrail.objects.create(
+            document=document,
+            # A ação é uma choice controlada; payload livre não pertence a esse campo.
+            action=DocumentAuditTrail.Action.REVIEWED,
+            actor=self.admin,
+            snapshot=snapshot_payload,
+            reason=reason_payload,
+        )
+        assert event.action in DocumentAuditTrail.Action.values
+
+        response = self.client.get(
+            f'/app/documents/controlled-documents/{document.pk}/'
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        audit_html = content.split(
+            'aria-labelledby="audit-trail-title"', maxsplit=1
+        )[1].split('</section>', maxsplit=1)[0]
+        assert str(escape(actor_payload)) in audit_html
+        assert str(escape(snapshot_payload)) in audit_html
+        assert str(escape(reason_payload)) in audit_html
+        assert actor_payload not in audit_html
+        assert snapshot_payload not in audit_html
+        assert reason_payload not in audit_html
+        assert '<img' not in audit_html
+        assert '<script' not in audit_html
+        assert '<svg' not in audit_html
+
     def test_capa_detail_uses_exact_generic_history_identity(self):
         capa = self.create_capa()
         other_capa = self.create_capa('Outra CAPA')
@@ -1017,6 +1055,97 @@ class AppUiPersistedAuditTests(TestCase):
         assert 'contaminação.app' not in content
         assert 'contaminação.modelo' not in content
         assert 'contaminação.pk' not in content
+
+    def test_generic_adapter_uses_one_query_custom_limit_and_stable_tie_order(self):
+        from base.ui.audit import get_audit_entries
+
+        capa = self.create_capa()
+        other_capa = self.create_capa('CAPA com PK diferente')
+        second_actor = self.User.objects.create_user(
+            username='bruno.auditoria@example.com',
+            email='bruno.auditoria@example.com',
+            password='S3curePass!123',
+            first_name='Bruno',
+            last_name='Lima',
+        )
+        third_actor = self.User.objects.create_user(
+            username='carla.auditoria@example.com',
+            email='carla.auditoria@example.com',
+            password='S3curePass!123',
+            first_name='Carla',
+            last_name='Souza',
+        )
+        RecordStatusHistory.record_transition(
+            instance=capa,
+            previous_status='draft',
+            new_status='open',
+            action='capa.older',
+            actor=self.admin,
+        )
+        tie_first = RecordStatusHistory.record_transition(
+            instance=capa,
+            previous_status='open',
+            new_status='in_progress',
+            action='capa.tie_first',
+            actor=second_actor,
+        )
+        tie_second = RecordStatusHistory.record_transition(
+            instance=capa,
+            previous_status='in_progress',
+            new_status='pending_approval',
+            action='capa.tie_second',
+            actor=third_actor,
+        )
+        tied_at = timezone.now() + timedelta(days=1)
+        RecordStatusHistory.objects.filter(
+            pk__in=(tie_first.pk, tie_second.pk)
+        ).update(occurred_at=tied_at)
+        contaminant_at = tied_at + timedelta(days=1)
+        RecordStatusHistory.objects.create(
+            source_module='risks',
+            target_model='CapaRecord',
+            target_record_id=str(capa.pk),
+            previous_status='draft',
+            new_status='wrong_app',
+            action='contaminação.app.futura',
+            actor=self.admin,
+            occurred_at=contaminant_at,
+        )
+        RecordStatusHistory.objects.create(
+            source_module='capa',
+            target_model='RiskRecord',
+            target_record_id=str(capa.pk),
+            previous_status='draft',
+            new_status='wrong_class',
+            action='contaminação.classe.futura',
+            actor=self.admin,
+            occurred_at=contaminant_at,
+        )
+        RecordStatusHistory.record_transition(
+            instance=other_capa,
+            previous_status='draft',
+            new_status='wrong_pk',
+            action='contaminação.pk.futura',
+            actor=self.admin,
+        )
+        RecordStatusHistory.objects.filter(
+            source_module='capa',
+            target_model='CapaRecord',
+            target_record_id=str(other_capa.pk),
+        ).update(occurred_at=contaminant_at)
+
+        with self.assertNumQueries(1):
+            entries = get_audit_entries(capa, limit=2)
+
+        assert len(entries) == 2
+        assert [entry.action_label for entry in entries] == [
+            'capa.tie_second',
+            'capa.tie_first',
+        ]
+        assert [entry.actor_label for entry in entries] == [
+            'Carla Souza',
+            'Bruno Lima',
+        ]
 
     def test_detail_with_no_history_renders_true_empty_state(self):
         capa = self.create_capa()
