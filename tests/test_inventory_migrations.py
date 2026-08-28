@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 import pytest
-from django.db import IntegrityError, connection, transaction
+from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.utils import timezone
 

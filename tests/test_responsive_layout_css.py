@@ -11,6 +11,15 @@ from django.test import override_settings
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_mobile_navigation_toggle_has_an_accessible_pt_br_label():
+    template = (ROOT / 'templates' / 'base.html').read_text()
+
+    assert (
+        'class="nxl-head-mobile-toggler" id="mobile-collapse" '
+        'aria-label="Abrir menu de navegação"'
+    ) in template
+
+
 def test_advanced_filters_use_accessible_bootstrap_collapse_only_when_configured():
     template = (ROOT / 'templates' / 'app' / 'includes' / 'search_filters.html').read_text()
 

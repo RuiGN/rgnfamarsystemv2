@@ -2,8 +2,6 @@ from decimal import Decimal
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import connection, migrations
-from django.db.migrations.loader import MigrationLoader
 from django.test import TestCase
 from django.utils import timezone
 
