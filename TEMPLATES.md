@@ -17,6 +17,48 @@ Os cockpits de operação, qualidade e workflow usam configurações imutáveis
 métricas, tons, ícones e URLs já resolvidas. A view filtra módulos, cartões e
 atalhos no servidor antes da renderização.
 
+### Contratos do design system operacional
+
+Os componentes compartilhados recebem projeções imutáveis de
+`base.ui.presentation`; eles não consultam o banco, não calculam regras de
+negócio e não constroem URLs a partir de dados livres.
+
+Todo texto visível deve usar português do Brasil com acentuação correta.
+
+- `ProgressMetric` alimenta o cartão de indicador com `label`, `value`, `icon`,
+  `tone`, `badge`, `url`, `target`, `helper` e `required_permission`. A meta só
+  deve ser informada quando houver denominador real e autorizado. Sem meta
+  positiva, o cartão permanece simples; com meta, o percentual é limitado de
+  0% a 100% e exposto por barra e atributos ARIA. A view ou o workspace é dono
+  da verificação de `required_permission`. Estado vazio do conjunto: “Nenhum
+  indicador disponível”.
+- `DeadlineItem` representa um prazo já autorizado com `title`, `description`,
+  `due_at`, `tone`, `icon` e `url`. `build_workspace_deadlines` verifica a
+  permissão `view` de cada fonte, restringe tarefas e notificações ao usuário e
+  aplica ordenação e limite antes da renderização. Estado vazio: “Nenhum prazo
+  operacional encontrado.”
+- `advanced_filter_fields` é a lista permitida de campos em `ResourceConfig`.
+  Somente choices e datas/datas-horas declaradas entram no `QuerySet`; chaves
+  livres nunca viram lookups Django. A view é dona da validação e publica os
+  parâmetros autorizados para paginação e exportação. Sem configuração, o
+  painel avançado não é exibido; uma data inválida permanece visível para
+  correção, mas não filtra a consulta.
+- `NotificationPreview` projeta `title`, criticidade, origem, tom, ícone,
+  `created_at`, estado de leitura e URL de detalhe. O context processor só
+  consulta `WorkflowNotification` após confirmar acesso ao workspace e
+  `workflow.view_workflownotification`, sempre com
+  `recipient=request.user`, ordenação recente e limite de cinco. Estado vazio:
+  “Nenhuma notificação recente.”
+- `StatusPresentation` mantém o rótulo original e associa `tone` e `icon` por
+  `resolve_status`. Cor nunca é a única indicação: o componente apresenta texto
+  e ícone semântico. Valores desconhecidos usam apresentação neutra, sem
+  inventar um estado de negócio.
+- `AuditEntry` normaliza `occurred_at`, ator, ação, detalhes, motivo e
+  `StatusPresentation` para leitura. A view só ativa a consulta quando o recurso
+  declara `audit_trail`; `base.ui.audit.get_audit_entries` usa fontes
+  persistidas, ordena do evento mais recente e limita a 25. Estado vazio:
+  “Nenhum evento de auditoria disponível para este registro.”
+
 O mesmo template inclui `deadline_list.html`, alimentado por `DeadlineItem` e
 `build_workspace_deadlines`. Cada fonte é consultada somente após a permissão
 `view` correspondente: ordens de produção ativas, itens pendentes de checklist

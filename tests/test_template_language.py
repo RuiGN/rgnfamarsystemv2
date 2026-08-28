@@ -56,3 +56,19 @@ def test_representative_functional_icons_remain_available():
     assert 'btn-close' in base
     assert 'feather-message-circle' in chat
     assert 'feather-send' in chat
+
+
+def test_documentation_defines_operational_design_system_contracts_in_ptbr():
+    documentation = (ROOT / 'TEMPLATES.md').read_text()
+
+    for contract in (
+        'ProgressMetric',
+        'DeadlineItem',
+        'advanced_filter_fields',
+        'NotificationPreview',
+        'StatusPresentation',
+        'AuditEntry',
+    ):
+        assert contract in documentation
+
+    assert 'Todo texto visível deve usar português do Brasil com acentuação correta.' in documentation

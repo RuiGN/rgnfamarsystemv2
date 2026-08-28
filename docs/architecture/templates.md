@@ -37,6 +37,34 @@ permanecem permitidos em botões, menus, alertas, indicadores e controles
 interativos quando comunicam uma ação ou um estado. A configuração central de
 widgets não publica `data-icon` nem metadados equivalentes de apresentação.
 
+## Componentes operacionais reutilizáveis
+
+`base.ui.presentation` define projeções imutáveis, e os includes sob
+`templates/includes/components/` apenas apresentam essas projeções. Consultas,
+permissões, normalização de estados e URLs pertencem às views, aos context
+processors e aos construtores em `base.ui`; não devem migrar para Django
+Templates.
+
+| Contrato/configuração | Finalidade e entrada | Dono da autorização | Estado vazio ou fallback |
+| --- | --- | --- | --- |
+| `ProgressMetric` | Indicador simples ou com meta real, valor, tom, ícone, URL e texto auxiliar | View/workspace filtra por `required_permission` | “Nenhum indicador disponível” |
+| `DeadlineItem` | Prazo real com descrição, data/hora, tom, ícone e URL | `build_workspace_deadlines` verifica a permissão da fonte e o escopo do usuário | “Nenhum prazo operacional encontrado.” |
+| `advanced_filter_fields` | Lista permitida de choices e datas/datas-horas de um `ResourceConfig` | `ResourceListView` valida nomes, valores e parâmetros preservados | Painel omitido quando não há configuração; entrada inválida é preservada sem filtrar |
+| `NotificationPreview` | Até cinco notificações recentes com criticidade, origem, momento e estado de leitura | `sidebar_menu` exige acesso ao workflow, permissão de visualização e `recipient=request.user` | “Nenhuma notificação recente.” |
+| `StatusPresentation` | Rótulo original, tom e ícone produzidos por `resolve_status` | Consumidor fornece apenas valores que já pode exibir | Tom e ícone neutros para valor sem classificação |
+| `AuditEntry` | Evento persistido com data/hora, ator, ação, detalhes, motivo e estado | `ResourceDetailView` consulta somente recursos com `audit_trail` declarado | “Nenhum evento de auditoria disponível para este registro.” |
+
+Todo texto visível deve estar em português do Brasil com acentuação correta.
+Cor deve vir acompanhada de texto e ícone ou descrição acessível. Exemplos
+aprovados incluem “Ver detalhes”, “Filtros avançados”, “Vence hoje” e “Não há
+dados suficientes para exibir este gráfico.”
+
+O layout lateral de detalhe usa oito colunas para os dados e quatro para o
+resumo somente quando `build_detail_summary` retorna identificação,
+responsável, data ou estado real. Sem resumo, o conteúdo ocupa as doze colunas.
+Dashboards publicam a hora real em `generated_at` e oferecem tabela textual
+equivalente ao gráfico.
+
 ## Verificação mínima
 
 ```bash
