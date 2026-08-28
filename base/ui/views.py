@@ -25,6 +25,7 @@ from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.registry import get_module, get_visible_modules, get_resource
+from base.ui.workspaces import get_workspace
 from costing.models import ProductionCostCapture
 from documents.models import ControlledDocument, DocumentAuditTrail
 from governance.models import GovernanceAuditLog
@@ -45,7 +46,6 @@ from reports.forms import (
 )
 from reports.models import ReportDefinition
 from reports.services import run_report_definition
-from workflow.models import ApprovalTask, AsyncJobStatus, WorkflowNotification
 
 
 def _build_inline_form_class(inline):
@@ -251,17 +251,6 @@ class ModuleContextMixin:
         if self.module is None:
             raise Http404('Módulo não encontrado.')
         return self.module
-
-
-class ModuleWorkspaceMixin:
-    module_slug = ''
-
-    def dispatch(self, request, *args, **kwargs):
-        module = get_module(self.module_slug)
-        if module is None or not module.can_view(request.user):
-            raise PermissionDenied('Usuário sem permissão para visualizar este módulo.')
-        # Método cooperativo: a implementação concreta vem da CBV à direita no MRO.
-        return super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
 
 
 class ResourceContextMixin(ModuleContextMixin):
@@ -584,71 +573,38 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
         }
 
 
-class OperationsWorkspaceView(LoginRequiredMixin, ModuleWorkspaceMixin, TemplateView):
-    module_slug = 'production'
-    template_name = 'workspaces/operations.html'
+class WorkspaceView(LoginRequiredMixin, TemplateView):
+    template_name = 'workspaces/workspace.html'
+    workspace_slug = ''
+    workspace = None
+
+    def get_workspace(self):
+        if self.workspace is None:
+            self.workspace = get_workspace(self.workspace_slug)
+        if self.workspace is None:
+            raise Http404('Workspace não encontrado.')
+        return self.workspace
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        workspace = self.get_workspace()
+        module = get_module(workspace.module_slug)
+        if module is None or not module.can_view(request.user):
+            raise PermissionDenied('Usuário sem permissão para visualizar este workspace.')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        production_orders = ProductionOrder.objects.all()
-        stock_lots = StockLot.objects.all()
-        samples = QualitySample.objects.all()
-        context['metrics'] = {
-            'production_in_progress': production_orders.filter(
-                status=ProductionOrder.Status.IN_PROGRESS
-            ).count(),
-            'stock_lots': stock_lots.count(),
-            'pending_samples': samples.exclude(
-                status__in=(
-                    QualitySample.Status.APPROVED,
-                    QualitySample.Status.REJECTED,
-                    QualitySample.Status.CANCELLED,
-                )
-            ).count(),
-        }
-        return context
-
-
-class QualityWorkspaceView(LoginRequiredMixin, ModuleWorkspaceMixin, TemplateView):
-    module_slug = 'quality'
-    template_name = 'workspaces/quality.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        samples = QualitySample.objects.all()
-        analyses = QualityAnalysis.objects.all()
-        investigations = LaboratoryInvestigation.objects.all()
-        context['metrics'] = {
-            'samples_in_analysis': samples.filter(status=QualitySample.Status.IN_ANALYSIS).count(),
-            'pending_analyses': analyses.filter(status=QualityAnalysis.Status.PENDING).count(),
-            'open_investigations': investigations.exclude(
-                status__in=(
-                    LaboratoryInvestigation.Status.CONCLUDED,
-                    LaboratoryInvestigation.Status.CANCELLED,
-                )
-            ).count(),
-        }
-        return context
-
-
-class WorkflowWorkspaceView(LoginRequiredMixin, ModuleWorkspaceMixin, TemplateView):
-    module_slug = 'workflow'
-    template_name = 'workspaces/workflow.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        tasks = ApprovalTask.objects.all()
-        notifications = WorkflowNotification.objects.filter(recipient=self.request.user)
-        jobs = AsyncJobStatus.objects.all()
-        context['metrics'] = {
-            'pending_approvals': tasks.filter(status=ApprovalTask.Status.PENDING).count(),
-            'unread_notifications': notifications.filter(
-                status=WorkflowNotification.Status.UNREAD
-            ).count(),
-            'running_jobs': jobs.filter(
-                status__in=(AsyncJobStatus.Status.PENDING, AsyncJobStatus.Status.RUNNING)
-            ).count(),
-        }
+        workspace = self.get_workspace()
+        content = workspace.build_content(self.request)
+        context.update(
+            {
+                'workspace': workspace,
+                'metrics': content.metrics,
+                'quick_links': content.quick_links,
+            }
+        )
         return context
 
 

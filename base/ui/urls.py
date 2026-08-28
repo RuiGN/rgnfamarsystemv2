@@ -14,11 +14,19 @@ urlpatterns = [
     ),
     path(
         'workspaces/operations/',
-        views.OperationsWorkspaceView.as_view(),
+        views.WorkspaceView.as_view(workspace_slug='operations'),
         name='operations_workspace',
     ),
-    path('workspaces/quality/', views.QualityWorkspaceView.as_view(), name='quality_workspace'),
-    path('workspaces/workflow/', views.WorkflowWorkspaceView.as_view(), name='workflow_workspace'),
+    path(
+        'workspaces/quality/',
+        views.WorkspaceView.as_view(workspace_slug='quality'),
+        name='quality_workspace',
+    ),
+    path(
+        'workspaces/workflow/',
+        views.WorkspaceView.as_view(workspace_slug='workflow'),
+        name='workflow_workspace',
+    ),
     # Explicit operational maps must precede the generic resource detail route.
     path(
         'production/orders/<int:pk>/control-map/',

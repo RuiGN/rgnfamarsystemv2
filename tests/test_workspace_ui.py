@@ -1,10 +1,25 @@
 from dataclasses import FrozenInstanceError
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
+from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.urls import reverse
 
+from base.ui.views import WorkspaceView
 from base.ui.workspaces import WORKSPACES, get_workspace
+from production.models import ProductionOrder
 from workflow.models import WorkflowNotification
+
+
+def grant_view_permission(user, model):
+    user.user_permissions.add(
+        Permission.objects.get(
+            content_type__app_label=model._meta.app_label,
+            content_type__model=model._meta.model_name,
+            codename=f'view_{model._meta.model_name}',
+        )
+    )
 
 
 class WorkspaceConfigurationTests(SimpleTestCase):
@@ -80,3 +95,68 @@ class WorkspaceContentBuilderTests(TestCase):
         )
 
         self.assertEqual(metric.value, 1)
+
+
+class WorkspaceAccessTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='workspace@example.com',
+            email='workspace@example.com',
+            password='WorkspaceSecure!123',
+        )
+        self.admin = get_user_model().objects.create_superuser(
+            username='workspace-admin@example.com',
+            email='workspace-admin@example.com',
+            password='WorkspaceSecure!123',
+        )
+
+    def test_existing_route_names_and_paths_are_preserved(self):
+        self.assertEqual(reverse('app:operations_workspace'), '/app/workspaces/operations/')
+        self.assertEqual(reverse('app:quality_workspace'), '/app/workspaces/quality/')
+        self.assertEqual(reverse('app:workflow_workspace'), '/app/workspaces/workflow/')
+
+    def test_workspace_requires_login(self):
+        response = self.client.get(reverse('app:operations_workspace'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response['Location'].startswith(reverse('accounts:login')))
+
+    def test_all_workspaces_render_the_shared_template(self):
+        self.client.force_login(self.admin)
+
+        for route_name in (
+            'app:operations_workspace',
+            'app:quality_workspace',
+            'app:workflow_workspace',
+        ):
+            with self.subTest(route_name=route_name):
+                response = self.client.get(reverse(route_name))
+                self.assertEqual(response.status_code, 200)
+                self.assertTemplateUsed(response, 'workspaces/workspace.html')
+                self.assertContains(response, 'data-ui="workspace"')
+
+    def test_user_without_module_permission_receives_403(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:operations_workspace'))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_unknown_direct_workspace_configuration_raises_404(self):
+        request = RequestFactory().get('/app/workspaces/missing/')
+        request.user = self.admin
+
+        with self.assertRaises(Http404):
+            WorkspaceView.as_view(workspace_slug='missing')(request)
+
+    def test_metric_cards_are_filtered_by_model_permission(self):
+        grant_view_permission(self.user, ProductionOrder)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('app:operations_workspace'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ordens em execução')
+        self.assertNotContains(response, 'Lotes em estoque')
+        self.assertNotContains(response, 'Amostras pendentes')
+        self.assertNotContains(response, '>Planejamento<')
