@@ -33,6 +33,7 @@ from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.personal_area import build_personal_area
 from base.ui.presentation import ProgressMetric, build_detail_summary, resolve_status
 from base.ui.registry import get_module, get_visible_modules, get_resource
+from base.ui.search import search_visible_resources
 from base.ui.workspaces import get_workspace
 from base.templatetags.ui_query import build_query_string
 from costing.models import ProductionCostCapture
@@ -394,6 +395,12 @@ class PersonalAreaView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['sections'] = build_personal_area(self.request)
         return context
+
+
+class GlobalSearchView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        results = search_visible_resources(request, request.GET.get('q', ''))
+        return JsonResponse({'results': [result.as_dict() for result in results]})
 
 
 class DashboardHubView(LoginRequiredMixin, TemplateView):
