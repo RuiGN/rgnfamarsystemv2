@@ -1,5 +1,7 @@
-from pathlib import Path
 import base64
+from datetime import date
+from decimal import Decimal
+from pathlib import Path
 import re
 import tempfile
 import unicodedata
@@ -23,7 +25,9 @@ from files.models import ProtectedFile
 from governance.models import InstitutionSettings
 from maintenance.models import EquipmentAsset
 from masters.models import Product, UnitOfMeasure
+from production.models import ProductionOrder
 from risks.models import RiskRecord
+from tests.test_production import create_released_manufacturing_set
 from workflow.models import WorkflowNotification
 
 
@@ -340,6 +344,57 @@ class AppUiFoundationTests(TestCase):
         assert 'class="table table-borderless' in detail.content.decode()
         assert form.status_code == 200
         assert 'data-ui="resource-form"' in form.content.decode()
+
+    def test_detail_layout_places_operational_summary_beside_production_data(self):
+        unit, product, _material, formula, _component, route = create_released_manufacturing_set(
+            suffix='detail-layout'
+        )
+        order = ProductionOrder.objects.create(
+            order_number='OP-DETAIL-001',
+            batch_number='LOTE-DETAIL-001',
+            product=product,
+            formula=formula,
+            route=route,
+            planned_quantity=Decimal('100.0000'),
+            unit=unit,
+            responsible=self.admin,
+            scheduled_end=date(2026, 8, 31),
+            status=ProductionOrder.Status.IN_PROGRESS,
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse(
+                'app:resource_detail',
+                kwargs={'module_slug': 'production', 'resource_slug': 'orders', 'pk': order.pk},
+            )
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'data-ui="detail-layout"' in content
+        assert 'col-xl-8' in content
+        assert 'col-xl-4' in content
+        assert 'Responsável' in content
+        assert 'Fim previsto' in content
+        assert 'Em execução' in content
+
+    def test_detail_layout_keeps_simple_unit_full_width_without_sidebar(self):
+        self.client.force_login(self.admin)
+        unit = UnitOfMeasure.objects.first()
+
+        response = self.client.get(
+            reverse(
+                'app:resource_detail',
+                kwargs={'module_slug': 'masters', 'resource_slug': 'units', 'pk': unit.pk},
+            )
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'data-ui="detail-layout"' in content
+        assert 'class="col-12"' in content
+        assert 'data-ui="detail-summary"' not in content
 
     def test_resource_form_uses_neutral_titles_for_plural_resource_labels(self):
         template = Path('templates/app/resource_form.html').read_text()

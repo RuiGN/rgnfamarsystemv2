@@ -11,6 +11,17 @@ from django.test import override_settings
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_detail_summary_uses_scoped_readable_layout_styles():
+    css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+    template = (ROOT / 'templates' / 'app' / 'resource_detail.html').read_text()
+
+    assert 'data-ui="detail-layout"' in template
+    assert 'col-xl-8' in template
+    assert 'col-xl-4' in template
+    assert '.detail-summary__list' in css
+    assert '.detail-summary__value { overflow-wrap: anywhere; }' in css
+
+
 def test_app_css_does_not_override_duralux_mobile_shell_offsets():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
 

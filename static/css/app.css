@@ -1061,6 +1061,31 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 
 .operational-deadlines__label { color: var(--rgn-text); font-weight: 700; }
 
+/* Resumo lateral de detalhes: complementa os dados primários sem criar outra tabela. */
+.detail-summary__list { display: grid; gap: 1rem; }
+
+.detail-summary__item {
+    border-bottom: 1px solid var(--rgn-border);
+    display: grid;
+    gap: .2rem;
+    padding-bottom: 1rem;
+}
+
+.detail-summary__item:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.detail-summary__label {
+    align-items: center;
+    color: var(--rgn-muted);
+    display: flex;
+    font-size: .75rem;
+    font-weight: 700;
+    gap: .45rem;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+.detail-summary__value { overflow-wrap: anywhere; }
+
 @media (max-width: 575.98px) {
     .operational-deadlines__link { flex-wrap: wrap; }
     .operational-deadlines__due { margin-left: 2.75rem; text-align: left; width: 100%; }

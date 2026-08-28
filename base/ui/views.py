@@ -24,7 +24,7 @@ from django.views.generic import TemplateView
 from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.forms import _apply_widget_metadata, build_resource_form
-from base.ui.presentation import ProgressMetric
+from base.ui.presentation import ProgressMetric, build_detail_summary
 from base.ui.registry import get_module, get_visible_modules, get_resource
 from base.ui.workspaces import get_workspace
 from costing.models import ProductionCostCapture
@@ -989,10 +989,6 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
         resource = self.get_resource()
         obj = self.get_object()
         context['object'] = obj
-        context['fields'] = [
-            (_field_label(resource.model, field), _object_value(obj, field))
-            for field in resource.list_display
-        ]
         try:
             resource.model._meta.get_field('status')
         except Exception:
@@ -1001,6 +997,29 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
         else:
             context['detail_status'] = _object_value(obj, 'status')
             context['detail_status_tone'] = _status_tone(context['detail_status'])
+        context['detail_summary'] = build_detail_summary(obj, context['detail_status'])
+        primary_field_names = {
+            field_name.split('__')[0] for field_name in resource.list_display
+        }
+        context['has_detail_sidebar'] = any(
+            item.field_name == 'status'
+            or (
+                item.field_name not in primary_field_names
+                and item.field_name not in {'created_at', 'updated_at'}
+            )
+            for item in context['detail_summary']
+        )
+        summary_field_names = {
+            item.field_name for item in context['detail_summary']
+        }
+        context['fields'] = [
+            (_field_label(resource.model, field), _object_value(obj, field))
+            for field in resource.list_display
+            if not (
+                context['has_detail_sidebar']
+                and field.split('__')[0] in summary_field_names
+            )
+        ]
         context['resource_actions'] = available_actions(self.request, resource, obj)
         context['can_view_production_maps'] = isinstance(
             obj, ProductionOrder

@@ -1,0 +1,25 @@
+<section class="card stretch stretch-full" data-ui="detail-summary" aria-label="Resumo operacional">
+    <div class="card-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="feather-sidebar" aria-hidden="true"></i>
+            <h2 class="h6 mb-0">Resumo operacional</h2>
+        </div>
+    </div>
+    <dl class="card-body detail-summary__list mb-0">
+        {% for item in detail_summary %}
+        <div class="detail-summary__item">
+            <dt class="detail-summary__label">
+                <i class="{{ item.icon }}" aria-hidden="true"></i>
+                {{ item.label|capfirst }}
+            </dt>
+            <dd class="detail-summary__value mb-0">
+                {% if item.is_status %}
+                <span class="badge bg-soft-{{ detail_status_tone }} text-{{ detail_status_tone }}" data-ui="resource-status">{{ item.value }}</span>
+                {% else %}
+                {{ item.value }}
+                {% endif %}
+            </dd>
+        </div>
+        {% endfor %}
+    </dl>
+</section>

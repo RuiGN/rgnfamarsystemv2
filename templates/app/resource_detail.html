@@ -82,34 +82,42 @@
 ></div>
 {% endif %}
 {% include 'app/includes/resource_actions.html' with actions=resource_actions %}
-<section class="card stretch stretch-full">
-    <div class="card-body">
-        <div class="d-flex align-items-center gap-3 pb-4 mb-4 border-bottom">
-            <div class="avatar-text avatar-lg bg-soft-primary text-primary"><i class="feather-file-text" aria-hidden="true"></i></div>
-            <div>
-                <span class="text-muted fs-12">{{ resource.label }}</span>
-                <h2 class="h5 mb-0">{{ object }}</h2>
-                {% if detail_status %}<span class="badge bg-soft-{{ detail_status_tone }} text-{{ detail_status_tone }} mt-2" data-ui="resource-status">{{ detail_status }}</span>{% endif %}
+<div class="row g-4" data-ui="detail-layout">
+    <div class="{% if has_detail_sidebar %}col-xl-8{% else %}col-12{% endif %}">
+        <section class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 pb-4 mb-4 border-bottom">
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary"><i class="feather-file-text" aria-hidden="true"></i></div>
+                    <div>
+                        <span class="text-muted fs-12">{{ resource.label }}</span>
+                        <h2 class="h5 mb-0">{{ object }}</h2>
+                        {% if detail_status and not has_detail_sidebar %}<span class="badge bg-soft-{{ detail_status_tone }} text-{{ detail_status_tone }} mt-2" data-ui="resource-status">{{ detail_status }}</span>{% endif %}
+                    </div>
+                </div>
+                <div class="table-responsive" data-ui="resource-detail">
+                    <table class="table table-borderless align-middle mb-0">
+                        <tbody>
+                            {% for label, value in fields %}
+                            <tr>
+                                <th scope="row" class="text-muted fw-semibold w-25">{{ label|capfirst }}</th>
+                                <td>{{ value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="table-responsive" data-ui="resource-detail">
-            <table class="table table-borderless align-middle mb-0">
-                <tbody>
-                    {% for label, value in fields %}
-                    <tr>
-                        <th scope="row" class="text-muted fw-semibold w-25">{{ label|capfirst }}</th>
-                        <td>{{ value }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        </section>
+        {% if resource.audit_trail %}
+            {% include 'app/includes/audit_trail.html' %}
+        {% endif %}
     </div>
-</section>
-
-{% if resource.audit_trail %}
-    {% include 'app/includes/audit_trail.html' %}
-{% endif %}
+    {% if has_detail_sidebar %}
+    <aside class="col-xl-4">
+        {% include 'includes/components/detail_summary.html' %}
+    </aside>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block scripts %}
