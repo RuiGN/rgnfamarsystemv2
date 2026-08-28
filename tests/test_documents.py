@@ -3,7 +3,9 @@ from datetime import timedelta
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -48,6 +50,37 @@ def create_controlled_document(owner, suffix='001'):
 
 
 class ControlledDocumentModelTests(TestCase):
+    def test_audit_adapter_is_immutable_ordered_limited_and_avoids_n_plus_one(self):
+        from base.ui.audit import get_audit_entries
+        from base.ui.presentation import AuditEntry
+        from documents.models import DocumentAuditTrail
+
+        owner, _approver, _reader = create_document_users(suffix='audit-adapter')
+        owner.first_name = 'Carla'
+        owner.last_name = 'Mendes'
+        owner.save(update_fields=['first_name', 'last_name'])
+        document = create_controlled_document(owner, suffix='audit-adapter')
+        for number in range(30):
+            DocumentAuditTrail.objects.create(
+                document=document,
+                action=DocumentAuditTrail.Action.REVIEWED,
+                actor=owner,
+                snapshot=f'{{"sequência": {number}, "status": "reviewed"}}',
+                reason=f'Revisão {number}.',
+            )
+
+        with CaptureQueriesContext(connection) as queries:
+            entries = get_audit_entries(document, limit=100)
+
+        assert len(entries) == 25
+        assert all(isinstance(entry, AuditEntry) for entry in entries)
+        assert entries[0].occurred_at >= entries[-1].occurred_at
+        assert entries[0].actor_label == 'Carla Mendes'
+        assert entries[0].details == '{"sequência": 29, "status": "reviewed"}'
+        assert entries[0].reason == 'Revisão 29.'
+        assert len(queries) == 1
+        assert 'LIMIT 25' in queries[0]['sql'].upper()
+
     def test_document_workflow_locks_published_document_and_creates_revision_with_audit_trail(self):
         from documents.models import (
             ControlledDocument,

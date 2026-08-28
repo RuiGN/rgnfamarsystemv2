@@ -1,10 +1,11 @@
 import base64
-from datetime import date
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 import re
 import tempfile
 import unicodedata
+from unittest.mock import patch
 
 import pytest
 from django import forms
@@ -20,6 +21,8 @@ from audits.models import AuditProgram
 from auxiliary.models import City, StateProvince
 from base.ui.forms import _apply_widget_metadata
 from base.ui.registry import get_modules, get_resource
+from capa.models import CapaRecord
+from compliance.models import RecordStatusHistory
 from documents.models import DocumentAuditTrail
 from documents.models import ControlledDocument
 from files.models import ProtectedFile
@@ -891,6 +894,165 @@ class AppUiPermissionTests(TestCase):
             == 403
         )
         assert DocumentAuditTrail.objects.filter(pk=audit_trail.pk).exists()
+
+
+class AppUiPersistedAuditTests(TestCase):
+    def setUp(self):
+        self.User = get_user_model()
+        self.admin = self.User.objects.create_superuser(
+            username='auditoria.real@example.com',
+            email='auditoria.real@example.com',
+            password='S3curePass!123',
+            first_name='Ana',
+            last_name='Silva',
+        )
+        self.client.force_login(self.admin)
+
+    def create_document(self, code='DOC-AUD-001'):
+        return ControlledDocument.objects.create(
+            code=code,
+            document_type=ControlledDocument.DocumentType.SOP,
+            title='Procedimento com auditoria persistida',
+            area='Garantia da qualidade',
+            effective_from=timezone.localdate(),
+            owner=self.admin,
+            change_summary='Emissão inicial controlada.',
+        )
+
+    def create_capa(self, title='CAPA com histórico persistido'):
+        return CapaRecord.objects.create(
+            source_type=CapaRecord.SourceType.IMPROVEMENT,
+            source_reference='MELHORIA-AUD-001',
+            title=title,
+            root_cause='Causa raiz confirmada.',
+            action_plan='Executar e verificar o plano aprovado.',
+            owner=self.admin,
+            due_date=timezone.localdate() + timedelta(days=30),
+            effectiveness_criteria='Ausência de recorrência por três lotes.',
+            opened_by=self.admin,
+        )
+
+    def test_controlled_document_detail_renders_real_audit_entries_newest_first(self):
+        document = self.create_document()
+        older = DocumentAuditTrail.objects.create(
+            document=document,
+            action=DocumentAuditTrail.Action.CREATED,
+            actor=self.admin,
+            snapshot='{"version": "1.0", "status": "draft"}',
+            reason='Emissão inicial.',
+        )
+        newer = DocumentAuditTrail.objects.create(
+            document=document,
+            action=DocumentAuditTrail.Action.SUBMITTED,
+            actor=self.admin,
+            snapshot='{"version": "1.0", "status": "in_review"}',
+            reason='Revisão periódica.',
+        )
+        older_at = timezone.make_aware(datetime(2026, 8, 26, 9, 5))
+        newer_at = timezone.make_aware(datetime(2026, 8, 27, 14, 30))
+        DocumentAuditTrail.objects.filter(pk=older.pk).update(created_at=older_at)
+        DocumentAuditTrail.objects.filter(pk=newer.pk).update(created_at=newer_at)
+
+        response = self.client.get(
+            f'/app/documents/controlled-documents/{document.pk}/'
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert content.index('Submetido') < content.index('Criado')
+        assert 'Ana Silva' in content
+        assert 'status' in content
+        assert 'in_review' in content
+        assert 'Revisão periódica.' in content
+        assert '27/08/2026 14:30' in content
+        assert '26/08/2026 09:05' in content
+        assert 'datetime="2026-08-27T14:30:00' in content
+
+    def test_capa_detail_uses_exact_generic_history_identity(self):
+        capa = self.create_capa()
+        other_capa = self.create_capa('Outra CAPA')
+        expected = RecordStatusHistory.record_transition(
+            instance=capa,
+            previous_status=CapaRecord.Status.DRAFT,
+            new_status=CapaRecord.Status.OPEN,
+            action='capa.submit',
+            actor=self.admin,
+            reason='Submissão autorizada pela Garantia da Qualidade.',
+        )
+        RecordStatusHistory.objects.create(
+            source_module='risks',
+            target_model='CapaRecord',
+            target_record_id=str(capa.pk),
+            previous_status='draft',
+            new_status='ignored-risk-app',
+            action='contaminação.app',
+            actor=self.admin,
+        )
+        RecordStatusHistory.objects.create(
+            source_module='capa',
+            target_model='RiskRecord',
+            target_record_id=str(capa.pk),
+            previous_status='draft',
+            new_status='ignored-model',
+            action='contaminação.modelo',
+            actor=self.admin,
+        )
+        RecordStatusHistory.record_transition(
+            instance=other_capa,
+            previous_status=CapaRecord.Status.DRAFT,
+            new_status=CapaRecord.Status.IN_PROGRESS,
+            action='contaminação.pk',
+            actor=self.admin,
+        )
+
+        response = self.client.get(f'/app/capa/records/{capa.pk}/')
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert expected.action in content
+        assert CapaRecord.Status.DRAFT in content
+        assert CapaRecord.Status.OPEN in content
+        assert 'Submissão autorizada pela Garantia da Qualidade.' in content
+        assert 'Ana Silva' in content
+        assert 'contaminação.app' not in content
+        assert 'contaminação.modelo' not in content
+        assert 'contaminação.pk' not in content
+
+    def test_detail_with_no_history_renders_true_empty_state(self):
+        capa = self.create_capa()
+
+        response = self.client.get(f'/app/capa/records/{capa.pk}/')
+
+        assert response.status_code == 200
+        assert (
+            'Nenhum evento de auditoria disponível para este registro.'
+            in response.content.decode()
+        )
+
+    def test_unauthorized_detail_does_not_build_audit_entries(self):
+        document = self.create_document()
+        unauthorized = self.User.objects.create_user(
+            username='sem.auditoria@example.com',
+            email='sem.auditoria@example.com',
+            password='S3curePass!123',
+        )
+        self.client.force_login(unauthorized)
+
+        with patch('base.ui.views.get_audit_entries') as getter:
+            response = self.client.get(
+                f'/app/documents/controlled-documents/{document.pk}/'
+            )
+
+        assert response.status_code == 403
+        getter.assert_not_called()
+
+    def test_demonstrative_audit_content_is_absent_from_template(self):
+        template = Path('templates/app/includes/audit_trail.html').read_text()
+
+        assert 'Operador Sistema' not in template
+        assert '2026-07-19 14:30:22' not in template
+        assert '{% now' not in template
+        assert 'Exportar relatório' not in template
 
 
 class AppUiSprint38ResourceTests(TestCase):

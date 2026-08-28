@@ -1,68 +1,50 @@
-<section class="card stretch stretch-full mt-4 border-info">
-    <div class="card-header bg-soft-info d-flex align-items-center justify-content-between">
+<section class="card stretch stretch-full mt-4 border-info" aria-labelledby="audit-trail-title">
+    <div class="card-header bg-soft-info d-flex align-items-center">
         <div class="d-flex align-items-center gap-3">
-            <div class="avatar-text avatar-sm bg-info text-white"><i class="feather-clock" aria-hidden="true"></i></div>
+            <div class="avatar-text avatar-sm bg-info text-white">
+                <i class="feather-clock" aria-hidden="true"></i>
+            </div>
             <div>
-                <h2 class="h5 mb-0 text-info">Trilha de Auditoria (Audit Trail)</h2>
-                <p class="text-info mb-0 opacity-75 fs-12">Histórico protegido de alterações (CFR 21 Part 11)</p>
+                <h2 id="audit-trail-title" class="h5 mb-0 text-info">Trilha de auditoria</h2>
+                <p class="text-info mb-0 opacity-75 fs-12">Histórico persistido e somente leitura</p>
             </div>
         </div>
-        <button type="button" class="btn btn-light-brand btn-sm d-inline-flex align-items-center gap-2"><i class="feather-download" aria-hidden="true"></i>Exportar relatório</button>
     </div>
     <div class="card-body p-0">
+        {% if audit_entries %}
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
+                <caption class="visually-hidden">Eventos persistidos da trilha de auditoria deste registro</caption>
                 <thead class="table-light">
                     <tr>
-                        <th>Data/Hora (UTC)</th>
-                        <th>Usuário</th>
-                        <th>Ação</th>
-                        <th>Detalhes da Modificação</th>
-                        <th>Justificativa (Motivo)</th>
-                        <th class="text-center">Assinatura Eletrônica</th>
+                        <th scope="col">Data e hora</th>
+                        <th scope="col">Ator</th>
+                        <th scope="col">Ação</th>
+                        <th scope="col">Detalhes</th>
+                        <th scope="col">Motivo</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for entry in audit_entries %}
                     <tr>
-                        <td><span class="text-muted">{% now "Y-m-d H:i:s" %}</span></td>
                         <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="avatar-text avatar-xs bg-soft-primary text-primary">OP</div>
-                                <span>Operador Sistema</span>
-                            </div>
+                            <time datetime="{{ entry.occurred_at|date:'c' }}" class="text-muted text-nowrap">
+                                {{ entry.occurred_at|date:'d/m/Y H:i' }}
+                            </time>
                         </td>
-                        <td><span class="badge bg-soft-warning text-warning">UPDATE</span></td>
-                        <td>
-                            <div class="fs-12">
-                                <span class="text-muted">Campo: </span><strong>Status</strong><br>
-                                <span class="text-danger text-decoration-line-through">Em Rascunho</span> &rarr; <span class="text-success">Vigente</span>
-                            </div>
-                        </td>
-                        <td>Aprovação final do documento.</td>
-                        <td class="text-center"><i class="feather-check-circle text-success" title="Assinatura Validada"></i></td>
+                        <td>{{ entry.actor_label|default:'—' }}</td>
+                        <td>{% include 'includes/components/status_badge.html' with status=entry.status %}</td>
+                        <td class="text-break">{{ entry.details|default:'—' }}</td>
+                        <td class="text-break">{{ entry.reason|default:'—' }}</td>
                     </tr>
-                    <tr>
-                        <td><span class="text-muted">2026-07-19 14:30:22</span></td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="avatar-text avatar-xs bg-soft-primary text-primary">QA</div>
-                                <span>Garantia de Qualidade</span>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-soft-success text-success">CREATE</span></td>
-                        <td>
-                            <div class="fs-12">
-                                <span>Criação do Registro</span>
-                            </div>
-                        </td>
-                        <td>-</td>
-                        <td class="text-center"><i class="feather-check-circle text-success" title="Assinatura Validada"></i></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    <div class="card-footer bg-light text-muted fs-11 text-center">
-        Nota: Os registros nesta tabela são inalteráveis e mantidos permanentemente para conformidade com Data Integrity (ALCOA+).
+        {% else %}
+        <p class="text-muted text-center py-4 px-3 mb-0">
+            Nenhum evento de auditoria disponível para este registro.
+        </p>
+        {% endif %}
     </div>
 </section>

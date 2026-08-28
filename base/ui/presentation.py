@@ -18,6 +18,18 @@ class StatusPresentation:
     icon: str
 
 
+@dataclass(frozen=True)
+class AuditEntry:
+    """Evento persistido normalizado para apresentação somente leitura."""
+
+    occurred_at: datetime
+    actor_label: str
+    action_label: str
+    details: str
+    reason: str
+    status: StatusPresentation
+
+
 def _normalize_status(value: Any) -> str:
     return ''.join(
         character

@@ -28,6 +28,7 @@ from django.views.generic import TemplateView
 
 from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
+from base.ui.audit import get_audit_entries
 from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.presentation import ProgressMetric, build_detail_summary, resolve_status
 from base.ui.registry import get_module, get_visible_modules, get_resource
@@ -1169,6 +1170,9 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             )
         ]
         context['resource_actions'] = available_actions(self.request, resource, obj)
+        context['audit_entries'] = (
+            get_audit_entries(obj) if resource.audit_trail else ()
+        )
         context['can_view_production_maps'] = isinstance(
             obj, ProductionOrder
         ) and self.request.user.has_perms(
