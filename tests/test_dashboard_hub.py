@@ -2,7 +2,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
+from base.ui.presentation import ProgressMetric
 from base.ui.views import DashboardHubView
 from base.ui.registry import get_module
 
@@ -49,6 +51,36 @@ class DashboardHubAccessTests(TestCase):
         response = self.client.get(reverse('app:dashboard_hub', args=['executive']))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_dashboard_renders_accessible_progress_metric_when_target_exists(self):
+        data = {
+            'kpis': [
+                ProgressMetric(
+                    'Em execução',
+                    1,
+                    'feather-activity',
+                    'success',
+                    'Produção',
+                    reverse('app:resource_list', args=('production', 'orders')),
+                    2,
+                )
+            ],
+            'chart': {'labels': [], 'series': []},
+            'table': [],
+        }
+        with patch.object(DashboardHubView, '_build_data', return_value=data):
+            response = self.client.get(reverse('app:dashboard_hub', args=['operations']))
+
+        self.assertContains(response, 'data-ui="progress-metric"')
+        self.assertContains(response, 'role="progressbar"')
+        self.assertContains(response, 'aria-valuenow="')
+        self.assertContains(response, 'Ver detalhes')
+
+    def test_dashboard_filters_kpis_without_model_view_permission(self):
+        response = self.client.get(reverse('app:dashboard_hub', args=['executive']))
+
+        self.assertContains(response, 'Ordens ativas')
+        self.assertNotContains(response, 'Lotes em estoque')
 
     def test_navigation_lists_dashboards_by_django_permissions(self):
         response = self.client.get(reverse('app:index'))

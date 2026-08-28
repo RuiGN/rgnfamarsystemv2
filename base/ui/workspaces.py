@@ -9,21 +9,8 @@ from production.models import ProductionOrder
 from quality.models import LaboratoryInvestigation, QualityAnalysis, QualitySample
 from workflow.models import ApprovalTask, AsyncJobStatus, WorkflowNotification
 
+from .presentation import ProgressMetric as WorkspaceMetric
 from .registry import get_module
-
-
-@dataclass(frozen=True)
-class WorkspaceMetric:
-    label: str
-    value: int
-    icon: str
-    tone: str
-    badge: str
-    url: str
-    required_permission: str = ''
-
-    def can_view(self, user: Any) -> bool:
-        return not self.required_permission or user.has_perm(self.required_permission)
 
 
 @dataclass(frozen=True)
@@ -95,6 +82,13 @@ def build_operations_content(request: Any) -> WorkspaceContent:
                 tone='primary',
                 badge='Produção',
                 url=_resource_url('production', 'orders'),
+                target=ProductionOrder.objects.exclude(
+                    status__in=(
+                        ProductionOrder.Status.COMPLETED,
+                        ProductionOrder.Status.CANCELLED,
+                        ProductionOrder.Status.CLOSED,
+                    )
+                ).count(),
                 required_permission='production.view_productionorder',
             ),
             WorkspaceMetric(
@@ -151,20 +145,23 @@ def build_quality_content(request: Any) -> WorkspaceContent:
         metrics=(
             WorkspaceMetric(
                 label='Amostras em análise',
-                value=QualitySample.objects.filter(
-                    status=QualitySample.Status.IN_ANALYSIS
-                ).count(),
+                value=QualitySample.objects.filter(status=QualitySample.Status.IN_ANALYSIS).count(),
                 icon='feather-droplet',
                 tone='warning',
                 badge='Amostragem',
                 url=_resource_url('quality', 'samples'),
+                target=QualitySample.objects.exclude(
+                    status__in=(
+                        QualitySample.Status.APPROVED,
+                        QualitySample.Status.REJECTED,
+                        QualitySample.Status.CANCELLED,
+                    )
+                ).count(),
                 required_permission='quality.view_qualitysample',
             ),
             WorkspaceMetric(
                 label='Análises pendentes',
-                value=QualityAnalysis.objects.filter(
-                    status=QualityAnalysis.Status.PENDING
-                ).count(),
+                value=QualityAnalysis.objects.filter(status=QualityAnalysis.Status.PENDING).count(),
                 icon='feather-activity',
                 tone='primary',
                 badge='Laboratório',
@@ -237,6 +234,9 @@ def build_workflow_content(request: Any) -> WorkspaceContent:
                 tone='primary',
                 badge='Avisos',
                 url=_resource_url('workflow', 'notifications'),
+                target=WorkflowNotification.objects.filter(recipient=request.user)
+                .exclude(status=WorkflowNotification.Status.ARCHIVED)
+                .count(),
                 required_permission='workflow.view_workflownotification',
             ),
             WorkspaceMetric(

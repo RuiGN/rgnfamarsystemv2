@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 from auxiliary.models import City, StateProvince
 from base.ui.actions.context import available_actions
 from base.ui.forms import _apply_widget_metadata, build_resource_form
+from base.ui.presentation import ProgressMetric
 from base.ui.registry import get_module, get_visible_modules, get_resource
 from base.ui.workspaces import get_workspace
 from costing.models import ProductionCostCapture
@@ -370,6 +371,10 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 ProductionOrder.Status.CLOSED,
             )
         )
+        active_orders_count = active_orders.count()
+        open_titles = titles.exclude(
+            status__in=(FinancialTitle.Status.SETTLED, FinancialTitle.Status.CANCELLED)
+        )
         pending_quality = samples.exclude(
             status__in=(
                 QualitySample.Status.APPROVED,
@@ -384,24 +389,35 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
         }
         if slug == 'operations':
             data['kpis'] = [
-                {
-                    'label': 'Ordens ativas',
-                    'value': active_orders.count(),
-                    'icon': 'feather-play-circle',
-                    'tone': 'primary',
-                },
-                {
-                    'label': 'Em execução',
-                    'value': orders.filter(status=ProductionOrder.Status.IN_PROGRESS).count(),
-                    'icon': 'feather-activity',
-                    'tone': 'success',
-                },
-                {
-                    'label': 'Ordens liberadas',
-                    'value': orders.filter(status=ProductionOrder.Status.RELEASED).count(),
-                    'icon': 'feather-unlock',
-                    'tone': 'warning',
-                },
+                ProgressMetric(
+                    'Ordens ativas',
+                    active_orders_count,
+                    'feather-play-circle',
+                    'primary',
+                    'Produção',
+                    reverse('app:resource_list', args=('production', 'orders')),
+                    required_permission='production.view_productionorder',
+                ),
+                ProgressMetric(
+                    'Em execução',
+                    orders.filter(status=ProductionOrder.Status.IN_PROGRESS).count(),
+                    'feather-activity',
+                    'success',
+                    'Produção',
+                    reverse('app:resource_list', args=('production', 'orders')),
+                    active_orders_count,
+                    required_permission='production.view_productionorder',
+                ),
+                ProgressMetric(
+                    'Ordens liberadas',
+                    orders.filter(status=ProductionOrder.Status.RELEASED).count(),
+                    'feather-unlock',
+                    'warning',
+                    'Produção',
+                    reverse('app:resource_list', args=('production', 'orders')),
+                    active_orders_count,
+                    required_permission='production.view_productionorder',
+                ),
             ]
             data['chart'] = self._status_chart(orders, ProductionOrder.Status, 'status')
             data['table'] = list(
@@ -413,24 +429,35 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 expiry_date__lte=timezone.localdate() + timedelta(days=90),
             ).count()
             data['kpis'] = [
-                {
-                    'label': 'Lotes cadastrados',
-                    'value': lots.count(),
-                    'icon': 'feather-archive',
-                    'tone': 'primary',
-                },
-                {
-                    'label': 'Em quarentena',
-                    'value': lots.filter(quality_status='quarantine').count(),
-                    'icon': 'feather-alert-triangle',
-                    'tone': 'warning',
-                },
-                {
-                    'label': 'Vencendo em 90 dias',
-                    'value': expiring,
-                    'icon': 'feather-clock',
-                    'tone': 'danger',
-                },
+                ProgressMetric(
+                    'Lotes cadastrados',
+                    lots.count(),
+                    'feather-archive',
+                    'primary',
+                    'Estoque',
+                    reverse('app:resource_list', args=('inventory', 'lots')),
+                    required_permission='inventory.view_stocklot',
+                ),
+                ProgressMetric(
+                    'Em quarentena',
+                    lots.filter(quality_status='quarantine').count(),
+                    'feather-alert-triangle',
+                    'warning',
+                    'Estoque',
+                    reverse('app:resource_list', args=('inventory', 'lots')),
+                    lots.count(),
+                    required_permission='inventory.view_stocklot',
+                ),
+                ProgressMetric(
+                    'Vencendo em 90 dias',
+                    expiring,
+                    'feather-clock',
+                    'danger',
+                    'Estoque',
+                    reverse('app:resource_list', args=('inventory', 'lots')),
+                    lots.count(),
+                    required_permission='inventory.view_stocklot',
+                ),
             ]
             data['chart'] = {
                 'labels': ['Quarentena', 'Liberado', 'Reprovado'],
@@ -446,29 +473,44 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             )
         elif slug == 'quality':
             data['kpis'] = [
-                {
-                    'label': 'Amostras pendentes',
-                    'value': pending_quality,
-                    'icon': 'feather-droplet',
-                    'tone': 'warning',
-                },
-                {
-                    'label': 'Análises pendentes',
-                    'value': analyses.filter(status=QualityAnalysis.Status.PENDING).count(),
-                    'icon': 'feather-search',
-                    'tone': 'primary',
-                },
-                {
-                    'label': 'Investigações abertas',
-                    'value': investigations.exclude(
+                ProgressMetric(
+                    'Amostras pendentes',
+                    pending_quality,
+                    'feather-droplet',
+                    'warning',
+                    'Qualidade',
+                    reverse('app:resource_list', args=('quality', 'samples')),
+                    required_permission='quality.view_qualitysample',
+                ),
+                ProgressMetric(
+                    'Análises pendentes',
+                    analyses.filter(status=QualityAnalysis.Status.PENDING).count(),
+                    'feather-search',
+                    'primary',
+                    'Qualidade',
+                    reverse('app:resource_list', args=('quality', 'analyses')),
+                    analyses.exclude(
+                        status__in=(
+                            QualityAnalysis.Status.APPROVED,
+                            QualityAnalysis.Status.REJECTED,
+                        )
+                    ).count(),
+                    required_permission='quality.view_qualityanalysis',
+                ),
+                ProgressMetric(
+                    'Investigações abertas',
+                    investigations.exclude(
                         status__in=(
                             LaboratoryInvestigation.Status.CONCLUDED,
                             LaboratoryInvestigation.Status.CANCELLED,
                         )
                     ).count(),
-                    'icon': 'feather-alert-circle',
-                    'tone': 'danger',
-                },
+                    'feather-alert-circle',
+                    'danger',
+                    'Qualidade',
+                    reverse('app:resource_list', args=('quality', 'investigations')),
+                    required_permission='quality.view_laboratoryinvestigation',
+                ),
             ]
             data['chart'] = self._status_chart(samples, QualitySample.Status, 'status')
             data['table'] = list(
@@ -476,31 +518,39 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             )
         elif slug == 'finance':
             data['kpis'] = [
-                {
-                    'label': 'Títulos em aberto',
-                    'value': titles.exclude(
-                        status__in=(FinancialTitle.Status.SETTLED, FinancialTitle.Status.CANCELLED)
-                    ).count(),
-                    'icon': 'feather-credit-card',
-                    'tone': 'primary',
-                },
-                {
-                    'label': 'Títulos vencidos',
-                    'value': titles.filter(status=FinancialTitle.Status.OVERDUE).count(),
-                    'icon': 'feather-alert-triangle',
-                    'tone': 'danger',
-                },
-                {
-                    'label': 'A receber',
-                    'value': float(
+                ProgressMetric(
+                    'Títulos em aberto',
+                    open_titles.count(),
+                    'feather-credit-card',
+                    'primary',
+                    'Financeiro',
+                    reverse('app:resource_list', args=('finance', 'titles')),
+                    required_permission='finance.view_financialtitle',
+                ),
+                ProgressMetric(
+                    'Títulos vencidos',
+                    titles.filter(status=FinancialTitle.Status.OVERDUE).count(),
+                    'feather-alert-triangle',
+                    'danger',
+                    'Financeiro',
+                    reverse('app:resource_list', args=('finance', 'titles')),
+                    open_titles.count(),
+                    required_permission='finance.view_financialtitle',
+                ),
+                ProgressMetric(
+                    'A receber',
+                    float(
                         titles.filter(title_type=FinancialTitle.TitleType.RECEIVABLE)
                         .exclude(status=FinancialTitle.Status.SETTLED)
                         .aggregate(total=models.Sum('open_amount'))['total']
                         or 0
                     ),
-                    'icon': 'feather-arrow-down-circle',
-                    'tone': 'success',
-                },
+                    'feather-arrow-down-circle',
+                    'success',
+                    'Financeiro',
+                    reverse('app:resource_list', args=('finance', 'titles')),
+                    required_permission='finance.view_financialtitle',
+                ),
             ]
             data['chart'] = {
                 'labels': ['A pagar', 'A receber'],
@@ -518,35 +568,47 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
             )
         else:
             data['kpis'] = [
-                {
-                    'label': 'Ordens ativas',
-                    'value': active_orders.count(),
-                    'icon': 'feather-play-circle',
-                    'tone': 'primary',
-                },
-                {
-                    'label': 'Lotes em estoque',
-                    'value': lots.count(),
-                    'icon': 'feather-archive',
-                    'tone': 'success',
-                },
-                {
-                    'label': 'Pendências de qualidade',
-                    'value': pending_quality,
-                    'icon': 'feather-check-square',
-                    'tone': 'warning',
-                },
-                {
-                    'label': 'Investigações abertas',
-                    'value': investigations.exclude(
+                ProgressMetric(
+                    'Ordens ativas',
+                    active_orders_count,
+                    'feather-play-circle',
+                    'primary',
+                    'Produção',
+                    reverse('app:resource_list', args=('production', 'orders')),
+                    required_permission='production.view_productionorder',
+                ),
+                ProgressMetric(
+                    'Lotes em estoque',
+                    lots.count(),
+                    'feather-archive',
+                    'success',
+                    'Estoque',
+                    reverse('app:resource_list', args=('inventory', 'lots')),
+                    required_permission='inventory.view_stocklot',
+                ),
+                ProgressMetric(
+                    'Pendências de qualidade',
+                    pending_quality,
+                    'feather-check-square',
+                    'warning',
+                    'Qualidade',
+                    reverse('app:resource_list', args=('quality', 'samples')),
+                    required_permission='quality.view_qualitysample',
+                ),
+                ProgressMetric(
+                    'Investigações abertas',
+                    investigations.exclude(
                         status__in=(
                             LaboratoryInvestigation.Status.CONCLUDED,
                             LaboratoryInvestigation.Status.CANCELLED,
                         )
                     ).count(),
-                    'icon': 'feather-award',
-                    'tone': 'danger',
-                },
+                    'feather-award',
+                    'danger',
+                    'Qualidade',
+                    reverse('app:resource_list', args=('quality', 'investigations')),
+                    required_permission='quality.view_laboratoryinvestigation',
+                ),
             ]
             data['chart'] = {
                 'labels': ['Produção', 'Estoque', 'Qualidade', 'Investigações'],
@@ -562,6 +624,7 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 {'item': 'Lotes cadastrados', 'value': lots.count()},
                 {'item': 'Amostras pendentes', 'value': pending_quality},
             ]
+        data['kpis'] = [metric for metric in data['kpis'] if metric.can_view(self.request.user)]
         return data
 
     @staticmethod

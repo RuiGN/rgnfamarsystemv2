@@ -8,8 +8,9 @@ from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from base.ui.context_processors import sidebar_menu
+from base.ui.presentation import ProgressMetric
 from base.ui.views import WorkspaceView
-from base.ui.workspaces import WORKSPACES, get_workspace
+from base.ui.workspaces import WORKSPACES, WorkspaceConfig, WorkspaceContent, get_workspace
 from production.models import ProductionOrder
 from workflow.models import WorkflowNotification
 
@@ -243,6 +244,31 @@ class WorkspaceAccessTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertTemplateUsed(response, 'workspaces/workspace.html')
                 self.assertContains(response, 'data-ui="workspace"')
+
+    def test_workspace_renders_accessible_progress_metric_when_target_exists(self):
+        self.client.force_login(self.admin)
+
+        content = WorkspaceContent(
+            metrics=(
+                ProgressMetric(
+                    'Ordens em execução',
+                    1,
+                    'feather-play-circle',
+                    'primary',
+                    'Produção',
+                    reverse('app:resource_list', args=('production', 'orders')),
+                    2,
+                ),
+            ),
+            quick_links=(),
+        )
+        with patch.object(WorkspaceConfig, 'build_content', return_value=content):
+            response = self.client.get(reverse('app:operations_workspace'))
+
+        self.assertContains(response, 'data-ui="progress-metric"')
+        self.assertContains(response, 'role="progressbar"')
+        self.assertContains(response, 'aria-valuenow="')
+        self.assertContains(response, 'Ver detalhes')
 
     def test_user_without_module_permission_receives_403(self):
         self.client.force_login(self.user)
