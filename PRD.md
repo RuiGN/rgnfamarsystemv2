@@ -55,7 +55,7 @@ ANVISA quando aplicáveis.
 | RF-01 | Identidade e acesso | Login único, Django Admin, grupos, permissões e auditoria de ações críticas. |
 | RF-02 | Cadastros mestres | Produtos, unidades, parceiros, plantas, armazéns e estruturas operacionais validados. |
 | RF-03 | Fórmulas e roteiros | Fórmulas versionadas, componentes, rendimentos, roteiros e vigências controlados. |
-| RF-04 | Produção | Ordens, consumos, perdas, lotes, equipamentos, estados e desvios rastreáveis. |
+| RF-04 | Produção | Ordens, consumos, perdas, lotes, estados e desvios rastreáveis. |
 | RF-05 | PCP/MPS/MRP | Demanda, necessidade líquida, capacidade, sugestões e alertas de planejamento. |
 | RF-06 | Compras | Requisições, cotações, pedidos, recebimentos e qualificação de fornecedores. |
 | RF-07 | Estoque | Saldos por item/lote/local/status, movimentações, reservas e genealogia. |

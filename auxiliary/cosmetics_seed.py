@@ -56,7 +56,7 @@ BUSINESS_AREAS = (
     (
         'BA-COS-ENG',
         'Engenharia e Manutenção',
-        'Utilidades, equipamentos e manutenção.',
+        'Utilidades e infraestrutura industrial.',
     ),
     (
         'BA-COS-SSMA',

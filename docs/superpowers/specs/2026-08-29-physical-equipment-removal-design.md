@@ -126,7 +126,8 @@ Valores legados não permanecerão gravados depois que suas choices forem
 removidas. A migration de dados aplicará esta política:
 
 - conectores de Integrações com `provider_type='equipment'` serão excluídos;
-- recursos de Planejamento com `resource_type='equipment'` serão excluídos;
+- cargas vinculadas e recursos de Planejamento com
+  `resource_type='equipment'` serão excluídos, nessa ordem;
 - vínculos de Riscos com `link_type='equipment'` serão excluídos, preservando os
   riscos relacionados;
 - requisições de Compras com `source='maintenance'` serão convertidas para

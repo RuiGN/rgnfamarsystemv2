@@ -147,7 +147,6 @@ O sistema cobre o ciclo operacional completo:
 | Regulatory | Produtos regulatórios, dossiês, registros, petições, exigências, compromissos e alertas |
 | Pharmacovigilance | Casos, classificação, causalidade, investigação, ações e relatórios de segurança |
 | Recalls | Reclamações, devoluções, campanhas, clientes impactados, comunicações e efetividade |
-| Maintenance | Ativos, planos, ordens, paradas, uso e relatórios |
 | Training | Cargos, funções, competências, requisitos, matriz, turmas e atividades críticas |
 | Files | Arquivos protegidos, regras de acesso, links seguros e auditoria |
 | Reports | Dashboards, widgets, relatórios, execuções, agendamentos e notificações |
@@ -233,7 +232,7 @@ colaboradores, movimentos, genealogia, custos e eventos exigem ainda suas oito
 permissões de seção; uma seção não autorizada não é consultada.
 
 O mapa de controle apresenta identificação da ordem, fórmula, roteiro,
-programação, responsáveis, materiais e lotes, processos/equipamentos/tempos,
+programação, responsáveis, materiais e lotes, processos e tempos,
 colaboradores, movimentações, genealogia, custos, eventos e observações. O mapa
 de resultados apresenta também rendimento, perdas, retrabalho, devoluções,
 variações de material, tempos de processo e mão de obra e custos planejado,

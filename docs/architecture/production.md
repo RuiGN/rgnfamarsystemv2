@@ -196,9 +196,9 @@ A tela de execução apresenta quatro abas, exatamente nesta ordem:
    validade e observações. A aba registra resultados pendentes; o recebimento
    em quarentena ocorre somente pela action segura.
 3. **Processos**: etapa do roteiro, sequência, operação, centro de trabalho,
-   equipamento, tempos, custo-hora de máquina, estado e observações.
-4. **Colaboradores**: processo, pessoa, função, equipamento, intervalo,
-   custo-hora e observações.
+   tempos, custo-hora de máquina, estado e observações.
+4. **Colaboradores**: processo, pessoa, função, intervalo, custo-hora e
+   observações.
 
 Cada aba exige a permissão `view` de seu próprio model. `add`, `change` e
 `delete` são avaliadas separadamente; como `production` faz parte da retenção
@@ -297,8 +297,8 @@ detalhe da ordem. Ambos exigem simultaneamente:
 - `production.view_production_maps`.
 
 O cabeçalho apresenta ordem, produto, lote, fórmula, roteiro, quantidade,
-prioridade, responsável, linha/equipamento, datas previstas e reais, estado e
-observações. O mapa de resultados acrescenta:
+prioridade, responsável, linha, datas previstas e reais, estado e observações.
+O mapa de resultados acrescenta:
 
 - rendimento percentual, com zero seguro quando a quantidade planejada é
   zero;

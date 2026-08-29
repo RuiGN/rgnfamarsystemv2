@@ -266,7 +266,6 @@ Alguns endpoints não são recursos de model e usam política própria:
 | regulatory | 10 | 11 | 10/10 |
 | pharmacovigilance | 7 | 8 | 7/7 |
 | recalls | 6 | 7 | 6/6 |
-| maintenance | 6 | 7 | 6/6 |
 | training | 9 | 10 | 9/9 |
 | files | 4 | 5 | 4/4 |
 | reports | 6 | 7 | 6/6 |

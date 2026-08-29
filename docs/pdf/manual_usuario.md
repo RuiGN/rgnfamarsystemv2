@@ -235,8 +235,7 @@ A tela **Executar** organiza os registros em quatro abas:
   devolução;
 - **Produtos acabados**: cadastre o resultado pendente, lote, quantidade,
   destino e datas;
-- **Processos**: registre etapas, equipamento, estado, início, fim e
-  observações;
+- **Processos**: registre etapas, estado, início, fim e observações;
 - **Colaboradores**: registre pessoa, função, processo, intervalo e custo-hora.
 
 As quatro abas permanecem visíveis para que a organização da tela seja
@@ -537,7 +536,8 @@ Use para:
 - acompanhar implementação;
 - encerrar.
 
-Avalie impacto em validação, regulatório, treinamento, estoque, documentos, equipamentos, processos e sistemas.
+Avalie impacto em validação, regulatório, treinamento, estoque, documentos,
+processos e sistemas.
 
 ### Auditorias
 

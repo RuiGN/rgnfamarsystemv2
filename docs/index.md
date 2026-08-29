@@ -13,13 +13,13 @@ integrações ou processos operacionais forem alterados.
 - APIs REST com autenticação e permissões Django de modelo.
 - Cadastros mestres, produção, PCP/MRP, compras, estoque, custos, financeiro,
   fiscal, CRM, qualidade, QA, documentos, desvios, CAPA, mudanças, auditorias,
-  riscos, regulatório, farmacovigilância, recalls, manutenção e treinamentos.
+  riscos, regulatório, farmacovigilância, recalls e treinamentos.
 - Arquivos protegidos, criptografia AES-256-GCM, auditoria, workflow, relatórios,
   integrações, IA, RAG, backup e restauração.
 - UI operacional baseada no design system, com shell responsivo, sidebar,
   listagens, detalhes, formulários, confirmação de exclusão, badges, filtros,
   paginação, estados vazios e relações 1-N transacionais no formulário pai.
-- Catálogo HTML das 240 ações DRF, com permissões, formulários, confirmações e
+- Catálogo HTML das 232 ações DRF, com permissões, formulários, confirmações e
   visibilidade compatível com o estado atual do registro.
 
 ## Documentos principais

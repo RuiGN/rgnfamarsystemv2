@@ -9,7 +9,7 @@ from core.evidence_audit import evaluate_evidence_catalog
 
 ROOT = Path(__file__).resolve().parents[1]
 HISTORICAL_ACTION_HASH = 'c5a622328b62e9dc3b2383f8e266d9c6a22a7af4e1eff75e107015b7b4297ea9'
-CURRENT_ACTION_HASH = '25e628ea7c910c480dc33c87b69917b942facf815e5ac0afe2ddc0411aaf83a3'
+CURRENT_ACTION_HASH = 'dde6cf77806cd8b6e527c500df5e6232c299c2cb4a5a8c18a03474c020c3b041'
 
 
 def _read(path):

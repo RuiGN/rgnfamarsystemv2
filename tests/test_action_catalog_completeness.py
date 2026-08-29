@@ -22,8 +22,8 @@ def test_html_catalog_exactly_matches_post_actions():
 def test_catalog_has_approved_cardinality():
     configs = action_registry.all()
 
-    assert len(configs) == 240
-    assert sum(config.detail for config in configs) == 235
+    assert len(configs) == 232
+    assert sum(config.detail for config in configs) == 227
     assert sum(not config.detail for config in configs) == 5
 
 

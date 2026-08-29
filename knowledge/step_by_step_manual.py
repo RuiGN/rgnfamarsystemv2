@@ -44,8 +44,8 @@ STEP_BY_STEP_GUIDES = {
    - **Vigência**: datas de início e fim.
 5. Clique em **Salvar**.
 6. Para adicionar etapas do roteiro, use o recurso **Etapas de roteiro**:
-   - Informe sequência, descrição da operação, tempo setup, tempo processo,
-     equipamento e área.
+   - Informe sequência, descrição da operação, tempo setup, tempo processo e
+     área.
 """,
     'production': """
 ## Como criar uma ordem de produção
