@@ -58,40 +58,46 @@ schema válido sem depender do app removido.
 
 ## 4. Abordagem escolhida
 
-A exclusão ocorrerá em uma única entrega por meio de uma migration-ponte em um
-app permanente. Essa migration será executada somente depois das migrations que
-removem relacionamentos externos com `maintenance`.
+A exclusão ocorrerá em duas fases de implantação. O checkpoint entre elas é
+obrigatório para que bases existentes apliquem a migration destrutiva antes que
+o app e seu histórico sejam removidos do código.
 
-O histórico inicial de `training` será ajustado para não depender de
-`maintenance.0001_initial` nem criar FKs para `EquipmentAsset`. Isso permite
-que uma instalação nova monte o grafo sem carregar o app excluído. Em bases que
-já aplicaram essa migration, o Django não a executará novamente; as migrations
-incrementais já removem as FKs existentes.
+Na **Fase A**, o app continuará instalado como um tombstone sem models de
+runtime. Migrations removerão relacionamentos externos, limparão valores
+legados e executarão `DeleteModel` em ordem de dependência. Ao final dessa fase,
+as tabelas, permissões e content types de `maintenance` não existirão, embora o
+pacote mínimo de migrations ainda permaneça no repositório.
 
-A migration-ponte apagará as tabelas do antigo app em ordem de dependência,
-usando introspecção e nomes de tabela explícitos. Ela também limpará permissões,
-content types e registros do app em `django_migrations`. A operação será
-deliberadamente irreversível.
+Somente depois de confirmar a Fase A em todas as bases persistentes, a **Fase
+B** ajustará o histórico inicial de `training`, removerá migrations antigas já
+aplicadas, retirará `maintenance` de `INSTALLED_APPS` e excluirá fisicamente o
+diretório. Uma migration defensiva em app permanente falhará se encontrar
+qualquer tabela `maintenance_*`, impedindo que uma base pule a Fase A; quando a
+base estiver correta, ela limpará os registros obsoletos do catálogo de
+migrations.
 
-Depois disso, `maintenance` sairá de `INSTALLED_APPS` e o diretório do app será
-removido. Nenhuma migration ativa poderá depender dele.
+Instalações novas executarão apenas o histórico final, que não terá dependência
+de `maintenance`. A operação de exclusão de dados será deliberadamente
+irreversível.
 
 ## 5. Ordem da migração
 
 ```mermaid
 flowchart TD
     A[Remover FKs e campos externos] --> B[Remover escolhas e validações]
-    B --> C[Migration-ponte em app permanente]
-    C --> D[Apagar tabelas maintenance em ordem segura]
+    B --> C[Fase A: DeleteModel em maintenance]
+    C --> D[Apagar tabelas em ordem segura]
     D --> E[Limpar permissões e content types]
-    E --> F[Remover registros maintenance do catálogo de migrations]
-    F --> G[Executar aplicação sem o app maintenance]
+    E --> F{Todas as bases aplicaram a Fase A?}
+    F -->|não| E
+    F -->|sim| G[Fase B: remover app e histórico antigo]
+    G --> H[Validar banco existente e banco vazio]
 ```
 
-A migration-ponte dependerá explicitamente das últimas migrations de todos os
-apps que antes referenciavam equipamentos. Ela verificará a existência de cada
-tabela antes de apagá-la, permitindo execução tanto em bases que receberam o
-módulo quanto em bancos onde as tabelas não existem.
+A migration destrutiva da Fase A dependerá explicitamente das últimas
+migrations de todos os apps que antes referenciavam equipamentos. A migration
+defensiva da Fase B verificará a inexistência das tabelas antes de remover os
+registros históricos do app.
 
 Não será usado `CASCADE` indiscriminado. A ordem explícita de exclusão e a
 remoção prévia das FKs evitam apagar objetos fora do escopo.
