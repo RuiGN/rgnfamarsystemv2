@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 
 
 def _sequence_code(model, *args):
@@ -18,6 +18,8 @@ def _sequence_code(model, *args):
 
 
 class CapaRecord(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('capa_number', 'CAPA'),)
+
     class SourceType(models.TextChoices):
         DEVIATION = 'deviation', 'Desvio'
         AUDIT = 'audit', 'Auditoria'

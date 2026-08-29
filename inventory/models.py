@@ -6,7 +6,7 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner, Product, StorageLocation, UnitOfMeasure, Warehouse
 
 
@@ -230,6 +230,8 @@ class StockBalance(SingleInstanceModel):
 
 
 class StockMovement(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('movement_number', 'MOV'),)
+
     class MovementType(models.TextChoices):
         RECEIPT = 'receipt', 'Entrada'
         ISSUE = 'issue', 'Saída'

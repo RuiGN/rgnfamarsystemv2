@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
 
 
@@ -24,6 +24,7 @@ class RiskLevelChoices(models.TextChoices):
 
 
 class RiskRecord(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('risk_number', 'RSK'),)
     RiskLevel = RiskLevelChoices
 
     class RiskCategory(models.TextChoices):

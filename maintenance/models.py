@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 
 
 HOURS_SCALE = Decimal('0.01')
@@ -48,6 +48,8 @@ def _sequence_code(model, *args):
 
 
 class EquipmentAsset(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('asset_code', 'EQP'),)
+
     class AssetType(models.TextChoices):
         EQUIPMENT = 'equipment', 'Equipamento'
         INSTRUMENT = 'instrument', 'Instrumento'
@@ -366,6 +368,8 @@ class MaintenancePlan(SingleInstanceModel):
 
 
 class MaintenanceOrder(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('order_number', 'MAN'),)
+
     class OrderType(models.TextChoices):
         PREVENTIVE_MAINTENANCE = (
             'preventive_maintenance',

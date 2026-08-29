@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from base.models import SingleInstanceModel
 from base.normalized_locations import validate_normalized_location
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
 
 
@@ -47,6 +47,8 @@ def _validate_customer(errors, field, customer):
 
 
 class MarketComplaint(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('complaint_number', 'MKTQ'),)
+
     class ComplaintType(models.TextChoices):
         COMPLAINT = 'complaint', 'Reclamação'
         TECHNICAL_COMPLAINT = 'technical_complaint', 'Queixa técnica'
@@ -431,6 +433,8 @@ class MarketComplaint(SingleInstanceModel):
 
 
 class ProductReturn(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('return_number', 'RET'),)
+
     class ReturnType(models.TextChoices):
         CUSTOMER_RETURN = 'customer_return', 'Devolução de cliente'
         RECALL_RETURN = 'recall_return', 'Retorno de recall'
@@ -707,6 +711,8 @@ class ProductReturn(SingleInstanceModel):
 
 
 class RecallCampaign(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('campaign_number', 'RECALL'),)
+
     class CampaignType(models.TextChoices):
         RECALL = 'recall', 'Recall'
         VOLUNTARY_RECALL = 'voluntary_recall', 'Recolhimento voluntário'

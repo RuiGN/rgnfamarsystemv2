@@ -3,6 +3,7 @@ from datetime import timedelta
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -65,6 +66,53 @@ def create_training_asset(responsible, suffix='001'):
 
 
 class TrainingModelTests(TestCase):
+    def test_enrollment_number_is_persisted_during_partial_update(self):
+        from training.models import TrainingEnrollment, TrainingRequirement
+
+        trainee, _trainer, _approver = create_training_users('partial-identifier')
+        requirement = TrainingRequirement.objects.create(
+            code='TR-PARTIAL-IDENTIFIER',
+            title='Treinamento legado',
+            training_type=TrainingRequirement.TrainingType.REGULATORY,
+            area='Garantia da Qualidade',
+        )
+        enrollment = TrainingEnrollment.objects.create(
+            enrollment_number='REGISTRO-LEGADO',
+            requirement=requirement,
+            user=trainee,
+        )
+        TrainingEnrollment.objects.filter(pk=enrollment.pk).update(enrollment_number='')
+        enrollment.refresh_from_db()
+
+        enrollment.due_date = timezone.localdate() + timedelta(days=10)
+        enrollment.save(update_fields=['due_date', 'updated_at'])
+        enrollment.refresh_from_db()
+
+        assert enrollment.enrollment_number.startswith('TRN-')
+
+    def test_certificate_number_is_unique_when_filled(self):
+        from training.models import TrainingEnrollment, TrainingRequirement
+
+        first_user, second_user, _approver = create_training_users('certificate')
+        requirement = TrainingRequirement.objects.create(
+            code='TR-CERTIFICATE-001',
+            title='Treinamento com certificado',
+            training_type=TrainingRequirement.TrainingType.REGULATORY,
+            area='Garantia da Qualidade',
+        )
+        TrainingEnrollment.objects.create(
+            requirement=requirement,
+            user=first_user,
+            certificate_number='CERTIFICADO-ÚNICO-001',
+        )
+
+        with pytest.raises(IntegrityError), transaction.atomic():
+            TrainingEnrollment.objects.create(
+                requirement=requirement,
+                user=second_user,
+                certificate_number='CERTIFICADO-ÚNICO-001',
+            )
+
     def test_rf24_training_matrix_lifecycle_certificate_and_critical_activity_block(self):
         from training.models import (
             Competency,

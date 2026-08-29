@@ -43,8 +43,9 @@ resultado incerto, o operador deve conferir a impressora antes de reenviar.
 
 Os identificadores já gerados pelo servidor são apresentados desabilitados nos
 formulários da aplicação e como somente leitura na API e no Django Admin. A
-política usa uma lista explícita por modelo para preservar códigos e números
-manuais.
+política deriva códigos do contrato `AutoCodeMixin`/`CODE_PREFIX`; os demais
+identificadores são declarados no próprio model por `AUTOMATIC_IDENTIFIERS`,
+preservando códigos e números manuais.
 
 ## Verificação mínima
 

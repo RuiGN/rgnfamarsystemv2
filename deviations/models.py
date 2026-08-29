@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner, Product
 
 
@@ -17,6 +17,8 @@ def _sequence_code(model, *args):
 
 
 class QualityEvent(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('event_number', 'DEV'),)
+
     class EventType(models.TextChoices):
         DEVIATION = 'deviation', 'Desvio'
         NONCONFORMITY = 'nonconformity', 'Não conformidade'

@@ -6,7 +6,7 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from formulations.models import FormulaComponent, ManufacturingRoute, MasterFormula
 from masters.models import Product, UnitOfMeasure
 
@@ -28,6 +28,8 @@ def _has_persisted_changes(instance, persisted):
 
 
 class ProductionOrder(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('batch_number', 'LOT'),)
+
     class Priority(models.TextChoices):
         LOW = 'low', 'Baixa'
         NORMAL = 'normal', 'Normal'

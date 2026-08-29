@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from base.models import SingleInstanceModel
 from base.normalized_locations import validate_normalized_location
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner, Product, UnitOfMeasure
 from planning.models import MRPSuggestion
 
@@ -28,6 +28,8 @@ def _sequence_code(model, *args):
 
 
 class PurchaseRequisition(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('requisition_number', 'REQ'),)
+
     class Source(models.TextChoices):
         MANUAL = 'manual', 'Manual'
         MRP = 'mrp', 'MRP'
@@ -235,6 +237,8 @@ class PurchaseRequisitionItem(SingleInstanceModel):
 
 
 class QuotationRequest(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('rfq_number', 'COT'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         SENT = 'sent', 'Enviada'
@@ -559,6 +563,8 @@ class SupplierQualificationEvent(SingleInstanceModel):
 
 
 class PurchaseOrder(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('order_number', 'PC'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         APPROVED = 'approved', 'Aprovado'
@@ -842,6 +848,8 @@ class PurchaseOrderItem(SingleInstanceModel):
 
 
 class PurchaseReceipt(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('receipt_number', 'REC'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         RECEIVED = 'received', 'Recebido'

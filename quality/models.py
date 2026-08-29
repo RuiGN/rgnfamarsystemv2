@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from inventory.models import StockQualityStatus
 from masters.models import Product, UnitOfMeasure
 
@@ -186,6 +186,8 @@ class AnalyticalSpecification(SingleInstanceModel):
 
 
 class QualitySample(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('sample_number', 'AMO'),)
+
     class SampleType(models.TextChoices):
         RECEIPT = 'receipt', 'Recebimento'
         PRODUCTION = 'production', 'Produção'
@@ -469,6 +471,8 @@ class QualitySample(SingleInstanceModel):
 
 
 class QualityAnalysis(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('analysis_number', 'ANA'),)
+
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pendente'
         IN_PROGRESS = 'in_progress', 'Em execução'
@@ -749,6 +753,8 @@ class QualityResult(SingleInstanceModel):
 
 
 class LaboratoryInvestigation(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('investigation_number', 'INV'),)
+
     class InvestigationType(models.TextChoices):
         LABORATORY = 'laboratory', 'Investigação laboratorial'
         REPEAT = 'repeat', 'Repetição justificada'
@@ -924,6 +930,8 @@ class LaboratoryInvestigation(SingleInstanceModel):
 
 
 class QualityDocument(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('document_number', 'LAU'),)
+
     class DocumentType(models.TextChoices):
         CERTIFICATE_OF_ANALYSIS = 'certificate_of_analysis', 'Certificado de análise'
         ANALYTICAL_REPORT = 'analytical_report', 'Laudo analítico'

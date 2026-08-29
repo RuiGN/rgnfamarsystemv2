@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 
 
 def _sequence_code(model, *args):
@@ -19,6 +19,7 @@ def _sequence_code(model, *args):
 
 class AIAgentProfile(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'AGT'
+
     class AgentType(models.TextChoices):
         SUMMARY = 'summary', 'Resumo'
         CLASSIFICATION = 'classification', 'Classificação'
@@ -156,6 +157,8 @@ class AIAgentProfile(AutoCodeMixin, SingleInstanceModel):
 
 
 class AIAgentRun(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('run_number', 'AIRUN'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         QUEUED = 'queued', 'Enfileirado'

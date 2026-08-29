@@ -11,7 +11,7 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from base.roles import OperationalRole, user_has_operational_role
 from core.crypto import AES256GCMCipher
 
@@ -30,6 +30,8 @@ def _sequence_code(model, *args):
 
 
 class ProtectedFile(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('file_number', 'ARQ'),)
+
     class SourceModule(models.TextChoices):
         OPERATIONAL = 'operational', 'Operacional'
         FINANCIAL = 'financial', 'Financeiro'

@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from base.models import SingleInstanceModel
 from base.normalized_locations import validate_normalized_location
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 from masters.models import BusinessPartner, Product
 
 
@@ -85,6 +85,7 @@ class CustomerGroup(AutoCodeMixin, SingleInstanceModel):
 
 class SalesChannel(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'SC'
+
     class ChannelType(models.TextChoices):
         DIRECT = 'direct', 'Venda direta'
         DISTRIBUTOR = 'distributor', 'Distribuidor'
@@ -284,6 +285,7 @@ class CustomerContact(SingleInstanceModel):
 
 class Campaign(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'CMP'
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         ACTIVE = 'active', 'Ativa'
@@ -464,6 +466,8 @@ class Opportunity(SingleInstanceModel):
 
 
 class SalesProposal(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('proposal_number', 'PROP'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         SENT = 'sent', 'Enviada'
@@ -639,6 +643,8 @@ class SalesProposalItem(SingleInstanceModel):
 
 
 class SalesContract(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('contract_number', 'CTR'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         ACTIVE = 'active', 'Ativo'
@@ -754,6 +760,8 @@ class SalesContract(SingleInstanceModel):
 
 
 class SalesOrder(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('order_number', 'PV'),)
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         APPROVED = 'approved', 'Aprovado'
@@ -1116,6 +1124,8 @@ class CustomerInteraction(SingleInstanceModel):
 
 
 class CustomerComplaint(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('complaint_number', 'RCL'),)
+
     class Severity(models.TextChoices):
         LOW = 'low', 'Baixa'
         MEDIUM = 'medium', 'Média'

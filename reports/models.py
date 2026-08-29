@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 from base.roles import OperationalRole, user_has_operational_role
 
 
@@ -143,6 +143,7 @@ def _validate_filter_map(filters, required_filters=None):
 
 class ReportDefinition(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'RPT'
+
     class Module(models.TextChoices):
         PRODUCTION = 'production', 'Produção'
         MRP = 'mrp', 'MRP'
@@ -490,6 +491,8 @@ class DashboardWidget(SingleInstanceModel):
 
 
 class ReportExecution(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('execution_number', 'REP'),)
+
     class ExportFormat(models.TextChoices):
         PDF = 'pdf', 'PDF'
         XLSX = 'xlsx', 'XLSX'

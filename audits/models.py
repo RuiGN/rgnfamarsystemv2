@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from base.models import SingleInstanceModel
 from base.normalized_locations import validate_normalized_location
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
 
 
@@ -26,6 +26,7 @@ class AuditTypeChoices(models.TextChoices):
 
 
 class AuditProgram(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('program_number', 'AUDPRG'),)
     AuditType = AuditTypeChoices
 
     class Status(models.TextChoices):
@@ -96,6 +97,7 @@ class AuditProgram(SingleInstanceModel):
 
 
 class AuditPlan(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('audit_number', 'AUD'),)
     AuditType = AuditTypeChoices
 
     class Status(models.TextChoices):

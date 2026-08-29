@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from base.models import SingleInstanceModel
 from base.normalized_locations import validate_normalized_location
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 
 
 PERCENT_SCALE = Decimal('0.01')
@@ -132,6 +132,7 @@ class WorkFunction(AutoCodeMixin, SingleInstanceModel):
 
 class Competency(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'CPT'
+
     class CompetencyType(models.TextChoices):
         TECHNICAL = 'technical', 'Técnica'
         GMP = 'gmp', 'BPF/GMP'
@@ -164,6 +165,7 @@ class Competency(AutoCodeMixin, SingleInstanceModel):
 
 class TrainingRequirement(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'TR'
+
     class TrainingType(models.TextChoices):
         DOCUMENT = 'document', 'Documento'
         CRITICAL_ACTIVITY = 'critical_activity', 'Atividade crítica'
@@ -382,6 +384,8 @@ class TrainingMatrixRequirement(SingleInstanceModel):
 
 
 class TrainingSession(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('session_number', 'TRNS'),)
+
     class DeliveryMethod(models.TextChoices):
         CLASSROOM = 'classroom', 'Presencial'
         ONLINE = 'online', 'Online'
@@ -525,6 +529,11 @@ class TrainingSession(SingleInstanceModel):
 
 
 class TrainingEnrollment(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (
+        IdentifierSpec('enrollment_number', 'TRN'),
+        IdentifierSpec('certificate_number', 'CERT', trigger='approval'),
+    )
+
     class Status(models.TextChoices):
         CONVOKED = 'convoked', 'Convocado'
         IN_PROGRESS = 'in_progress', 'Em realização'
@@ -622,6 +631,11 @@ class TrainingEnrollment(SingleInstanceModel):
             models.UniqueConstraint(
                 fields=['enrollment_number'],
                 name='unique_training_enrollment_number',
+            ),
+            models.UniqueConstraint(
+                fields=['certificate_number'],
+                condition=~models.Q(certificate_number=''),
+                name='unique_nonempty_training_certificate_number',
             ),
         ]
         indexes = [

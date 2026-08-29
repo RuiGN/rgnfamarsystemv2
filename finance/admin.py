@@ -12,7 +12,7 @@ from finance.models import (
 
 
 @admin.register(ChartOfAccount)
-class ChartOfAccountAdmin(admin.ModelAdmin):
+class ChartOfAccountAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = ('code', 'name', 'account_type', 'parent', 'is_active')
     list_filter = ('account_type', 'is_active')
     search_fields = ('code', 'name')

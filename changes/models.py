@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code
+from base.sequences import IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
 
 
@@ -22,6 +22,8 @@ def _sequence_code(model, *args):
 
 
 class ChangeControl(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('change_number', 'MUD'),)
+
     class ChangeType(models.TextChoices):
         PERMANENT = 'permanent', 'Permanente'
         TEMPORARY = 'temporary', 'Temporária'

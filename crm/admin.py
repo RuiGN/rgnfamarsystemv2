@@ -216,7 +216,7 @@ class CustomerInteractionAdmin(admin.ModelAdmin):
 
 
 @admin.register(CustomerComplaint)
-class CustomerComplaintAdmin(admin.ModelAdmin):
+class CustomerComplaintAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     list_display = (
         'complaint_number',
         'customer',

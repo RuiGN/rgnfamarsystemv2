@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from base.modules import OperationalModule
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 from inventory.models import StockBalance, StockLot, StockQualityStatus
 from masters.models import BusinessPartner, Product
 
@@ -22,6 +22,8 @@ def _sequence_code(model, *args):
 
 
 class QAReview(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('review_number', 'RQA'),)
+
     class ReviewType(models.TextChoices):
         LOT_RELEASE = 'lot_release', 'Liberação de lote'
         PRODUCTION_ORDER = 'production_order', 'Ordem de produção'
@@ -282,6 +284,7 @@ class BatchRecordChecklistItem(SingleInstanceModel):
 
 
 class LotRelease(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('release_number', 'LIB'),)
     TARGET_FIELDS = (
         'product',
         'stock_lot',
@@ -781,6 +784,8 @@ class LotRelease(SingleInstanceModel):
 
 
 class QualityBlock(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('block_number', 'BLQ'),)
+
     class TargetType(models.TextChoices):
         LOT = 'lot', 'Lote'
         PRODUCT = 'product', 'Item/produto'

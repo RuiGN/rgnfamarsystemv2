@@ -6,7 +6,7 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 from masters.models import BusinessPartner
 from procurement.models import PurchaseOrder
 
@@ -33,6 +33,7 @@ def _sequence_code(model, *args):
 
 class ChartOfAccount(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'COA'
+
     class AccountType(models.TextChoices):
         ASSET = 'asset', 'Ativo'
         LIABILITY = 'liability', 'Passivo'
@@ -76,6 +77,7 @@ class ChartOfAccount(AutoCodeMixin, SingleInstanceModel):
 
 class FinancialCategory(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'FC'
+
     class CategoryType(models.TextChoices):
         PAYABLE = 'payable', 'Pagar'
         RECEIVABLE = 'receivable', 'Receber'
@@ -117,6 +119,7 @@ class FinancialCategory(AutoCodeMixin, SingleInstanceModel):
 
 class FinancialAccount(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'FA'
+
     class AccountType(models.TextChoices):
         CASH = 'cash', 'Caixa'
         BANK = 'bank', 'Banco'
@@ -168,6 +171,8 @@ class FinancialAccount(AutoCodeMixin, SingleInstanceModel):
 
 
 class FinancialTitle(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('title_number', 'FIN'),)
+
     class TitleType(models.TextChoices):
         PAYABLE = 'payable', 'Conta a pagar'
         RECEIVABLE = 'receivable', 'Conta a receber'

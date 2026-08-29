@@ -7,7 +7,7 @@ from django.db import models
 from django.utils import timezone
 
 from base.models import SingleInstanceModel
-from base.sequences import sequence_code, AutoCodeMixin
+from base.sequences import AutoCodeMixin, IdentifierSpec, sequence_code
 from base.roles import OperationalRole, user_has_operational_role
 
 
@@ -310,6 +310,8 @@ class ApprovalQueue(AutoCodeMixin, SingleInstanceModel):
 
 
 class ApprovalTask(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('task_number', 'WF'),)
+
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pendente'
         APPROVED = 'approved', 'Aprovada'
@@ -745,6 +747,8 @@ class WorkflowAttachment(SingleInstanceModel):
 
 
 class AsyncJobStatus(SingleInstanceModel):
+    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('job_number', 'JOB'),)
+
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pendente'
         RUNNING = 'running', 'Executando'
