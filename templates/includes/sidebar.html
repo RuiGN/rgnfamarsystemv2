@@ -2,12 +2,12 @@
     <li class="nxl-item nxl-caption"><label>Visão geral</label></li>
     {% if show_dashboard_navigation %}
     <li class="nxl-item nxl-hasmenu{% if request.resolver_match.url_name == 'dashboard_hub' %} active nxl-trigger{% endif %}">
-        <a href="javascript:void(0);" class="nxl-link" aria-label="Painéis" title="Painéis" aria-expanded="{% if request.resolver_match.url_name == 'dashboard_hub' %}true{% else %}false{% endif %}">
+        <button type="button" class="nxl-link sidebar-menu-toggle" aria-label="Painéis" title="Painéis" aria-expanded="{% if request.resolver_match.url_name == 'dashboard_hub' %}true{% else %}false{% endif %}" aria-controls="sidebar-dashboard-submenu">
             <span class="nxl-micon"><i class="feather-bar-chart-2" aria-hidden="true"></i></span>
             <span class="nxl-mtext">Painéis</span>
             <span class="nxl-arrow"><i class="feather-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <ul class="nxl-submenu">
+        </button>
+        <ul class="nxl-submenu" id="sidebar-dashboard-submenu">
             {% for slug, label in dashboard_navigation %}
             <li class="nxl-item"><a href="{% url 'app:dashboard_hub' slug %}" class="nxl-link" data-command-label="Painel {{ label }}" data-command-url="{% url 'app:dashboard_hub' slug %}">{{ label }}</a></li>
             {% endfor %}
@@ -38,12 +38,12 @@
     <li class="nxl-item nxl-caption" data-sidebar-domain="{{ domain_key }}"><label>{{ domain_label }}</label></li>
     {% for module in domain_modules %}
     <li class="nxl-item nxl-menu-group nxl-hasmenu{% if module.slug == active_module_slug %} active nxl-trigger{% endif %}">
-        <a href="javascript:void(0);" class="nxl-link" aria-label="{{ module.label }}" title="{{ module.label }}" aria-expanded="{% if module.slug == active_module_slug %}true{% else %}false{% endif %}">
+        <button type="button" class="nxl-link sidebar-menu-toggle" aria-label="{{ module.label }}" title="{{ module.label }}" aria-expanded="{% if module.slug == active_module_slug %}true{% else %}false{% endif %}" aria-controls="sidebar-module-{{ module.slug }}-submenu">
             <span class="nxl-micon"><i class="{{ module.icon }}" aria-hidden="true"></i></span>
             <span class="nxl-mtext">{{ module.label }}</span>
             <span class="nxl-arrow"><i class="feather-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <ul class="nxl-submenu">
+        </button>
+        <ul class="nxl-submenu" id="sidebar-module-{{ module.slug }}-submenu">
             <li class="nxl-item{% if module.slug == active_module_slug and not active_resource_slug %} active{% endif %}">
                 <a href="{% url 'app:module' module.slug %}" class="nxl-link" data-command-label="{{ module.label }}: visão geral" data-command-url="{% url 'app:module' module.slug %}"{% if module.slug == active_module_slug and not active_resource_slug %} aria-current="page"{% endif %}>Visão geral</a>
             </li>

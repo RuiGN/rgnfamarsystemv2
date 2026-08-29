@@ -755,7 +755,6 @@ MODULES = (
                 advanced_filter_fields=('priority', 'scheduled_end'),
                 form_fields=(
                     'order_number',
-                    'batch_number',
                     'product',
                     'formula',
                     'route',
@@ -785,7 +784,6 @@ MODULES = (
                             'stock_lot',
                             'warehouse',
                             'location',
-                            'lot_number',
                             'quality_status',
                             'expiry_date',
                             'notes',

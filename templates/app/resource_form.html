@@ -75,6 +75,19 @@
 {{ block.super }}
 <script>
 document.addEventListener('click', function (event) {
+    const deleteButton = event.target.closest('[data-inline-formset-delete]');
+    if (deleteButton) {
+        const row = deleteButton.closest('[data-inline-formset-form]');
+        const deleteField = row ? row.querySelector('input[type="checkbox"][name$="-DELETE"]') : null;
+
+        if (deleteField) {
+            deleteField.checked = true;
+            row.classList.add('d-none');
+        }
+
+        return;
+    }
+
     const addButton = event.target.closest('[data-inline-formset-add]');
     if (!addButton) {
         return;

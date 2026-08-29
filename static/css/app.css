@@ -1345,6 +1345,13 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
 .command-palette__label { font-weight: 700; }
 .command-palette__hint { color: var(--rgn-muted); font-size: .75rem; }
 
+.sidebar-menu-toggle {
+    background: transparent;
+    border: 0;
+    text-align: left;
+    width: 100%;
+}
+
 @media (max-width: 575.98px) {
     .operational-deadlines__link { flex-wrap: wrap; }
     .operational-deadlines__due { margin-left: 2.75rem; text-align: left; width: 100%; }

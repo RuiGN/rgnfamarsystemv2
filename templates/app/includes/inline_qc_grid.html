@@ -39,9 +39,11 @@
                                                 {% for field in inline_form.visible_fields %}
                                                     {% if field.name == 'DELETE' %}
                                                         <td class="text-center align-middle">
-                                                            <div class="form-check d-inline-block m-0 p-0">
-                                                                {{ field }}
-                                                            </div>
+                                                            <span class="d-none">{{ field }}</span>
+                                                            <button type="button" class="btn btn-icon btn-outline-danger" data-inline-formset-delete aria-label="Excluir item" title="Excluir item">
+                                                                <i class="feather-trash-2" aria-hidden="true"></i>
+                                                                <span class="visually-hidden">Excluir item</span>
+                                                            </button>
                                                         </td>
                                                     {% else %}
                                                         <td class="align-middle">
@@ -65,9 +67,11 @@
                                     {% for field in inline.formset.empty_form.visible_fields %}
                                         {% if field.name == 'DELETE' %}
                                             <td class="text-center align-middle">
-                                                <div class="form-check d-inline-block m-0 p-0">
-                                                    {{ field }}
-                                                </div>
+                                                <span class="d-none">{{ field }}</span>
+                                                <button type="button" class="btn btn-icon btn-outline-danger" data-inline-formset-delete aria-label="Excluir item" title="Excluir item">
+                                                    <i class="feather-trash-2" aria-hidden="true"></i>
+                                                    <span class="visually-hidden">Excluir item</span>
+                                                </button>
                                             </td>
                                         {% else %}
                                             <td class="align-middle">

@@ -1915,6 +1915,20 @@ class AppUiSprint43ReadinessTests(TestCase):
         assert 'aria-label="{{ module.label }}"' in template
         assert 'title="{{ module.label }}"' in template
 
+    def test_sidebar_groups_use_accessible_toggle_controls(self):
+        template = Path('templates/includes/sidebar.html').read_text()
+        base_template = Path('templates/base.html').read_text()
+        script = Path('static/js/sidebar-accessibility.js').read_text()
+
+        assert '<button type="button" class="nxl-link sidebar-menu-toggle"' in template
+        assert 'aria-controls="sidebar-dashboard-submenu"' in template
+        assert 'aria-controls="sidebar-module-{{ module.slug }}-submenu"' in template
+        assert 'id="sidebar-module-{{ module.slug }}-submenu"' in template
+        assert 'aria-expanded="' in template
+        assert 'sidebar-accessibility.js' in base_template
+        assert 'aria-expanded' in script
+        assert 'aria-controls' in script
+
     def test_mobile_shell_preserves_duralux_main_content_contract(self):
         css = Path('static/css/app.css').read_text()
 

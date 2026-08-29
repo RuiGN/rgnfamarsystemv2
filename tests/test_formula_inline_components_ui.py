@@ -1,4 +1,5 @@
 from decimal import Decimal
+from pathlib import Path
 from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
@@ -66,6 +67,40 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert 'Componentes da fórmula' in content
         assert 'Adicionar componente' in content
         assert 'components-TOTAL_FORMS' in content
+
+    def test_tabular_inline_delete_control_is_icon_action(self):
+        response = self.client.get(
+            reverse(
+                'app:resource_create',
+                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+            )
+        )
+
+        assert response.status_code == 200
+        section = response.content.decode().split('data-inline-formset="components"', 1)[1]
+        assert '>Ações</th>' in section
+        assert '>Excluir</th>' not in section
+        assert 'data-inline-formset-delete' in section
+        assert 'aria-label="Excluir item"' in section
+        assert 'feather-trash-2' in section
+        assert '<span class="visually-hidden">' in section
+
+    def test_qc_grid_template_uses_icon_delete_action(self):
+        template = Path('templates/app/includes/inline_qc_grid.html').read_text()
+
+        assert '>Ações</th>' in template
+        assert '>Excluir</th>' not in template
+        assert 'data-inline-formset-delete' in template
+        assert 'aria-label="Excluir item"' in template
+        assert 'feather-trash-2' in template
+        assert '<span class="visually-hidden">' in template
+
+    def test_inline_delete_action_marks_delete_field_and_hides_row(self):
+        template = Path('templates/app/resource_form.html').read_text()
+
+        assert "event.target.closest('[data-inline-formset-delete]')" in template
+        assert "deleteField.checked = true;" in template
+        assert "row.classList.add('d-none');" in template
 
     def test_priority_parent_forms_render_registered_inline_sections(self):
         expectations = self._priority_inline_expectations()
@@ -155,6 +190,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         )
 
         assert {'stock_lot', 'warehouse', 'location'} <= set(material_inline.fields)
+        assert 'lot_number' not in material_inline.fields
         assert {
             'reserved_quantity',
             'issued_quantity',
