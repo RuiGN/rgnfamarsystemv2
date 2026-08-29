@@ -194,17 +194,7 @@
             </div>
         </div>
         <!-- [ Footer ] start -->
-        <footer class="footer">
-            <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
-                <span>Direitos autorais &copy; <script>document.write(new Date().getFullYear())</script> RGN Farma System</span>
-            </p>
-            <div class="d-flex align-items-center gap-4">
-                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Ajuda</a>
-                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Termos</a>
-                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Privacidade</a>
-                <span class="fs-11 fw-semibold text-uppercase text-muted">Versão 1.0</span>
-            </div>
-        </footer>
+        {% include 'includes/footer.html' %}
         <!-- [ Footer ] end -->
     </main>
     {% block global_rag_chat %}
