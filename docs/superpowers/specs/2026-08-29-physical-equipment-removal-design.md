@@ -114,6 +114,22 @@ Menções puramente textuais serão avaliadas pelo contexto. Documentos de
 impressão podem continuar dizendo “equipamento físico”, pois isso não reativa o
 domínio removido.
 
+### 6.1 Tratamento dos dados existentes
+
+Valores legados não permanecerão gravados depois que suas choices forem
+removidas. A migration de dados aplicará esta política:
+
+- conectores de Integrações com `provider_type='equipment'` serão excluídos;
+- recursos de Planejamento com `resource_type='equipment'` serão excluídos;
+- vínculos de Riscos com `link_type='equipment'` serão excluídos, preservando os
+  riscos relacionados;
+- requisições de Compras com `source='maintenance'` serão convertidas para
+  `source='manual'`, preservando o documento transacional e sua auditoria.
+
+Essa limpeza ocorrerá antes das alterações de schema e da remoção das tabelas
+de manutenção. A migration registrará as quantidades afetadas no log do
+processo sem expor conteúdo sensível dos registros.
+
 ## 7. Segurança, integridade e tratamento de erros
 
 - a operação de banco será atômica quando suportada pelo backend;
