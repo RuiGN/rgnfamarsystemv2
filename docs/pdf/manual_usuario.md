@@ -207,6 +207,12 @@ Use para controlar:
 
 Antes de liberar uso operacional, confirme versão, status, componentes e roteiro.
 
+Para criar uma nova versão com base em uma fórmula existente, use
+**Reaproveitar** na coluna **Ações**. O sistema abre um novo registro em
+Rascunho, sugere a próxima versão e copia todos os componentes. Revise os dados
+antes de salvar; o código é gerado na gravação e a fórmula de origem permanece
+inalterada.
+
 ### Produção
 
 Use para preparar, executar e rastrear ordens de produção. O fluxo recomendado

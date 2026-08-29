@@ -141,6 +141,11 @@ receber acesso direto.
 5. Adicione testes de listagem, detalhe, criação, edição, exclusão e visibilidade
    dos botões por permissão.
 
+Recursos com reaproveitamento declaram `reuse_route_name` e
+`reuse_permissions` no `ResourceConfig`. O template apenas renderiza a rota
+autorizada; a view repete as permissões, controla campos de rastreabilidade e
+não persiste dados no GET.
+
 Campos derivados, hashes, timestamps técnicos e trilhas de auditoria devem
 ficar fora de `form_fields` ou ser marcados como `read_only=True` quando
 precisarem aparecer em detalhe/API.
