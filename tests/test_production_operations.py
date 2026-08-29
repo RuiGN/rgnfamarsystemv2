@@ -563,7 +563,7 @@ def test_route_step_requires_matching_execution_identity(
 
 
 @pytest.mark.django_db
-def test_route_step_allows_execution_work_center_and_equipment_snapshots(production_order):
+def test_route_step_allows_execution_work_center_snapshots(production_order):
     route_step = production_order.route.steps.get()
     operation = ProductionOperationExecution(
         order=production_order,
@@ -571,7 +571,6 @@ def test_route_step_allows_execution_work_center_and_equipment_snapshots(product
         sequence=route_step.sequence,
         operation=route_step.operation,
         work_center='Centro efetivamente utilizado',
-        equipment_code='EQ-EXECUCAO',
     )
 
     operation.full_clean()
@@ -5549,7 +5548,6 @@ def mapped_production_order(
     production_order.scheduled_start = timezone.localdate() - timedelta(days=1)
     production_order.scheduled_end = timezone.localdate()
     production_order.production_line = 'Linha de sólidos 1'
-    production_order.equipment_code = 'MIST-01'
     production_order.responsible = operations_user
     production_order.notes = 'Acompanhar umidade crítica do lote.'
     production_order.save(
@@ -5558,7 +5556,6 @@ def mapped_production_order(
             'scheduled_start',
             'scheduled_end',
             'production_line',
-            'equipment_code',
             'responsible',
             'notes',
             'updated_at',
@@ -5598,7 +5595,6 @@ def mapped_production_order(
         sequence=20,
         operation='Mistura',
         work_center='Sala de mistura',
-        equipment_code='MIST-01',
         planned_minutes=Decimal('35.00'),
         status=ProductionOperationExecution.Status.COMPLETED,
         started_at=now - timedelta(minutes=45),
@@ -5613,7 +5609,6 @@ def mapped_production_order(
         operation_execution=operation,
         user=operations_user,
         role='Operador de mistura',
-        equipment_code='MIST-01',
         started_at=now - timedelta(minutes=30),
         ended_at=now,
         hourly_cost=Decimal('20.0000'),

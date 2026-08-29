@@ -89,7 +89,7 @@ class CompetencyViewSet(SingleInstanceTrainingViewSet):
 
 class TrainingRequirementViewSet(SingleInstanceTrainingViewSet):
     queryset = TrainingRequirement.objects.select_related(
-        'job_position', 'function', 'competency', 'document', 'equipment'
+        'job_position', 'function', 'competency', 'document'
     )
     serializer_class = TrainingRequirementSerializer
     filterset_fields = (
@@ -100,7 +100,6 @@ class TrainingRequirementViewSet(SingleInstanceTrainingViewSet):
         'function',
         'competency',
         'document',
-        'equipment',
         'module_code',
         'is_mandatory',
         'block_without_valid_training',
@@ -267,14 +266,13 @@ class TrainingEnrollmentViewSet(SingleInstanceTrainingViewSet):
 
 
 class CriticalActivityRuleViewSet(SingleInstanceTrainingViewSet):
-    queryset = CriticalActivityRule.objects.select_related('requirement', 'equipment')
+    queryset = CriticalActivityRule.objects.select_related('requirement')
     serializer_class = CriticalActivityRuleSerializer
     filterset_fields = (
         'requirement',
         'enforcement_mode',
         'area',
         'process',
-        'equipment',
         'module_code',
         'is_active',
     )

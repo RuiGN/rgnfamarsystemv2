@@ -122,19 +122,19 @@ APIs iniciais:
 - `GET|POST /api/quality/specifications/` mantém especificações analíticas por produto, lote, versão, método, parâmetro, unidade, limites e critérios.
 - `GET|POST /api/quality/samples/` mantém amostras de recebimento, produção, estabilidade, validação, reclamação, investigação e monitoramento ambiental.
 - `POST /api/quality/samples/{id}/collect/`, `/receive/`, `/start_analysis/`, `/review/`, `/approve/` e `/reject/` executam o workflow da amostra.
-- `GET|POST /api/quality/analyses/` e `/api/quality/results/` registram análises, equipamentos, reagentes, padrões, anexos e resultados com flags OOS, OOT, alerta e ação.
+- `GET|POST /api/quality/analyses/` e `/api/quality/results/` registram análises, reagentes, padrões, anexos e resultados com flags OOS, OOT, alerta e ação.
 - `GET|POST /api/quality/investigations/` controla investigação laboratorial, repetição, reteste, reamostragem e conclusão.
 - `GET|POST /api/quality/documents/` emite certificados de análise, laudos, etiquetas e relatórios de liberação.
 - `GET|POST /api/qa/reviews/` mantém revisões e aprovações QA de lotes, ordens, registros de embalagem, laudos, desvios, CAPAs, mudanças e documentos.
 - `GET|POST /api/qa/checklist-items/` controla checklist de batch record com pendências, responsáveis, prazos, comentários e evidências.
 - `GET|POST /api/qa/lot-releases/` controla liberação, rejeição, bloqueio e desbloqueio de lotes com reflexo no status de qualidade do estoque.
-- `GET|POST /api/qa/blocks/` bloqueia e desbloqueia lotes, itens, fornecedores, documentos, equipamentos e processos.
+- `GET|POST /api/qa/blocks/` bloqueia e desbloqueia lotes, itens, fornecedores, documentos e processos.
 - `GET|POST /api/qa/training-requirements/`, `/api/qa/training-records/` e `/api/qa/critical-activity-rules/` mantêm treinamentos obrigatórios e impedem atividades críticas por usuário sem treinamento válido.
 - `GET|POST /api/documents/controlled-documents/` mantém documentos controlados com revisão, aprovação, publicação, obsolescência, cancelamento, arquivamento e nova revisão.
 - `GET|POST /api/documents/attachments/` e `/api/documents/relationships/` registram anexos com hash ALCOA+ e relacionamentos documentais.
 - `GET|POST /api/documents/distributions/` distribui documentos publicados e `POST /api/documents/distributions/{id}/confirm_read/` registra confirmação de leitura.
 - `GET /api/documents/audit-trail/` consulta trilha de auditoria documental em escopo global.
-- `GET|POST /api/deviations/events/` mantém desvios e não conformidades com origem, área, produto, lote, equipamento, documento, fornecedor, cliente, severidade e criticidade.
+- `GET|POST /api/deviations/events/` mantém desvios e não conformidades com origem, área, produto, lote, documento, fornecedor, cliente, severidade e criticidade.
 - `GET|POST /api/deviations/evidences/`, `/api/deviations/investigations/`, `/api/deviations/impact-assessments/` e `/api/deviations/approvals/` controlam evidências, investigação, impacto e aprovações obrigatórias.
 - `POST /api/deviations/events/{id}/start_investigation/` inicia investigação e `POST /api/deviations/events/{id}/close/` encerra somente com investigação, impacto e aprovações concluídas.
 - `GET|POST /api/deviations/links/` vincula desvios a CAPAs, mudanças, auditorias, reclamações, OOS/OOT, lotes, documentos e riscos.
@@ -143,7 +143,7 @@ APIs iniciais:
 - `POST /api/capa/records/{id}/submit/`, `/start/`, `/close/`, `/cancel/` e `/generate_notifications/` executam workflow, encerramento controlado e geração de alertas.
 - `POST /api/capa/actions/{id}/complete/`, `/api/capa/effectiveness-checks/{id}/verify/` e `/api/capa/approvals/{id}/approve/` registram conclusão, eficácia e aprovação.
 - `GET|POST /api/capa/notifications/` acompanha vencimentos, atrasos, aprovações pendentes e verificações de eficácia.
-- `GET|POST /api/changes/controls/` mantém controles de mudança com escopo, justificativa, áreas afetadas, equipamentos, sistemas, validação, treinamento, regulatório e estoque.
+- `GET|POST /api/changes/controls/` mantém controles de mudança com escopo, justificativa, áreas afetadas, sistemas, validação, treinamento, regulatório e estoque.
 - `GET|POST /api/changes/affected-items/`, `/api/changes/assessments/`, `/api/changes/actions/`, `/api/changes/approvals/` e `/api/changes/stock-assessments/` controlam itens afetados, análises, plano de ações, aprovações e avaliação de estoque.
 - `POST /api/changes/controls/{id}/submit/`, `/approve_for_implementation/`, `/start_implementation/`, `/close/` e `/cancel/` executam o workflow de mudança.
 - `POST /api/changes/assessments/{id}/complete/`, `/api/changes/actions/{id}/complete/`, `/api/changes/approvals/{id}/approve/` e `/api/changes/stock-assessments/{id}/complete/` registram análise, ação, aprovação e decisão de estoque.
@@ -159,8 +159,6 @@ APIs iniciais:
 - `POST /api/recalls/complaints/{id}/start_triage/`, `/start_investigation/`, `/record_regulatory_communication/`, `/close/` e `/cancel/` controlam triagem, investigação, comunicação regulatória e encerramento de reclamações.
 - `POST /api/recalls/returns/{id}/authorize/`, `/receive/`, `/inspect/` e `/close/` controlam autorização, recebimento, inspeção e encerramento de devoluções.
 - `POST /api/recalls/campaigns/{id}/approve/`, `/start/` e `/close/`, `/api/recalls/impacted-customers/{id}/record_response/`, `/record_return/`, `/api/recalls/communications/{id}/send/` e `/api/recalls/reports/{id}/generate/` executam recall com comunicação, respostas, retorno e efetividade.
-- `GET|POST /api/maintenance/assets/`, `/plans/`, `/orders/`, `/downtimes/`, `/usage-logs/` e `/reports/` mantêm equipamentos, instrumentos, linhas, salas, utilidades, componentes críticos, planos, ordens, paradas, uso e indicadores.
-- `POST /api/maintenance/assets/{id}/block/`, `/release/`, `/api/maintenance/plans/{id}/generate_order/`, `/api/maintenance/orders/{id}/start/`, `/complete/`, `/cancel/`, `/api/maintenance/downtimes/{id}/close/` e `/api/maintenance/reports/{id}/generate/` controlam bloqueios, liberação, execução, evidências e métricas de manutenção/calibração.
 - `GET|POST /api/training/job-positions/`, `/functions/`, `/competencies/`, `/requirements/`, `/matrix/`, `/sessions/`, `/enrollments/`, `/critical-activities/` e `/reports/` mantêm cargos, funções, competências, matriz, requisitos, turmas, convocações, registros, atividades críticas e indicadores.
 - `POST /api/training/sessions/{id}/convocate/`, `/api/training/enrollments/{id}/start/`, `/complete/`, `/approve/`, `/fail/`, `/revoke/`, `/api/training/critical-activities/{id}/authorize/` e `/api/training/reports/{id}/generate/` controlam convocação, realização, avaliação, aprovação, certificado, bloqueios/alertas e aderência.
 - `GET|POST /api/files/protected-files/`, `/access-rules/`, `/secure-links/` e `/audit-trail/` mantêm anexos protegidos em escopo global, origem, sigilo, criticidade, validade, hash e responsável.
@@ -169,7 +167,7 @@ APIs iniciais:
 - `POST /api/reports/definitions/{id}/run/`, `/api/reports/executions/{id}/run/`, `/cancel/` e `/api/reports/schedules/{id}/trigger_now/` geram exportações PDF/XLSX/CSV, executam relatórios e notificam conclusão.
 - `GET|POST /api/workflow/notifications/`, `/approval-queues/`, `/approval-tasks/`, `/delegations/`, `/comments/`, `/attachments/`, `/async-jobs/` e `GET /api/workflow/history/` mantêm central de notificações, aprovações, delegações, anexos, jobs assíncronos e histórico.
 - `POST /api/workflow/notifications/{id}/send/`, `/mark_read/`, `/archive/`, `/api/workflow/approval-tasks/{id}/approve/`, `/reject/`, `/cancel/` e `/api/workflow/async-jobs/{id}/start/`, `/update_progress/`, `/complete/`, `/fail/` executam o fluxo operacional.
-- `GET|POST /api/integrations/connectors/` mantém conectores para ERPs, fiscal, laboratório, equipamentos, email, OpenAI e BI.
+- `GET|POST /api/integrations/connectors/` mantém conectores para ERPs, fiscal, laboratório, email, OpenAI e BI.
 - `GET|POST /api/integrations/label-printers/` mantém a configuração da impressora de etiquetas; somente uma pode estar ativa.
 - `POST /api/integrations/connectors/{id}/activate/`, `/suspend/`, `/test_success/` e `/test_failure/` controlam o ciclo técnico do conector.
 - `GET|POST /api/integrations/api-clients/` mantém clientes de API e `POST /api/integrations/api-clients/{id}/rotate_secret/` rotaciona segredo com hash.

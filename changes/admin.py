@@ -28,7 +28,6 @@ class ChangeControlAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
         'scope',
         'justification',
         'affected_areas',
-        'equipment_reference',
         'system_reference',
         'impact_summary',
     )

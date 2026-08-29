@@ -169,7 +169,6 @@ class TrainingRequirement(AutoCodeMixin, SingleInstanceModel):
     class TrainingType(models.TextChoices):
         DOCUMENT = 'document', 'Documento'
         CRITICAL_ACTIVITY = 'critical_activity', 'Atividade crítica'
-        EQUIPMENT = 'equipment', 'Equipamento'
         MODULE = 'module', 'Módulo do sistema'
         REGULATORY = 'regulatory', 'Requisito regulatório'
         RECYCLE = 'recycle', 'Reciclagem'
@@ -227,14 +226,6 @@ class TrainingRequirement(AutoCodeMixin, SingleInstanceModel):
         blank=True,
         verbose_name='documento',
     )
-    equipment = models.ForeignKey(
-        'maintenance.EquipmentAsset',
-        on_delete=models.PROTECT,
-        related_name='training_requirements',
-        null=True,
-        blank=True,
-        verbose_name='equipamento',
-    )
     module_code = models.CharField('módulo', max_length=80, blank=True)
     regulatory_requirement_reference = models.CharField(
         'requisito regulatório', max_length=160, blank=True
@@ -267,7 +258,6 @@ class TrainingRequirement(AutoCodeMixin, SingleInstanceModel):
             models.Index(fields=['function']),
             models.Index(fields=['competency']),
             models.Index(fields=['document']),
-            models.Index(fields=['equipment']),
             models.Index(fields=['code']),
         ]
         verbose_name = 'requisito de treinamento'
@@ -283,7 +273,7 @@ class TrainingRequirement(AutoCodeMixin, SingleInstanceModel):
     def clean(self):
         super().clean()
         errors = {}
-        for field in ('job_position', 'function', 'competency', 'document', 'equipment'):
+        for field in ('job_position', 'function', 'competency', 'document'):
             pass
         if (
             self.function
@@ -866,14 +856,6 @@ class CriticalActivityRule(SingleInstanceModel):
         blank=True,
         verbose_name='processo normalizado',
     )
-    equipment = models.ForeignKey(
-        'maintenance.EquipmentAsset',
-        on_delete=models.PROTECT,
-        related_name='training_critical_activity_rules',
-        null=True,
-        blank=True,
-        verbose_name='equipamento',
-    )
     module_code = models.CharField('módulo', max_length=80, blank=True)
     is_active = models.BooleanField('ativo', default=True)
     notes = models.TextField('observações', blank=True)
@@ -889,7 +871,6 @@ class CriticalActivityRule(SingleInstanceModel):
         indexes = [
             models.Index(fields=['is_active', 'enforcement_mode']),
             models.Index(fields=['requirement']),
-            models.Index(fields=['equipment']),
             models.Index(fields=['activity_code']),
         ]
         verbose_name = 'atividade crítica de treinamento'

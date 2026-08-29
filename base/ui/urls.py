@@ -1,10 +1,12 @@
-from django.urls import path
+from django.urls import path, register_converter
 
 from base.ui import views
 from base.ui.actions import views as action_views
+from base.ui.converters import ActiveModuleSlugConverter
 
 
 app_name = 'app'
+register_converter(ActiveModuleSlugConverter, 'active_module_slug')
 
 urlpatterns = [
     path('', views.AppIndexView.as_view(), name='index'),
@@ -46,74 +48,74 @@ urlpatterns = [
         views.ReportRunView.as_view(),
         name='report_run',
     ),
-    path('<slug:module_slug>/', views.ModuleView.as_view(), name='module'),
+    path('<active_module_slug:module_slug>/', views.ModuleView.as_view(), name='module'),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/',
         views.ResourceListView.as_view(),
         name='resource_list',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/export/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/export/',
         views.ResourceExportView.as_view(),
         name='resource_export',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/new/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/new/',
         views.ResourceCreateView.as_view(),
         name='resource_create',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/actions/<slug:action_name>/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/actions/<slug:action_name>/',
         action_views.CollectionResourceActionView.as_view(),
         name='collection_action',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',
         action_views.ResourceActionView.as_view(),
         name='resource_action',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/',
         views.ResourceDetailView.as_view(),
         name='resource_detail',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/kanban/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/kanban/',
         views.ResourceKanbanView.as_view(),
         name='resource_kanban',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/gantt/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/gantt/',
         views.ResourceGanttView.as_view(),
         name='resource_gantt',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/viewer/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/viewer/',
         views.ResourceDocumentView.as_view(),
         name='resource_viewer',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/chat/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/chat/',
         views.ResourceChatView.as_view(),
         name='resource_chat',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/tree/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/tree/',
         views.ResourceTreeView.as_view(),
         name='resource_tree',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/edit/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/edit/',
         views.ResourceUpdateView.as_view(),
         name='resource_edit',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/execute/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/execute/',
         views.ResourceExecutionView.as_view(),
         name='resource_execute',
     ),
     path(
-        '<slug:module_slug>/<slug:resource_slug>/<int:pk>/delete/',
+        '<active_module_slug:module_slug>/<slug:resource_slug>/<int:pk>/delete/',
         views.ResourceDeleteView.as_view(),
         name='resource_delete',
     ),

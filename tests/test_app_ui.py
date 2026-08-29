@@ -28,7 +28,6 @@ from documents.models import DocumentAuditTrail
 from documents.models import ControlledDocument
 from files.models import ProtectedFile
 from governance.models import InstitutionSettings
-from maintenance.models import EquipmentAsset
 from masters.models import Product, UnitOfMeasure
 from production.models import ProductionOrder
 from risks.models import RiskRecord
@@ -1724,16 +1723,6 @@ class AppUiSprint42ResourceTests(TestCase):
         session = self.client.session
         session.save()
 
-    def create_asset(self, code, name):
-        return EquipmentAsset.objects.create(
-            asset_code=code,
-            name=name,
-            asset_type=EquipmentAsset.AssetType.EQUIPMENT,
-            area='Utilidades',
-            location='Sala tecnica',
-            responsible=self.admin,
-        )
-
     def create_protected_file(self):
         return ProtectedFile.objects.create(
             file_number='ARQ-REC',
@@ -1756,14 +1745,6 @@ class AppUiSprint42ResourceTests(TestCase):
 
     def test_sprint_42_modules_expose_expected_resources(self):
         expected = {
-            'maintenance': [
-                'Ativos',
-                'Planos de manutencao',
-                'Ordens de manutencao',
-                'Paradas de equipamento',
-                'Logs de uso',
-                'Relatorios de manutencao',
-            ],
             'training': [
                 'Cargos',
                 'Funcoes',
@@ -1835,7 +1816,6 @@ class AppUiSprint42ResourceTests(TestCase):
         assert response.status_code == 200
         navigation = response.content.decode().split('</nav>', 1)[0]
         for module_slug in (
-            'maintenance',
             'training',
             'files',
             'reports',
@@ -1846,28 +1826,6 @@ class AppUiSprint42ResourceTests(TestCase):
             'compliance',
         ):
             assert f'href="/app/{module_slug}/"' in navigation
-
-    def test_maintenance_asset_list_uses_single_instance_global_scope(self):
-        self.create_asset('EQ-REC', 'Misturador Recife')
-        self.create_asset('EQ-GYN', 'Misturador Goiania')
-
-        response = self.client.get('/app/maintenance/assets/')
-
-        assert response.status_code == 200
-        content = response.content.decode()
-        assert 'Misturador Recife' in content
-        assert 'Misturador Goiania' in content
-
-    def test_maintenance_plan_form_uses_single_instance_global_related_choices(self):
-        self.create_asset('EQ-REC', 'Autoclave Recife')
-        self.create_asset('EQ-GYN', 'Autoclave Goiania')
-
-        response = self.client.get('/app/maintenance/plans/new/')
-
-        assert response.status_code == 200
-        content = response.content.decode()
-        assert 'Autoclave Recife' in content
-        assert 'Autoclave Goiania' in content
 
     def test_protected_files_do_not_expose_file_references_in_html_detail(self):
         protected_file = self.create_protected_file()

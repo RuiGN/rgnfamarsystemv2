@@ -26,7 +26,6 @@ class QualityEventAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     search_fields = (
         'event_number',
         'area',
-        'equipment_reference',
         'description',
         'product__code',
         'stock_lot__lot_number',

@@ -20,7 +20,6 @@ urlpatterns = [
     path('integrations/', include('integrations.urls', namespace='v1_integrations')),
     path('knowledge/', include('knowledge.urls', namespace='v1_knowledge')),
     path('inventory/', include('inventory.urls', namespace='v1_inventory')),
-    path('maintenance/', include('maintenance.urls', namespace='v1_maintenance')),
     path('masters/', include('masters.urls', namespace='v1_masters')),
     path('planning/', include('planning.urls', namespace='v1_planning')),
     path('procurement/', include('procurement.urls', namespace='v1_procurement')),

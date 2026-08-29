@@ -22,7 +22,6 @@ class OperationalModule(models.TextChoices):
     AUDITS = 'audits', 'Auditorias'
     RISKS = 'risks', 'Riscos'
     RECALLS = 'recalls', 'Recall'
-    MAINTENANCE = 'maintenance', 'Manutencao'
     TRAINING = 'training', 'Treinamentos'
     FILES = 'files', 'Arquivos'
     REPORTS = 'reports', 'Relatorios'

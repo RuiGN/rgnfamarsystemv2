@@ -45,7 +45,6 @@
                 <dt class="col-sm-3 text-muted">Prioridade</dt><dd class="col-sm-3">{{ order.get_priority_display }}</dd>
                 <dt class="col-sm-3 text-muted">Responsável</dt><dd class="col-sm-3">{{ order.responsible|default:'—' }}</dd>
                 <dt class="col-sm-3 text-muted">Linha de produção</dt><dd class="col-sm-3">{{ order.production_line|default:'—' }}</dd>
-                <dt class="col-sm-3 text-muted">Equipamento principal</dt><dd class="col-sm-3">{{ order.equipment_code|default:'—' }}</dd>
                 <dt class="col-sm-3 text-muted">Quantidade planejada</dt><dd class="col-sm-3">{{ order.planned_quantity|floatformat:4 }} {{ order.unit }}</dd>
                 <dt class="col-sm-3 text-muted">Período planejado</dt>
                 <dd class="col-sm-3">{{ order.scheduled_start|date:'d/m/Y'|default:'—' }} — {{ order.scheduled_end|date:'d/m/Y'|default:'—' }}</dd>
@@ -186,15 +185,14 @@
             {% elif operations %}
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <caption class="visually-hidden">Execuções, equipamentos, horários e observações do processo</caption>
-                        <thead><tr><th scope="col">Seq.</th><th scope="col">Operação</th><th scope="col">Centro</th><th scope="col">Equipamento</th><th scope="col">Planejado</th><th scope="col">Real</th><th scope="col">Início/fim</th><th scope="col">Status</th><th scope="col">Executor</th><th scope="col">Observações</th></tr></thead>
+                        <caption class="visually-hidden">Execuções, horários e observações do processo</caption>
+                        <thead><tr><th scope="col">Seq.</th><th scope="col">Operação</th><th scope="col">Centro</th><th scope="col">Planejado</th><th scope="col">Real</th><th scope="col">Início/fim</th><th scope="col">Status</th><th scope="col">Executor</th><th scope="col">Observações</th></tr></thead>
                         <tbody>
                             {% for operation in operations %}
                                 <tr>
                                     <th scope="row">{{ operation.sequence }}</th>
                                     <td>{{ operation.operation }}</td>
                                     <td>{{ operation.work_center|default:'—' }}</td>
-                                    <td>{{ operation.equipment_code|default:'—' }}</td>
                                     <td>{{ operation.planned_minutes|floatformat:2 }} min</td>
                                     <td>{{ operation.actual_minutes|floatformat:2 }} min</td>
                                     <td>{{ operation.started_at|date:'d/m/Y H:i'|default:'—' }} / {{ operation.ended_at|date:'d/m/Y H:i'|default:'—' }}</td>
@@ -221,13 +219,12 @@
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <caption class="visually-hidden">Apontamentos de mão de obra da ordem</caption>
-                        <thead><tr><th scope="col">Colaborador</th><th scope="col">Função</th><th scope="col">Equipamento</th><th scope="col">Início</th><th scope="col">Fim</th><th scope="col">Duração</th><th scope="col">Observações</th></tr></thead>
+                        <thead><tr><th scope="col">Colaborador</th><th scope="col">Função</th><th scope="col">Início</th><th scope="col">Fim</th><th scope="col">Duração</th><th scope="col">Observações</th></tr></thead>
                         <tbody>
                             {% for labor in labor_entries %}
                                 <tr>
                                     <th scope="row">{{ labor.user }}</th>
                                     <td>{{ labor.role }}</td>
-                                    <td>{{ labor.equipment_code|default:'—' }}</td>
                                     <td>{{ labor.started_at|date:'d/m/Y H:i' }}</td>
                                     <td>{{ labor.ended_at|date:'d/m/Y H:i' }}</td>
                                     <td>{{ labor.duration_minutes|floatformat:2 }} min</td>

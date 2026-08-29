@@ -46,7 +46,6 @@ class RouteStepInline(admin.TabularInline):
         'operation',
         'work_center',
         'resource',
-        'equipment_code',
         'standard_time_minutes',
     )
 
@@ -76,10 +75,9 @@ class RouteStepAdmin(admin.ModelAdmin):
         'sequence',
         'operation',
         'work_center',
-        'equipment_code',
         'standard_time_minutes',
     )
     list_filter = ('work_center',)
-    search_fields = ('route__code', 'operation', 'work_center', 'equipment_code')
+    search_fields = ('route__code', 'operation', 'work_center', 'resource')
     autocomplete_fields = ('route',)
     readonly_fields = ('created_at', 'updated_at')

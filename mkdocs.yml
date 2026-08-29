@@ -32,7 +32,6 @@ nav:
       - Auditorias: architecture/audits.md
       - Gestão de Riscos: architecture/risks.md
       - Recall e Recolhimento: architecture/recalls.md
-      - Equipamentos e Manutenção: architecture/maintenance.md
       - Treinamentos e Qualificação: architecture/training.md
       - Arquivos Protegidos: architecture/files.md
       - Relatórios e BI: architecture/reports.md

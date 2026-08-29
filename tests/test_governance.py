@@ -477,7 +477,6 @@ class GovernanceCommandTests(TestCase):
         from formulations.models import MasterFormula
         from governance.models import DemoScenarioLoad
         from inventory.models import StockLot
-        from maintenance.models import EquipmentAsset
         from masters.models import BusinessPartner, Product
         from planning.models import MRPSuggestion
         from procurement.models import PurchaseOrder
@@ -518,7 +517,6 @@ class GovernanceCommandTests(TestCase):
             RiskRecord,
             AuditProgram,
             RecallCampaign,
-            EquipmentAsset,
             TrainingSession,
             ApprovalTask,
             ReportDefinition,

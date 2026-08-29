@@ -74,7 +74,7 @@ class TrainingRequirementSerializer(
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def validate(self, attrs):
-        for field_name in ('job_position', 'function', 'competency', 'document', 'equipment'):
+        for field_name in ('job_position', 'function', 'competency', 'document'):
             pass
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs

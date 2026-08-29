@@ -93,7 +93,6 @@ class ProductionOrder(SingleInstanceModel):
     actual_start = models.DateTimeField('início real', null=True, blank=True)
     actual_end = models.DateTimeField('fim real', null=True, blank=True)
     production_line = models.CharField('linha', max_length=120, blank=True)
-    equipment_code = models.CharField('equipamento', max_length=80, blank=True)
     responsible = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -921,7 +920,6 @@ class ProductionOperationExecution(SingleInstanceModel):
     sequence = models.PositiveIntegerField('sequência')
     operation = models.CharField('operação', max_length=160)
     work_center = models.CharField('centro de trabalho', max_length=120, blank=True)
-    equipment_code = models.CharField('equipamento', max_length=80, blank=True)
     planned_minutes = models.DecimalField(
         'minutos planejados', max_digits=10, decimal_places=2, default=Decimal('0.00')
     )
@@ -1153,7 +1151,6 @@ class ProductionLaborEntry(SingleInstanceModel):
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='production_labor_entries'
     )
     role = models.CharField('função', max_length=120)
-    equipment_code = models.CharField('equipamento', max_length=80, blank=True)
     started_at = models.DateTimeField('início')
     ended_at = models.DateTimeField('fim')
     duration_minutes = models.DecimalField(

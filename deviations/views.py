@@ -75,7 +75,6 @@ class QualityEventViewSet(SingleInstanceDeviationViewSet):
     search_fields = (
         'event_number',
         'area',
-        'equipment_reference',
         'description',
         'closure_summary',
     )

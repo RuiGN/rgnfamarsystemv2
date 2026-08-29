@@ -123,7 +123,6 @@ def create_sample_analysis_result(
         sample=sample,
         specification=specification,
         method_reference=specification.method_code,
-        equipment_code='HPLC-01',
         reagent_lot='REAG-001',
         standard_lot='PAD-001',
     )

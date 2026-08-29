@@ -1259,7 +1259,6 @@ class QAProcessModelTests(TestCase):
             stock_lot=lot,
             supplier=supplier,
             quality_document=document,
-            equipment_reference='ENV-01',
             process_reference='Compressão',
             reason='Falha crítica de reconciliação.',
             blocked_by=user,

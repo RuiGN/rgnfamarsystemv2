@@ -194,7 +194,6 @@ class QualityBlockViewSet(SingleInstanceQAViewSet):
     search_fields = (
         'block_number',
         'reason',
-        'equipment_reference',
         'process_reference',
         'document_reference',
     )

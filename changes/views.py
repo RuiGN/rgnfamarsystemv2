@@ -67,7 +67,6 @@ class ChangeControlViewSet(SingleInstanceChangeViewSet):
         'scope',
         'justification',
         'affected_areas',
-        'equipment_reference',
         'system_reference',
         'impact_summary',
     )

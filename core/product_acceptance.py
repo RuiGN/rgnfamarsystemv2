@@ -195,7 +195,6 @@ def _api_v1_modules_check(api_v1_urls):
         'audits',
         'risks',
         'recalls',
-        'maintenance',
         'training',
         'files',
         'reports',

@@ -304,7 +304,6 @@ class RouteStep(SingleInstanceModel):
     operation = models.CharField('operação', max_length=160)
     work_center = models.CharField('centro de trabalho', max_length=160)
     resource = models.CharField('recurso', max_length=160, blank=True)
-    equipment_code = models.CharField('equipamento', max_length=80, blank=True)
     setup_time_minutes = models.DecimalField(
         'tempo de setup em minutos',
         max_digits=10,

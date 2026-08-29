@@ -790,7 +790,6 @@ class QualityBlock(SingleInstanceModel):
         LOT = 'lot', 'Lote'
         PRODUCT = 'product', 'Item/produto'
         SUPPLIER = 'supplier', 'Fornecedor'
-        EQUIPMENT = 'equipment', 'Equipamento'
         DOCUMENT = 'document', 'Documento'
         PROCESS = 'process', 'Processo'
 
@@ -833,7 +832,6 @@ class QualityBlock(SingleInstanceModel):
         blank=True,
         verbose_name='documento de qualidade',
     )
-    equipment_reference = models.CharField('equipamento', max_length=120, blank=True)
     process_reference = models.CharField('processo', max_length=120, blank=True)
     document_reference = models.CharField('documento', max_length=120, blank=True)
     reason = models.TextField('motivo')
@@ -926,7 +924,6 @@ class QualityBlock(SingleInstanceModel):
                 self.stock_lot_id,
                 self.supplier_id,
                 self.quality_document_id,
-                self.equipment_reference,
                 self.process_reference,
                 self.document_reference,
             )

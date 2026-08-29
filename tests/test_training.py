@@ -48,23 +48,6 @@ def create_training_document(owner, suffix='001'):
     )
 
 
-def create_training_asset(responsible, suffix='001'):
-    from maintenance.models import EquipmentAsset
-
-    return EquipmentAsset.objects.create(
-        asset_code=f'EQP-TRN-{suffix}',
-        name=f'Equipamento crítico {suffix}',
-        asset_type=EquipmentAsset.AssetType.EQUIPMENT,
-        area='Produção',
-        location='Sala crítica',
-        status=EquipmentAsset.Status.AVAILABLE,
-        qualification_status=EquipmentAsset.QualificationStatus.QUALIFIED,
-        qualification_valid_until=timezone.localdate() + timedelta(days=365),
-        calibration_required=False,
-        responsible=responsible,
-    )
-
-
 class TrainingModelTests(TestCase):
     def test_enrollment_number_is_persisted_during_partial_update(self):
         from training.models import TrainingEnrollment, TrainingRequirement
@@ -127,7 +110,6 @@ class TrainingModelTests(TestCase):
 
         trainee, trainer, approver = create_training_users()
         document = create_training_document(approver)
-        equipment = create_training_asset(approver)
         position = JobPosition.objects.create(
             code='POS-OP-PROD',
             title='Operador de produção',
@@ -157,7 +139,6 @@ class TrainingModelTests(TestCase):
             function=function,
             competency=competency,
             document=document,
-            equipment=equipment,
             module_code='production',
             regulatory_requirement_reference='RDC-658/2022',
             validity_days=180,
@@ -182,7 +163,6 @@ class TrainingModelTests(TestCase):
             enforcement_mode=CriticalActivityRule.EnforcementMode.BLOCK,
             area='Produção',
             process='Compressão',
-            equipment=equipment,
             module_code='production',
         )
 
@@ -250,7 +230,6 @@ class TrainingModelTests(TestCase):
             password='S3curePass!123',
         )
         document = create_training_document(approver)
-        equipment = create_training_asset(approver)
         position = JobPosition.objects.create(
             code='POS-CQ', title='Analista CQ', area='Controle de Qualidade'
         )
@@ -269,14 +248,13 @@ class TrainingModelTests(TestCase):
         requirement = TrainingRequirement.objects.create(
             code='TRN-HPLC-001',
             title='Treinamento HPLC',
-            training_type=TrainingRequirement.TrainingType.EQUIPMENT,
+            training_type=TrainingRequirement.TrainingType.CRITICAL_ACTIVITY,
             area='CQ',
             process='Análise',
             job_position=position,
             function=function,
             competency=competency,
             document=document,
-            equipment=equipment,
             module_code='quality',
             regulatory_requirement_reference='ICH Q2(R2)',
             validity_days=90,
@@ -325,7 +303,6 @@ class TrainingModelTests(TestCase):
         report.generate(user=approver, content_reference='training/reports/cq.pdf')
 
         assert requirement.document == document
-        assert requirement.equipment == equipment
         assert requirement.module_code == 'quality'
         assert requirement.regulatory_requirement_reference == 'ICH Q2(R2)'
         assert report.status == TrainingIndicatorReport.Status.GENERATED
@@ -352,7 +329,6 @@ class TestTrainingApi:
         other_trainee, _other_trainer, other_approver = create_training_users(suffix='api999')
         document = create_training_document(approver, suffix='api')
         other_document = create_training_document(other_approver, suffix='api999')
-        equipment = create_training_asset(approver, suffix='api')
         client = APIClient()
         client.force_authenticate(approver)
 
@@ -370,7 +346,7 @@ class TestTrainingApi:
             '/api/training/functions/',
             {
                 'code': 'FUNC-API',
-                'name': 'Operar equipamento API',
+                'name': 'Operar processo crítico API',
                 'job_position': position_id,
                 'area': 'Produção',
                 'process': 'Compressão',
@@ -412,7 +388,6 @@ class TestTrainingApi:
                 'function': function_id,
                 'competency': competency_id,
                 'document': document.id,
-                'equipment': equipment.id,
                 'module_code': 'production',
                 'regulatory_requirement_reference': 'RDC-658/2022',
                 'validity_days': 365,
@@ -474,7 +449,6 @@ class TestTrainingApi:
                 'enforcement_mode': CriticalActivityRule.EnforcementMode.BLOCK,
                 'area': 'Produção',
                 'process': 'Compressão',
-                'equipment': equipment.id,
                 'module_code': 'production',
             },
         )

@@ -85,17 +85,15 @@ class QualityAnalysisAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin)
         'sample',
         'specification',
         'status',
-        'equipment_code',
         'analyst',
         'reviewer',
         'approver',
     )
-    list_filter = ('status', 'equipment_code')
+    list_filter = ('status',)
     search_fields = (
         'analysis_number',
         'sample__sample_number',
         'method_reference',
-        'equipment_code',
         'reagent_lot',
         'standard_lot',
     )

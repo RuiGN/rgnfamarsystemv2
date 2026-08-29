@@ -497,7 +497,6 @@ class QualityAnalysis(SingleInstanceModel):
         'status', max_length=24, choices=Status.choices, default=Status.PENDING
     )
     method_reference = models.CharField('método executado', max_length=120, blank=True)
-    equipment_code = models.CharField('equipamento', max_length=80, blank=True)
     reagent_lot = models.CharField('lote do reagente', max_length=80, blank=True)
     standard_lot = models.CharField('lote do padrão', max_length=80, blank=True)
     analyst = models.ForeignKey(

@@ -46,8 +46,8 @@ def test_state_rule_inventory_has_no_orphans():
     registered_keys = {config.key for config in configs}
 
     assert set(RESTRICTED_ACTION_STATES) <= registered_keys
-    assert sum(bool(config.allowed_states) for config in configs) == 221
-    assert sum(config.detail and not config.allowed_states for config in configs) == 14
+    assert sum(bool(config.allowed_states) for config in configs) == 215
+    assert sum(config.detail and not config.allowed_states for config in configs) == 12
     assert all(not config.allowed_states for config in configs if not config.detail)
 
 
@@ -84,11 +84,6 @@ def test_state_rule_inventory_has_no_orphans():
             ('fiscal', 'documents', 'cancel'),
             'emission_status',
             ('authorized',),
-        ),
-        (
-            ('maintenance', 'orders', 'complete'),
-            'status',
-            ('in_progress',),
         ),
         (
             ('procurement', 'receipts', 'post_stock'),

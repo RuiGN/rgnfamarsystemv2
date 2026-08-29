@@ -169,7 +169,6 @@ class QualityAnalysisViewSet(SingleInstanceQualityViewSet):
         'analysis_number',
         'sample__sample_number',
         'method_reference',
-        'equipment_code',
         'reagent_lot',
         'standard_lot',
     )

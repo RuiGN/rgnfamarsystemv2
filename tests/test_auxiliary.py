@@ -71,7 +71,6 @@ class AuxiliaryCatalogTests(TestCase):
             GovernanceCatalogItem,
             GovernanceParameter,
         )
-        from maintenance.models import EquipmentAsset
         from masters.models import BusinessPartner
         from procurement.models import PurchaseOrder, SupplierQualificationEvent, SupplierQuotation
         from recalls.models import MarketComplaint, RecallCampaign
@@ -101,7 +100,6 @@ class AuxiliaryCatalogTests(TestCase):
             QualityEvent: ['area_ref', 'severity_ref', 'criticality_ref'],
             AuditPlan: ['area_ref'],
             AuditFinding: ['criticality_ref'],
-            EquipmentAsset: ['area_ref'],
             QATrainingRequirement: ['area_ref', 'process_ref', 'role_ref'],
             QACriticalActivityRule: ['area_ref', 'process_ref', 'role_ref'],
             JobPosition: ['area_ref', 'department_ref'],

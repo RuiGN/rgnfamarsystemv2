@@ -64,7 +64,7 @@ class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAd
         'regulatory_requirement_reference',
         'notes',
     )
-    autocomplete_fields = ('job_position', 'function', 'competency', 'document', 'equipment')
+    autocomplete_fields = ('job_position', 'function', 'competency', 'document')
 
 
 @admin.register(TrainingMatrixRequirement)
@@ -190,7 +190,7 @@ class CriticalActivityRuleAdmin(admin.ModelAdmin):
         'module_code',
         'notes',
     )
-    autocomplete_fields = ('requirement', 'equipment')
+    autocomplete_fields = ('requirement',)
 
 
 @admin.register(TrainingIndicatorReport)

@@ -134,7 +134,6 @@ class QualityBlockAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
         'stock_lot__lot_number',
         'supplier__legal_name',
         'quality_document__document_number',
-        'equipment_reference',
         'process_reference',
         'document_reference',
         'reason',

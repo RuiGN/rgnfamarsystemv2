@@ -133,41 +133,6 @@ RESTRICTED_ACTION_STATES = {
     ('fiscal', 'documents', 'send_email'): ('emission_status', ('authorized',)),
     ('fiscal', 'documents', 'submit_for_review'): ('status', ('draft',)),
     ('fiscal', 'obligations', 'submit'): ('status', ('open',)),
-    (
-        'maintenance',
-        'assets',
-        'block',
-    ): (
-        'status',
-        (
-            'draft',
-            'available',
-            'under_maintenance',
-            'under_calibration',
-            'cleaning',
-            'sanitization',
-            'blocked',
-        ),
-    ),
-    (
-        'maintenance',
-        'assets',
-        'release',
-    ): (
-        'status',
-        (
-            'draft',
-            'available',
-            'under_maintenance',
-            'under_calibration',
-            'cleaning',
-            'sanitization',
-            'blocked',
-        ),
-    ),
-    ('maintenance', 'orders', 'cancel'): ('status', ('open', 'in_progress', 'cancelled')),
-    ('maintenance', 'orders', 'complete'): ('status', ('in_progress',)),
-    ('maintenance', 'orders', 'start'): ('status', ('open',)),
     ('procurement', 'orders', 'approve'): ('status', ('draft',)),
     (
         'procurement',

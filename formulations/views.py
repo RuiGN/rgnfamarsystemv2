@@ -52,6 +52,6 @@ class ManufacturingRouteViewSet(SingleInstanceFormulationViewSet):
 class RouteStepViewSet(SingleInstanceFormulationViewSet):
     queryset = RouteStep.objects.select_related('route', 'route__product')
     serializer_class = RouteStepSerializer
-    filterset_fields = ('route', 'work_center', 'equipment_code')
-    search_fields = ('route__code', 'operation', 'work_center', 'equipment_code')
+    filterset_fields = ('route', 'work_center')
+    search_fields = ('route__code', 'operation', 'work_center', 'resource')
     ordering = ('route__code', 'sequence')

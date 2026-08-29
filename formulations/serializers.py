@@ -149,7 +149,6 @@ class RouteStepSerializer(SingleInstanceFormulationSerializerMixin, serializers.
             'operation',
             'work_center',
             'resource',
-            'equipment_code',
             'setup_time_minutes',
             'standard_time_minutes',
             'critical_parameters',

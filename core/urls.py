@@ -29,7 +29,6 @@ urlpatterns = [
     path('api/integrations/', include('integrations.urls')),
     path('api/knowledge/', include('knowledge.urls')),
     path('api/inventory/', include('inventory.urls')),
-    path('api/maintenance/', include('maintenance.urls')),
     path('api/masters/', include('masters.urls')),
     path('api/planning/', include('planning.urls')),
     path('api/procurement/', include('procurement.urls')),

@@ -218,7 +218,6 @@ SPECTACULAR_SETTINGS = {
         'GovernanceModuleEnum': 'base.modules.OperationalModule',
         'StockQualityStatusEnum': 'inventory.models.StockQualityStatus',
         'InvestigationStatusEnum': 'quality.models.LaboratoryInvestigation.Status',
-        'MaintenancePlanTypeEnum': 'maintenance.models.MaintenancePlan.PlanType',
         'PlanningSourceEnum': 'planning.models.PlanningPolicy.Source',
         'ReportModuleEnum': 'reports.models.ReportDefinition.Module',
         'ReportExecutionStatusEnum': 'reports.models.ReportExecution.Status',

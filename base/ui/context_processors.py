@@ -19,7 +19,7 @@ SIDEBAR_DOMAINS = (
     (
         'operations',
         'Operações',
-        ('formulations', 'production', 'planning', 'inventory', 'maintenance'),
+        ('formulations', 'production', 'planning', 'inventory'),
     ),
     (
         'quality',

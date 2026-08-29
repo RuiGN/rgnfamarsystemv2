@@ -644,7 +644,6 @@ class DemoSeeder:
                 'scheduled_start': self.today,
                 'scheduled_end': self.today + timezone.timedelta(days=2),
                 'production_line': 'Linha solidos 1',
-                'equipment_code': 'DEMO-COMP-01',
                 'approved_by': self.refs['quality_user'],
                 'approved_at': self.now,
                 'released_by': self.refs['production_user'],
@@ -1619,7 +1618,6 @@ class DemoSeeder:
         self.refs.update({'recall': recall})
 
     def _seed_support_modules(self):
-        from maintenance.models import EquipmentAsset, MaintenancePlan
         from reports.models import DashboardWidget, DashboardWorkspace, ReportDefinition
         from training.models import (
             Competency,
@@ -1630,45 +1628,6 @@ class DemoSeeder:
         )
         from workflow.models import ApprovalQueue, ApprovalTask, WorkflowNotification
 
-        asset = self._upsert(
-            EquipmentAsset,
-            'maintenance.assets',
-            {'asset_code': 'DEMO-COMP-01'},
-            {
-                'name': 'Compressora demo',
-                'asset_type': EquipmentAsset.AssetType.EQUIPMENT,
-                'area': 'Producao',
-                'area_ref': self.refs['production_area'],
-                'location': 'Sala de compressao',
-                'manufacturer': 'Fabricante Demo',
-                'model': 'CMP-1000',
-                'serial_number': 'SN-DEMO-001',
-                'is_critical': True,
-                'status': EquipmentAsset.Status.AVAILABLE,
-                'qualification_status': EquipmentAsset.QualificationStatus.QUALIFIED,
-                'qualification_valid_until': self.today + timezone.timedelta(days=365),
-                'calibration_required': True,
-                'calibration_status': EquipmentAsset.CalibrationStatus.VALID,
-                'calibration_valid_until': self.today + timezone.timedelta(days=180),
-                'responsible': self.refs['production_user'],
-            },
-        )
-        self._upsert(
-            MaintenancePlan,
-            'maintenance.plans',
-            {
-                'asset': asset,
-                'plan_type': MaintenancePlan.PlanType.PREVENTIVE_MAINTENANCE,
-            },
-            {
-                'trigger_type': MaintenancePlan.TriggerType.TIME,
-                'interval_days': 90,
-                'description': 'Plano preventivo demo.',
-                'responsible': self.refs['production_user'],
-                'next_due_date': self.today + timezone.timedelta(days=90),
-                'active': True,
-            },
-        )
         position = self._upsert(
             JobPosition,
             'training.positions',
@@ -1835,9 +1794,7 @@ class DemoSeeder:
                 'configuration': {'source': 'capa'},
             },
         )
-        self.refs.update(
-            {'asset': asset, 'training_session': session, 'approval_task': task, 'report': report}
-        )
+        self.refs.update({'training_session': session, 'approval_task': task, 'report': report})
 
     def _seed_ai_agents(self):
         from ai_agents.models import AIAgentProfile, AIAgentRun, AIInsightSuggestion

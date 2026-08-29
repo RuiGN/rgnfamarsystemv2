@@ -30,7 +30,6 @@ class ChangeControl(SingleInstanceModel):
         EMERGENCY = 'emergency', 'Emergencial'
         ADMINISTRATIVE = 'administrative', 'Administrativa'
         PROCESS = 'process', 'Processo'
-        EQUIPMENT = 'equipment', 'Equipamento'
         SYSTEM = 'system', 'Sistema'
         DOCUMENT = 'document', 'Documento'
 
@@ -48,7 +47,6 @@ class ChangeControl(SingleInstanceModel):
     scope = models.TextField('escopo')
     justification = models.TextField('justificativa')
     affected_areas = models.TextField('áreas afetadas')
-    equipment_reference = models.CharField('equipamento', max_length=120, blank=True)
     system_reference = models.CharField('sistema', max_length=120, blank=True)
     validation_plan = models.TextField('plano de validação', blank=True)
     training_plan = models.TextField('plano de treinamento', blank=True)
@@ -266,7 +264,6 @@ class ChangeAffectedItem(SingleInstanceModel):
         PRODUCT = 'product', 'Produto'
         DOCUMENT = 'document', 'Documento'
         SUPPLIER = 'supplier', 'Fornecedor'
-        EQUIPMENT = 'equipment', 'Equipamento'
         SYSTEM = 'system', 'Sistema'
         PROCESS = 'process', 'Processo'
         TRAINING = 'training', 'Treinamento'
@@ -340,7 +337,6 @@ class ChangeAffectedItem(SingleInstanceModel):
         if (
             self.item_type
             in {
-                self.ItemType.EQUIPMENT,
                 self.ItemType.SYSTEM,
                 self.ItemType.PROCESS,
                 self.ItemType.TRAINING,

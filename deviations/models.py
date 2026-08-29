@@ -80,7 +80,6 @@ class QualityEvent(SingleInstanceModel):
         blank=True,
         verbose_name='lote',
     )
-    equipment_reference = models.CharField('equipamento', max_length=120, blank=True)
     controlled_document = models.ForeignKey(
         'documents.ControlledDocument',
         on_delete=models.PROTECT,

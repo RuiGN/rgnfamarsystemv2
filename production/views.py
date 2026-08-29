@@ -395,7 +395,7 @@ class ProductionOperationExecutionViewSet(NonDestructiveProductionViewSet):
         'recorded_by_id',
     )
     filterset_fields = ('order', 'route_step', 'status')
-    search_fields = ('order__order_number', 'operation', 'work_center', 'equipment_code')
+    search_fields = ('order__order_number', 'operation', 'work_center')
     ordering = ('order__order_number', 'sequence')
 
     def get_serializer_save_kwargs(self):
@@ -415,5 +415,5 @@ class ProductionLaborEntryViewSet(NonDestructiveProductionViewSet):
         'duration_minutes',
     )
     filterset_fields = ('order', 'operation_execution', 'user')
-    search_fields = ('order__order_number', 'role', 'equipment_code', 'user__username')
+    search_fields = ('order__order_number', 'role', 'user__username')
     ordering = ('order__order_number', 'started_at')
