@@ -30,6 +30,12 @@ from production.models import (
 )
 
 
+requires_postgresql = pytest.mark.skipif(
+    connection.vendor != 'postgresql',
+    reason='Requer locks ou constraints do PostgreSQL.',
+)
+
+
 @pytest.fixture
 def production_order():
     today = timezone.localdate()
@@ -2049,6 +2055,7 @@ def test_receive_outputs_rolls_back_earlier_output_when_later_output_fails(
     ).exists()
 
 
+@requires_postgresql
 @pytest.mark.django_db
 def test_stock_lot_genealogy_constraint_prevents_duplicate_production_link(
     production_order,
@@ -2539,6 +2546,7 @@ def test_balance_lock_keys_are_globally_sorted_and_deduplicated():
     ]
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_reserve_and_issue_materials_opposite_allocations_do_not_deadlock(
     reservable_order,
@@ -2760,6 +2768,7 @@ def test_calculate_cost_rejects_cross_month_when_final_month_is_closed(
     ).exists()
 
 
+@requires_postgresql
 @pytest.mark.django_db
 def test_calculate_cost_locks_monthly_closing_before_rejecting_closed_period(
     production_order,
@@ -2796,6 +2805,7 @@ def test_calculate_cost_locks_monthly_closing_before_rejecting_closed_period(
     assert any('FOR UPDATE' in sql.upper() for sql in closing_queries)
 
 
+@requires_postgresql
 @pytest.mark.django_db
 def test_monthly_cost_closing_close_acquires_compatible_row_lock(operations_user):
 
@@ -2816,6 +2826,7 @@ def test_monthly_cost_closing_close_acquires_compatible_row_lock(operations_user
     assert any('FOR UPDATE' in sql.upper() for sql in closing_queries)
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_calculate_cost_and_monthly_close_serialize_consistently(
     production_order,
@@ -3060,6 +3071,7 @@ def test_calculate_cost_selects_latest_approved_revision_not_lexical_version(
     assert capture.actual_material_cost == Decimal('100.0000')
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_calculate_cost_rejects_approved_candidate_without_real_approval_time(
     production_order,
@@ -4292,6 +4304,7 @@ def test_operational_resource_api_calls_full_clean_once_per_post_and_patch(
         assert full_clean.call_count == 2
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.permission_strict
 def test_output_patch_revalidates_after_concurrent_receipt(
@@ -4378,6 +4391,7 @@ def test_output_patch_revalidates_after_concurrent_receipt(
     assert production_output.notes == ''
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.permission_strict
 def test_operation_patch_revalidates_after_concurrent_completion(
@@ -4461,6 +4475,7 @@ def test_operation_patch_revalidates_after_concurrent_completion(
     assert operation.notes == ''
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.permission_strict
 @pytest.mark.parametrize('mutation', ['create', 'update'])

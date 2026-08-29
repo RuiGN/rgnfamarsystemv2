@@ -12,7 +12,14 @@ from uuid import UUID
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import connection
 from django.utils import timezone
+
+
+requires_postgresql = pytest.mark.skipif(
+    connection.vendor != 'postgresql',
+    reason='Requer locks e concorrência transacional do PostgreSQL.',
+)
 
 
 @pytest.fixture
@@ -700,8 +707,8 @@ def seeded_report_domains(report_context):
     )
     from production.models import MaterialConsumption, ProductionOrder, ProductionOutput
 
-    today = date(2026, 7, 28)
-    now = timezone.make_aware(datetime(2026, 7, 28, 12, 0))
+    now = timezone.now()
+    today = timezone.localdate(now)
 
     def persist(instance):
         instance.full_clean()
@@ -4163,6 +4170,7 @@ def test_old_reserved_worker_cannot_clear_or_delete_new_worker_artifact(
     assert list(tmp_path.rglob('*.enc')) == [tmp_path / execution.result_file.file_reference]
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_upload_holds_reservation_locks_and_cannot_leave_post_reclaim_blob(
     system_report_definition,
@@ -5200,6 +5208,7 @@ def test_catalog_sync_retries_whole_transaction_once_then_reraises_integrity_err
     assert attempts == ['REL-FIN-001', 'REL-FIN-001']
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_empty_catalog_syncs_retry_managed_winner_idempotently(monkeypatch):
     from threading import Lock, get_ident
@@ -5252,6 +5261,7 @@ def test_concurrent_empty_catalog_syncs_retry_managed_winner_idempotently(monkey
     )
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_empty_catalog_race_with_user_winner_raises_collision_without_partial_writes(
     monkeypatch,

@@ -6,6 +6,12 @@ from django.db.migrations.executor import MigrationExecutor
 from django.utils import timezone
 
 
+requires_postgresql = pytest.mark.skipif(
+    connection.vendor != 'postgresql',
+    reason='Requer trigger reversível do PostgreSQL.',
+)
+
+
 @pytest.fixture
 def restore_latest_migrations():
     yield
@@ -13,6 +19,7 @@ def restore_latest_migrations():
     executor.migrate(executor.loader.graph.leaf_nodes())
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_standard_cost_state_machine_trigger_applies_and_unapplies(restore_latest_migrations):
     old_target = ('costing', '0002_initial')

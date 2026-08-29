@@ -28,6 +28,10 @@ from masters.models import (
 
 
 User = get_user_model()
+requires_postgresql = pytest.mark.skipif(
+    connection.vendor != 'postgresql',
+    reason='Requer serialização por lock de linha do PostgreSQL.',
+)
 
 
 def grant_model_perms(user, *models):
@@ -1169,6 +1173,7 @@ class QAModelTests(TestCase):
         ).exists()
 
 
+@requires_postgresql
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_lot_dispositions_serialize_to_one_coherent_terminal_decision():
     from governance.models import GovernanceAuditLog

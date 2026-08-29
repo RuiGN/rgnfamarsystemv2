@@ -3,6 +3,13 @@ from django.db import connection
 import pytest
 
 
+requires_postgresql = pytest.mark.skipif(
+    connection.vendor != 'postgresql',
+    reason='Consulta catálogos information_schema e pg_* do PostgreSQL.',
+)
+
+
+@requires_postgresql
 @pytest.mark.django_db
 def test_operational_models_and_postgresql_schema_have_no_tenant_artifacts():
     models_with_tenant = [

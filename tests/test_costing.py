@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, connection, transaction
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.utils import timezone
@@ -16,6 +16,10 @@ from masters.models import Product, UnitOfMeasure
 
 
 User = get_user_model()
+requires_postgresql = pytest.mark.skipif(
+    connection.vendor != 'postgresql',
+    reason='Requer constraints e triggers do PostgreSQL.',
+)
 
 
 def create_released_manufacturing_set(suffix='001'):
@@ -130,6 +134,7 @@ class CostingModelTests(TestCase):
 
         assert 'approved_at' in error.value.message_dict
 
+    @requires_postgresql
     def test_standard_cost_database_rejects_approved_status_without_timestamp(self):
         from costing.models import StandardCost
 
@@ -202,6 +207,7 @@ class CostingModelTests(TestCase):
 
         assert 'status' in error.value.message_dict
 
+    @requires_postgresql
     def test_standard_cost_queryset_update_cannot_bypass_state_machine(self):
         standard = self._draft_standard_cost()
 
@@ -211,6 +217,7 @@ class CostingModelTests(TestCase):
         standard.refresh_from_db()
         assert standard.status == standard.Status.DRAFT
 
+    @requires_postgresql
     def test_standard_cost_save_cannot_bypass_state_machine(self):
         standard = self._draft_standard_cost()
         standard.status = standard.Status.OBSOLETE
@@ -221,6 +228,7 @@ class CostingModelTests(TestCase):
         standard.refresh_from_db()
         assert standard.status == standard.Status.DRAFT
 
+    @requires_postgresql
     def test_standard_cost_bulk_update_cannot_bypass_state_machine(self):
         standard = self._draft_standard_cost()
         standard.status = standard.Status.OBSOLETE
@@ -231,6 +239,7 @@ class CostingModelTests(TestCase):
         standard.refresh_from_db()
         assert standard.status == standard.Status.DRAFT
 
+    @requires_postgresql
     def test_standard_cost_raw_sql_cannot_bypass_state_machine(self):
         standard = self._draft_standard_cost()
 
@@ -244,6 +253,7 @@ class CostingModelTests(TestCase):
         standard.refresh_from_db()
         assert standard.status == standard.Status.DRAFT
 
+    @requires_postgresql
     def test_standard_cost_status_neutral_update_preserves_approval_evidence(self):
         standard = self._draft_standard_cost()
         approver = self._approval_user()

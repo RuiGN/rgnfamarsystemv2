@@ -37,6 +37,8 @@ CELERY_TASK_EAGER_PROPAGATES = True
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 DEMO_USER_PASSWORD = 'TestOnly-Demo-Password-2026!'  # nosec B105
+DATA_ENCRYPTION_KEY_ID = 'test'
+DATA_ENCRYPTION_KEYS = 'test:cmduLWZhcm1hLXRlc3Qta2V5LTAxMjM0NTY3ODlhYmM='
 MIDDLEWARE = [
     middleware
     for middleware in MIDDLEWARE
@@ -44,6 +46,7 @@ MIDDLEWARE = [
 ]
 
 DEBUG = False
+CSRF_TRUSTED_ORIGINS = ['https://testserver']
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False

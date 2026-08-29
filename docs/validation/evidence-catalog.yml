@@ -41,9 +41,9 @@ evidence:
     title: Validação física do schema single-instance
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-07-18T00:00:00Z'
+    captured_at: '2026-08-29T00:00:00Z'
     status: approved
-    sha256: '1047b9584cfa4567906f66c0a58b8e4069620d140b66f51f26795fb7c41f9fd5'
+    sha256: 'd1d3b50d5bab0d937c28ea96ec254a99f01137d9bc9e588e146804250e13acc1'
     artifact: tests/test_single_instance_schema.py
   - id: EV-SI-005
     requirement: SI-005
