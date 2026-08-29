@@ -27,7 +27,6 @@ STATIC_ANALYSIS_PACKAGES=(
   integrations
   inventory
   knowledge
-  maintenance
   masters
   pharmacovigilance
   planning

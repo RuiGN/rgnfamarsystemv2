@@ -95,7 +95,6 @@ LOCAL_APPS = [
     'audits',
     'risks',
     'recalls',
-    'maintenance',
     'training',
     'files',
     'reports',

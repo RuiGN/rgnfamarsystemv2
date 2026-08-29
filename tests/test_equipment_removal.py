@@ -1,5 +1,9 @@
+from importlib import import_module
+from importlib.util import find_spec
+
 import pytest
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
@@ -36,8 +40,11 @@ def test_active_models_no_longer_expose_equipment_fields():
         assert 'equipment' not in field_names, model._meta.label
 
 
-def test_phase_a_maintenance_app_is_an_empty_tombstone():
-    assert list(apps.get_app_config('maintenance').get_models()) == []
+def test_maintenance_app_and_python_package_are_physically_absent():
+    assert 'maintenance' not in settings.INSTALLED_APPS
+    with pytest.raises(LookupError):
+        apps.get_app_config('maintenance')
+    assert find_spec('maintenance') is None
 
 
 @pytest.mark.django_db
@@ -46,6 +53,22 @@ def test_phase_a_maintenance_schema_and_metadata_are_deleted():
     assert not {name for name in tables if name.startswith('maintenance_')}
     assert not ContentType.objects.filter(app_label='maintenance').exists()
     assert not Permission.objects.filter(content_type__app_label='maintenance').exists()
+
+
+@pytest.mark.django_db(transaction=True)
+def test_phase_b_guard_rejects_a_database_that_skipped_phase_a():
+    migration = import_module('base.migrations.0002_prune_maintenance_history')
+    table_name = 'maintenance_phase_guard'
+    quoted_table = connection.ops.quote_name(table_name)
+    with connection.cursor() as cursor:
+        cursor.execute(f'CREATE TABLE {quoted_table} (id integer primary key)')
+    try:
+        with connection.schema_editor() as schema_editor:
+            with pytest.raises(RuntimeError, match='Fase A obrigatória não aplicada'):
+                migration.prune_maintenance_history(apps, schema_editor)
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute(f'DROP TABLE {quoted_table}')
 
 
 def test_ui_registry_does_not_expose_equipment_or_maintenance():
@@ -73,9 +96,14 @@ def test_ui_registry_does_not_expose_equipment_or_maintenance():
     (
         '/api/maintenance/',
         '/api/v1/maintenance/',
-        '/app/maintenance/',
     ),
 )
 def test_maintenance_routes_are_removed_from_public_url_configuration(path):
     with pytest.raises(Resolver404):
         resolve(path)
+
+
+def test_maintenance_app_route_returns_not_found(client):
+    response = client.get('/app/maintenance/')
+
+    assert response.status_code == 404

@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('auxiliary', '0001_initial'),
         ('documents', '0001_initial'),
-        ('maintenance', '0001_initial'),
         ('masters', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
@@ -71,7 +70,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='atualizado em')),
                 ('code', models.CharField(blank=True, max_length=40, verbose_name='código')),
                 ('title', models.CharField(max_length=180, verbose_name='treinamento')),
-                ('training_type', models.CharField(choices=[('document', 'Documento'), ('critical_activity', 'Atividade crítica'), ('equipment', 'Equipamento'), ('module', 'Módulo do sistema'), ('regulatory', 'Requisito regulatório'), ('recycle', 'Reciclagem')], max_length=32, verbose_name='tipo')),
+                ('training_type', models.CharField(choices=[('document', 'Documento'), ('critical_activity', 'Atividade crítica'), ('module', 'Módulo do sistema'), ('regulatory', 'Requisito regulatório'), ('recycle', 'Reciclagem')], max_length=32, verbose_name='tipo')),
                 ('area', models.CharField(max_length=120, verbose_name='área')),
                 ('process', models.CharField(blank=True, max_length=120, verbose_name='processo')),
                 ('module_code', models.CharField(blank=True, max_length=80, verbose_name='módulo')),
@@ -88,7 +87,6 @@ class Migration(migrations.Migration):
                 ('area_ref', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='+', to='auxiliary.businessarea', verbose_name='área normalizada')),
                 ('competency', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='training_requirements', to='training.competency', verbose_name='competência')),
                 ('document', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='training_requirements', to='documents.controlleddocument', verbose_name='documento')),
-                ('equipment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='training_requirements', to='maintenance.equipmentasset', verbose_name='equipamento')),
                 ('job_position', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='training_requirements', to='training.jobposition', verbose_name='cargo')),
                 ('process_ref', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='+', to='auxiliary.businessprocess', verbose_name='processo normalizado')),
             ],
@@ -114,7 +112,6 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, verbose_name='ativo')),
                 ('notes', models.TextField(blank=True, verbose_name='observações')),
                 ('area_ref', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='+', to='auxiliary.businessarea', verbose_name='área normalizada')),
-                ('equipment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='training_critical_activity_rules', to='maintenance.equipmentasset', verbose_name='equipamento')),
                 ('process_ref', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='+', to='auxiliary.businessprocess', verbose_name='processo normalizado')),
                 ('requirement', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='critical_activity_rules', to='training.trainingrequirement', verbose_name='requisito')),
             ],
@@ -299,10 +296,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='criticalactivityrule',
-            index=models.Index(fields=['equipment'], name='training_cr_equipme_c51040_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='criticalactivityrule',
             index=models.Index(fields=['activity_code'], name='training_cr_activit_eea887_idx'),
         ),
         migrations.AddConstraint(
@@ -396,10 +389,6 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name='trainingrequirement',
             index=models.Index(fields=['document'], name='training_tr_documen_655fc0_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='trainingrequirement',
-            index=models.Index(fields=['equipment'], name='training_tr_equipme_c54e26_idx'),
         ),
         migrations.AddIndex(
             model_name='trainingrequirement',
