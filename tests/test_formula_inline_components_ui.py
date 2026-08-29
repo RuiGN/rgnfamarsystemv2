@@ -128,6 +128,108 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert is_formula_version_conflict(conflict) is True
         assert is_formula_version_conflict(unrelated) is False
 
+    def test_formula_list_offers_reuse_to_fully_authorized_user(self):
+        source = self._formula_with_component('FRM-LIST-REUSE', quantity='1.0000')[0]
+
+        response = self.client.get(
+            reverse(
+                'app:resource_list',
+                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+            )
+        )
+
+        assert response.status_code == 200
+        assert 'Reaproveitar' in response.content.decode()
+        assert (
+            reverse('app:master_formula_reuse', kwargs={'pk': source.pk})
+            in response.content.decode()
+        )
+
+    def test_formula_reuse_button_and_url_require_parent_and_component_permissions(self):
+        source = self._formula_with_component('FRM-REUSE-PERMS', quantity='1.0000')[0]
+        user = get_user_model().objects.create_user(
+            email='reuse-permissions@example.com',
+            password='S3curePass!123',
+            username='Permissões de reaproveitamento',
+        )
+        permissions = Permission.objects.filter(
+            content_type__app_label='formulations',
+            codename__in=('view_masterformula', 'add_masterformula'),
+        )
+        user.user_permissions.set(permissions)
+        self.client.force_login(user)
+
+        list_response = self.client.get(
+            reverse(
+                'app:resource_list',
+                kwargs={'module_slug': 'formulations', 'resource_slug': 'formulas'},
+            )
+        )
+        direct_response = self.client.get(
+            reverse('app:master_formula_reuse', kwargs={'pk': source.pk})
+        )
+
+        assert list_response.status_code == 200
+        assert 'Reaproveitar' not in list_response.content.decode()
+        assert direct_response.status_code == 403
+
+    def test_formula_reuse_get_prefills_parent_and_all_components_without_persisting(self):
+        from base.models import IdentifierSequence
+        from governance.models import GovernanceAuditLog
+
+        source, first = self._formula_with_component('FRM-REUSE-GET', quantity='2.0000')
+        second = FormulaComponent.objects.create(
+            formula=source,
+            line_number=20,
+            material=self.materials[1],
+            role=FormulaComponent.Role.EXCIPIENT,
+            quantity=Decimal('3.0000'),
+            unit=self.unit,
+        )
+        MasterFormula.objects.create(
+            product=self.product,
+            code='FRM-REUSE-GET-V4',
+            version=4,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+        formula_count = MasterFormula.objects.count()
+        component_count = FormulaComponent.objects.count()
+        audit_count = GovernanceAuditLog.objects.count()
+        sequence_count = IdentifierSequence.objects.count()
+
+        response = self.client.get(
+            reverse('app:master_formula_reuse', kwargs={'pk': source.pk})
+        )
+
+        assert response.status_code == 200
+        form = response.context['form']
+        formset = response.context['inline_formsets'][0]['formset']
+        assert form.initial['product'] == self.product.pk
+        assert form.initial['version'] == 5
+        assert form.initial['status'] == MasterFormula.Status.DRAFT
+        assert 'copied_from' not in form.fields
+        copied_rows = [
+            row.initial for row in formset.forms if row.initial.get('line_number')
+        ]
+        assert [row['line_number'] for row in copied_rows] == [10, 20]
+        assert [row['material'] for row in copied_rows] == [
+            first.material_id,
+            second.material_id,
+        ]
+        assert all(not row.instance.pk for row in formset.forms)
+        assert MasterFormula.objects.count() == formula_count
+        assert FormulaComponent.objects.count() == component_count
+        assert GovernanceAuditLog.objects.count() == audit_count
+        assert IdentifierSequence.objects.count() == sequence_count
+
+    def test_formula_reuse_missing_source_returns_404(self):
+        response = self.client.get(
+            reverse('app:master_formula_reuse', kwargs={'pk': 999999})
+        )
+
+        assert response.status_code == 404
+
     def test_formula_form_renders_inline_component_section(self):
         response = self.client.get(
             reverse(

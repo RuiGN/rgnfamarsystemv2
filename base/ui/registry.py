@@ -347,6 +347,8 @@ class ResourceConfig:
     has_gantt_view: bool = False
     has_chat_view: bool = False
     update_form_fields: tuple[str, ...] | None = None
+    reuse_route_name: str = ''
+    reuse_permissions: tuple[str, ...] = field(default_factory=tuple)
     view_permission_action: str = 'view'
     advanced_filter_fields: tuple[str, ...] = field(default_factory=tuple)
     queryset_scope: ResourceQuerysetScope = _unscoped_resource_queryset
@@ -378,6 +380,14 @@ class ResourceConfig:
 
     def can_mutate(self, user):
         return self.can_add(user) or self.can_change(user) or self.can_delete(user)
+
+    def can_reuse(self, user):
+        return bool(
+            self.reuse_route_name
+            and self.can_view(user)
+            and self.can_add(user)
+            and user.has_perms(self.reuse_permissions)
+        )
 
     def _can_write(self, user, action):
         if self.read_only:
@@ -695,6 +705,11 @@ MODULES = (
                 ),
                 audit_trail=True,
                 has_tree_view=True,
+                reuse_route_name='app:master_formula_reuse',
+                reuse_permissions=(
+                    'formulations.view_formulacomponent',
+                    'formulations.add_formulacomponent',
+                ),
             ),
             ResourceConfig(
                 'components',

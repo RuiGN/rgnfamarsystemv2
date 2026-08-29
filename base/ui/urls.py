@@ -2,6 +2,7 @@ from django.urls import path
 
 from base.ui import views
 from base.ui.actions import views as action_views
+from formulations.ui_views import MasterFormulaReuseView
 
 
 app_name = 'app'
@@ -66,6 +67,12 @@ urlpatterns = [
         '<slug:module_slug>/<slug:resource_slug>/actions/<slug:action_name>/',
         action_views.CollectionResourceActionView.as_view(),
         name='collection_action',
+    ),
+    path(
+        'formulations/formulas/<int:pk>/reuse/',
+        MasterFormulaReuseView.as_view(),
+        {'module_slug': 'formulations', 'resource_slug': 'formulas'},
+        name='master_formula_reuse',
     ),
     path(
         '<slug:module_slug>/<slug:resource_slug>/<int:pk>/actions/<slug:action_name>/',

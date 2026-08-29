@@ -128,14 +128,27 @@ def _build_inline_form_class(inline):
     return InlineResourceForm
 
 
-def _build_inline_formset(request, resource, inline, *, data=None, instance=None, allow_add=True):
+def _build_inline_formset(
+    request,
+    resource,
+    inline,
+    *,
+    data=None,
+    instance=None,
+    allow_add=True,
+    initial=None,
+):
     formset_class = inlineformset_factory(
         resource.model,
         inline.child_model,
         fk_name=inline.parent_field,
         form=_build_inline_form_class(inline),
         fields=inline.fields,
-        extra=inline.extra if allow_add and inline.can_add(request.user) else 0,
+        extra=(
+            max(inline.extra, len(initial or ()))
+            if allow_add and inline.can_add(request.user)
+            else 0
+        ),
         can_delete=inline.can_delete(request.user),
         max_num=None if allow_add else 0,
         validate_max=not allow_add,
@@ -145,6 +158,7 @@ def _build_inline_formset(request, resource, inline, *, data=None, instance=None
         instance=instance,
         prefix=inline.key,
         form_kwargs={'request': request},
+        initial=initial,
     )
 
 
@@ -364,6 +378,7 @@ class ResourceContextMixin(ModuleContextMixin):
         context['can_change'] = resource.can_change(self.request.user)
         context['can_delete'] = resource.can_delete(self.request.user)
         context['can_mutate'] = resource.can_mutate(self.request.user)
+        context['can_reuse'] = resource.can_reuse(self.request.user)
         return context
 
     def ensure_can_add(self):
@@ -1508,9 +1523,16 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
     def get_form_class(self):
         return build_resource_form(self.get_resource())
 
-    def get_inline_formsets(self, *, data=None, instance=None):
+    def get_form_initial(self):
+        return {}
+
+    def get_inline_initial(self):
+        return {}
+
+    def get_inline_formsets(self, *, data=None, instance=None, initial_by_key=None):
         resource = self.get_resource()
         inline_formsets = []
+        initial_by_key = initial_by_key or {}
         for inline in resource.inlines:
             can_view = inline.can_view(self.request.user)
             allow_add = not (
@@ -1528,6 +1550,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                     data=data,
                     instance=instance,
                     allow_add=allow_add,
+                    initial=initial_by_key.get(inline.key) if data is None else None,
                 )
             inline_formsets.append(
                 {
@@ -1706,11 +1729,17 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = kwargs.get('form') or self.get_form_class()(request=self.request)
+        form = kwargs.get('form') or self.get_form_class()(
+            request=self.request,
+            initial=self.get_form_initial(),
+        )
         context['form'] = form
         inline_formsets = kwargs.get('inline_formsets')
         if inline_formsets is None:
-            inline_formsets = self.get_inline_formsets(instance=getattr(form, 'instance', None))
+            inline_formsets = self.get_inline_formsets(
+                instance=getattr(form, 'instance', None),
+                initial_by_key=self.get_inline_initial(),
+            )
         context['inline_formsets'] = inline_formsets
         context['has_inline_formsets'] = bool(inline_formsets)
         context['form_mode'] = 'create'

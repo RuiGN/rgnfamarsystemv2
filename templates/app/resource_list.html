@@ -80,6 +80,13 @@
                             </td>
                         {% endfor %}
                         <td class="text-end">
+                            {% if can_reuse %}
+                                <a href="{% url resource.reuse_route_name row.object.pk %}"
+                                   class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2"
+                                   aria-label="Reaproveitar {{ row.object }}">
+                                    <i class="feather-copy" aria-hidden="true"></i>Reaproveitar
+                                </a>
+                            {% endif %}
                             <a href="{% url 'app:resource_detail' module.slug resource.slug row.object.pk %}" class="btn btn-sm btn-light-brand d-inline-flex align-items-center gap-2" aria-label="Ver detalhe de {{ row.object }}"><i class="feather-eye" aria-hidden="true"></i>Detalhe</a>
                         </td>
                     </tr>
