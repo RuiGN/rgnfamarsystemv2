@@ -103,7 +103,6 @@ class IntegrationConnector(SingleInstanceModel):
         ERP = 'erp', 'ERP externo'
         FISCAL_SYSTEM = 'fiscal_system', 'Sistema fiscal'
         LABORATORY = 'laboratory', 'Laboratorio'
-        EQUIPMENT = 'equipment', 'Equipamento'
         EMAIL_PROVIDER = 'email_provider', 'Provedor de email'
         OPENAI = 'openai', 'OpenAI'
         BI = 'bi', 'BI'

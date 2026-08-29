@@ -34,7 +34,6 @@ class PurchaseRequisition(SingleInstanceModel):
         MANUAL = 'manual', 'Manual'
         MRP = 'mrp', 'MRP'
         STOCK_MINIMUM = 'stock_minimum', 'Estoque mínimo'
-        MAINTENANCE = 'maintenance', 'Manutenção'
         LABORATORY = 'laboratory', 'Laboratório'
         ADMINISTRATIVE = 'administrative', 'Administrativa'
 

@@ -511,7 +511,6 @@ class RiskLink(SingleInstanceModel):
         CHANGE = 'change', 'Mudança'
         AUDIT = 'audit', 'Auditoria'
         SUPPLIER = 'supplier', 'Fornecedor'
-        EQUIPMENT = 'equipment', 'Equipamento'
 
     risk = models.ForeignKey(
         RiskRecord, on_delete=models.CASCADE, related_name='links', verbose_name='risco'
@@ -618,10 +617,7 @@ class RiskLink(SingleInstanceModel):
             field, value = required_by_type[self.link_type]
             if not value:
                 errors[field] = 'Informe o cadastro relacionado ao tipo de vínculo.'
-        if (
-            self.link_type in {self.LinkType.PROCESS, self.LinkType.EQUIPMENT}
-            and not self.reference_code
-        ):
+        if self.link_type == self.LinkType.PROCESS and not self.reference_code:
             errors['reference_code'] = 'Informe a referência do vínculo.'
         if self.supplier and self.supplier.partner_type not in {
             BusinessPartner.PartnerType.SUPPLIER,

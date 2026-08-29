@@ -564,7 +564,6 @@ class CapacityResource(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'CAP'
     class ResourceType(models.TextChoices):
         LINE = 'line', 'Linha'
-        EQUIPMENT = 'equipment', 'Equipamento'
         WORK_CENTER = 'work_center', 'Centro de trabalho'
         SHIFT = 'shift', 'Turno'
 

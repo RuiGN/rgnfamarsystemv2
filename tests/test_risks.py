@@ -246,7 +246,6 @@ class RiskModelTests(TestCase):
             RiskLink.LinkType.CHANGE,
             RiskLink.LinkType.AUDIT,
             RiskLink.LinkType.SUPPLIER,
-            RiskLink.LinkType.EQUIPMENT,
         }.issubset(set(RiskLink.LinkType.values))
         assert generated == 2
         assert set(RiskAlert.objects.values_list('alert_type', flat=True)) == {
