@@ -1944,7 +1944,7 @@ class AppUiSprint43ReadinessTests(TestCase):
         content = response.content.decode()
         assert 'class="skip-link" href="#main-content"' in content
         assert 'class="nxl-navigation" aria-label="Navegação principal"' in content
-        assert 'id="main-content" class="nxl-container" tabindex="-1"' in content
+        assert 'id="main-content" class="nxl-container app-shell" tabindex="-1"' in content
         assert 'role="status" aria-live="polite"' in Path('templates/base.html').read_text()
 
     def test_collapsed_sidebar_controls_keep_accessible_names(self):

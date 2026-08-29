@@ -273,7 +273,7 @@ def _ui_check(css_source, base_template_source):
         and 'vendor/duralux/css/theme.min.css' in base_template_source
         and 'vendor/duralux/js/vendors.min.js' in base_template_source
         and 'class="nxl-navigation"' in base_template_source
-        and 'id="main-content" class="nxl-container"' in base_template_source
+        and 'id="main-content" class="nxl-container app-shell"' in base_template_source
         and 'class="nxl-content"' in base_template_source
         and 'class="main-content"' in base_template_source
     )
