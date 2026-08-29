@@ -52,7 +52,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-08-29T00:00:00Z'
     status: approved
-    sha256: '03c1e621929b14b426e55b39a25cee12f1aba5e838a8d3e758b89b7ff92725de'
+    sha256: 'c1709c8ea1228b86c158cc70ede2e48dd8a15078f3908485525189c28994ebc6'
     artifact: tests/test_formula_inline_components_ui.py
   - id: EV-SI-006
     requirement: SI-006
