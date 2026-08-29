@@ -14,6 +14,7 @@ from masters.models import Product
 from procurement.models import PurchaseOrder
 from procurement.serializers import PurchaseOrderSerializer
 from production.models import ProductionOrder
+from production.serializers import ProductionOrderSerializer
 
 
 pytestmark = pytest.mark.django_db
@@ -24,7 +25,7 @@ def test_registry_distinguishes_automatic_and_manual_codes():
     assert automatic_generated_fields(ChartOfAccount) == ('code',)
     assert automatic_generated_fields(Currency) == ()
     assert automatic_generated_fields(PurchaseOrder) == ('order_number',)
-    assert automatic_generated_fields(ProductionOrder) == ('batch_number',)
+    assert automatic_generated_fields(ProductionOrder) == ('order_number', 'batch_number')
     assert automatic_generated_fields(CustomerComplaint) == ('complaint_number',)
 
 
@@ -76,11 +77,12 @@ def test_manual_number_remains_editable():
     assert form.fields['street_number'].disabled is False
 
 
-def test_production_batch_is_visible_and_disabled():
+def test_production_order_identifier_is_visible_and_disabled():
     form = build_resource_form(get_resource('production', 'orders'))()
 
-    assert form.fields['batch_number'].disabled is True
-    assert form.fields['order_number'].disabled is False
+    assert 'batch_number' not in form.fields
+    assert form.fields['order_number'].disabled is True
+    assert form.fields['order_number'].required is False
 
 
 @pytest.mark.parametrize(
@@ -101,6 +103,13 @@ def test_drf_serializer_marks_generated_identifier_readonly():
     serializer = PurchaseOrderSerializer()
 
     assert serializer.fields['order_number'].read_only is True
+
+
+def test_production_serializer_marks_generated_order_identifier_readonly():
+    serializer = ProductionOrderSerializer()
+
+    assert serializer.fields['order_number'].read_only is True
+    assert serializer.fields['batch_number'].read_only is True
 
 
 def test_chart_account_serializer_marks_generated_code_readonly():

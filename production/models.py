@@ -28,7 +28,10 @@ def _has_persisted_changes(instance, persisted):
 
 
 class ProductionOrder(SingleInstanceModel):
-    AUTOMATIC_IDENTIFIERS = (IdentifierSpec('batch_number', 'LOT'),)
+    AUTOMATIC_IDENTIFIERS = (
+        IdentifierSpec('order_number', 'OP'),
+        IdentifierSpec('batch_number', 'LOT'),
+    )
 
     class Priority(models.TextChoices):
         LOW = 'low', 'Baixa'
@@ -54,7 +57,7 @@ class ProductionOrder(SingleInstanceModel):
         Status.PAUSED,
     )
 
-    order_number = models.CharField('ordem', max_length=80)
+    order_number = models.CharField('ordem', max_length=80, blank=True)
     batch_number = models.CharField('lote', max_length=80, blank=True)
     product = models.ForeignKey(
         Product,
@@ -183,9 +186,14 @@ class ProductionOrder(SingleInstanceModel):
         verbose_name_plural = 'ordens de produção'
 
     def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = self.generate_order_number()
         if not self.batch_number:
             self.batch_number = self.generate_batch_number()
         super().save(*args, **kwargs)
+
+    def generate_order_number(self):
+        return sequence_code(ProductionOrder, 'order_number', 'OP')
 
     def generate_batch_number(self):
         return sequence_code(ProductionOrder, 'batch_number', 'LOT')

@@ -76,12 +76,11 @@ class ProductionOrderModelTests(TestCase):
             email='production-model-actor@example.com',
         )
 
-    def test_order_generates_batch_number_and_releases_with_approved_formula_route(self):
+    def test_order_generates_order_and_batch_numbers_and_releases_with_approved_formula_route(self):
         from production.models import ProductionOrder
 
         unit, product, _material, formula, _component, route = create_released_manufacturing_set()
         order = ProductionOrder.objects.create(
-            order_number='OP-0001',
             product=product,
             formula=formula,
             route=route,
@@ -89,6 +88,7 @@ class ProductionOrderModelTests(TestCase):
             unit=unit,
         )
 
+        assert order.order_number.startswith(f'OP-{timezone.localdate():%Y%m%d}-')
         assert order.batch_number.startswith(f'LOT-{timezone.localdate():%Y%m%d}-')
         assert order.status == ProductionOrder.Status.DRAFT
 
@@ -226,7 +226,6 @@ class TestProductionApi:
         create_response = client.post(
             '/api/production/orders/',
             {
-                'order_number': 'OP-0001',
                 'product': product.id,
                 'formula': formula.id,
                 'route': route.id,
@@ -242,8 +241,10 @@ class TestProductionApi:
         list_response = client.get('/api/production/orders/')
 
         assert list_response.status_code == 200
+        created_order_number = create_response.json()['order_number']
+        assert created_order_number.startswith(f'OP-{timezone.localdate():%Y%m%d}-')
         assert {item['order_number'] for item in list_response.json()['results']} == {
-            'OP-0001',
+            created_order_number,
             'OP-9999',
         }
 

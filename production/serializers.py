@@ -105,6 +105,7 @@ class ProductionOrderSerializer(
         )
         read_only_fields = (
             'id',
+            'order_number',
             'batch_number',
             'status',
             'actual_start',

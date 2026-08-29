@@ -4615,7 +4615,6 @@ def test_standard_production_order_creation_does_not_take_execution_locks(
     response = client.post(
         reverse('app:resource_create', args=['production', 'orders']),
         {
-            'order_number': 'OP-UI-CREATE',
             'product': production_order.product_id,
             'formula': production_order.formula_id,
             'route': production_order.route_id,
@@ -4642,13 +4641,13 @@ def test_standard_production_order_creation_does_not_take_execution_locks(
     )
 
     assert response.status_code == 302
-    assert ProductionOrder.objects.filter(order_number='OP-UI-CREATE').exists()
+    created_order = ProductionOrder.objects.exclude(pk=production_order.pk).latest('created_at')
+    assert created_order.order_number.startswith(f'OP-{timezone.localdate():%Y%m%d}-')
 
 
 def _production_order_ui_payload(order):
     """Return the persisted order fields required by the generic UI form."""
     payload = {
-        'order_number': order.order_number,
         'product': order.product_id,
         'formula': order.formula_id,
         'route': order.route_id,
