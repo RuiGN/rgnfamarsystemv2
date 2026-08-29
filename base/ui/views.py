@@ -14,7 +14,7 @@ from django.core.exceptions import (
     PermissionDenied,
     ValidationError,
 )
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import inlineformset_factory
@@ -1529,6 +1529,14 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
     def get_inline_initial(self):
         return {}
 
+    def prepare_object_for_save(self, obj, *, action):
+        del action
+        return obj
+
+    def handle_integrity_error(self, form, error):
+        del form, error
+        return False
+
     def get_inline_formsets(self, *, data=None, instance=None, initial_by_key=None):
         resource = self.get_resource()
         inline_formsets = []
@@ -1608,6 +1616,7 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
 
         with transaction.atomic():
             obj = form.save(commit=False)
+            obj = self.prepare_object_for_save(obj, action=action)
             is_production_order_ui = (
                 isinstance(obj, ProductionOrder)
                 and self.get_module().slug == 'production'
@@ -1775,6 +1784,14 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             obj = self.save_object_and_inline_formsets(form, inline_formsets, action='created')
         except (_InlineRevalidationError, _OrderRevalidationError) as exc:
             _add_validation_error_to_form(exc.form, exc.error)
+            self.annotate_inline_formsets(inline_formsets)
+            return self.render_to_response(
+                self.get_context_data(form=form, inline_formsets=inline_formsets)
+            )
+        except IntegrityError as exc:
+            if not self.handle_integrity_error(form, exc):
+                raise
+            _annotate_form_accessibility(form)
             self.annotate_inline_formsets(inline_formsets)
             return self.render_to_response(
                 self.get_context_data(form=form, inline_formsets=inline_formsets)

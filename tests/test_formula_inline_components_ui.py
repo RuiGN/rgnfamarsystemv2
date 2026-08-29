@@ -230,6 +230,109 @@ class FormulaInlineComponentsUiTests(TestCase):
 
         assert response.status_code == 404
 
+    def test_formula_reuse_post_generates_code_traceability_and_new_components(self):
+        from governance.models import GovernanceAuditLog
+
+        source, first = self._formula_with_component('FRM-REUSE-POST', quantity='2.0000')
+        second = FormulaComponent.objects.create(
+            formula=source,
+            line_number=20,
+            material=self.materials[1],
+            role=FormulaComponent.Role.EXCIPIENT,
+            quantity=Decimal('3.0000'),
+            unit=self.unit,
+        )
+        payload = {
+            **self._formula_payload('TAMPERED-CODE'),
+            'version': '2',
+            'status': MasterFormula.Status.APPROVED,
+            'copied_from': '',
+            'components-TOTAL_FORMS': '2',
+            'components-INITIAL_FORMS': '0',
+            'components-MIN_NUM_FORMS': '0',
+            'components-MAX_NUM_FORMS': '1000',
+            **self._component_payload(0, 10, first.material, first.role),
+            **self._component_payload(1, 20, second.material, second.role),
+        }
+
+        response = self.client.post(
+            reverse('app:master_formula_reuse', kwargs={'pk': source.pk}), payload
+        )
+
+        assert response.status_code == 302, self._response_form_errors(response)
+        reused = MasterFormula.objects.exclude(pk=source.pk).get(version=2)
+        assert reused.code.startswith('MF-')
+        assert reused.code != 'TAMPERED-CODE'
+        assert reused.status == MasterFormula.Status.DRAFT
+        assert reused.copied_from == source
+        assert reused.components.count() == 2
+        assert not set(reused.components.values_list('pk', flat=True)) & {
+            first.pk,
+            second.pk,
+        }
+        audit = GovernanceAuditLog.objects.get(
+            action='ui.resource.created',
+            target_model='MasterFormula',
+            target_record_id=str(reused.pk),
+        )
+        assert audit.safe_context['inline_resources']['components'] == 2
+        source.refresh_from_db()
+        assert source.code == 'FRM-REUSE-POST'
+        assert source.components.count() == 2
+
+    def test_formula_reuse_child_failure_rolls_back_parent(self):
+        source = self._formula_with_component('FRM-REUSE-ROLLBACK', quantity='2.0000')[0]
+        payload = {
+            **self._formula_payload('IGNORED'),
+            'version': '2',
+            'components-TOTAL_FORMS': '1',
+            'components-INITIAL_FORMS': '0',
+            'components-MIN_NUM_FORMS': '0',
+            'components-MAX_NUM_FORMS': '1000',
+            **self._component_payload(
+                0,
+                10,
+                self.materials[0],
+                FormulaComponent.Role.ACTIVE,
+            ),
+        }
+
+        with patch.object(
+            FormulaComponent, 'save', side_effect=RuntimeError('storage failure')
+        ):
+            with self.assertRaisesMessage(RuntimeError, 'storage failure'):
+                self.client.post(
+                    reverse('app:master_formula_reuse', kwargs={'pk': source.pk}),
+                    payload,
+                )
+
+        assert MasterFormula.objects.count() == 1
+        assert FormulaComponent.objects.count() == 1
+
+    def test_formula_reuse_version_integrity_conflict_returns_form_error(self):
+        source = self._formula_with_component('FRM-REUSE-CONFLICT', quantity='2.0000')[0]
+        payload = {
+            **self._formula_payload('IGNORED'),
+            'version': '2',
+            'components-TOTAL_FORMS': '0',
+            'components-INITIAL_FORMS': '0',
+            'components-MIN_NUM_FORMS': '0',
+            'components-MAX_NUM_FORMS': '1000',
+        }
+        conflict = IntegrityError(
+            'UNIQUE constraint failed: '
+            'formulations_masterformula.product_id, formulations_masterformula.version'
+        )
+
+        with patch.object(MasterFormula, 'save', side_effect=conflict):
+            response = self.client.post(
+                reverse('app:master_formula_reuse', kwargs={'pk': source.pk}), payload
+            )
+
+        assert response.status_code == 200
+        assert 'Esta versão já foi utilizada' in response.content.decode()
+        assert MasterFormula.objects.count() == 1
+
     def test_formula_form_renders_inline_component_section(self):
         response = self.client.get(
             reverse(

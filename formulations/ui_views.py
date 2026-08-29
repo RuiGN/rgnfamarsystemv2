@@ -4,10 +4,13 @@ from django.http import Http404
 from base.ui.views import ResourceCreateView
 from formulations.models import MasterFormula
 from formulations.reuse import (
+    VERSION_CONFLICT_MESSAGE,
     build_master_formula_reuse_form,
     component_reuse_initial,
+    is_formula_version_conflict,
     master_formula_reuse_initial,
 )
+from masters.models import Product
 
 
 class MasterFormulaReuseView(ResourceCreateView):
@@ -43,6 +46,22 @@ class MasterFormulaReuseView(ResourceCreateView):
 
     def get_inline_initial(self):
         return {'components': component_reuse_initial(self.get_source())}
+
+    def prepare_object_for_save(self, obj, *, action):
+        del action
+        Product.objects.select_for_update().only('pk').get(pk=obj.product_id)
+        obj.code = ''
+        obj.status = MasterFormula.Status.DRAFT
+        obj.copied_from = self.get_source()
+        obj.approved_by = None
+        obj.approved_at = None
+        return obj
+
+    def handle_integrity_error(self, form, error):
+        if not is_formula_version_conflict(error):
+            return False
+        form.add_error('version', VERSION_CONFLICT_MESSAGE)
+        return True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
