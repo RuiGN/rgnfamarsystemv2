@@ -137,13 +137,39 @@ html.minimenu .nxl-navigation .m-header .b-brand .logo.logo-sm.app-brand-logo {
     display: block !important;
 }
 
-.nxl-container .nxl-content {
+.nxl-container.app-shell {
+    display: flex;
+    min-height: calc(100vh - 80px);
+    min-height: calc(100dvh - 80px);
+    flex-direction: column;
+}
+
+.nxl-container.app-shell > .nxl-content {
+    flex: 1 0 auto;
     padding-bottom: 0;
 }
 
-.nxl-container .footer {
+.auth-page-shell {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    flex-direction: column;
+}
+
+.auth-page-shell > .auth-main {
+    flex: 1 0 auto;
+}
+
+.app-footer {
     position: static;
+    display: flex;
+    flex: 0 0 auto;
     min-height: 66px;
+    padding: 20px 30px;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    border-top: 1px solid #e5e7eb;
     box-shadow: 0 -6px 18px rgba(40, 60, 80, 0.06);
 }
 
@@ -853,18 +879,12 @@ html.app-skin-dark .nxl-navigation .m-header .app-brand-logo {
         padding-bottom: 0;
     }
 
-    .nxl-container .footer {
-        position: static;
+    .app-footer {
         min-height: 104px;
         padding: 14px 20px;
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
-    }
-
-    .nxl-container .footer .d-flex {
-        flex-wrap: wrap;
-        gap: 12px !important;
     }
 
     .rag-chat .rag-chat__toggle {

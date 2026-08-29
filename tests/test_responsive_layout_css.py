@@ -132,7 +132,7 @@ def test_rag_chat_component_styles_do_not_leak_into_duralux_resource_templates()
 def test_rag_chat_toggle_remains_accessible_with_footer_in_document_flow():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
 
-    footer_block = re.search(r'(?m)^\.nxl-container \.footer\s*\{(?P<body>[^}]*)\}', css)
+    footer_block = re.search(r'(?m)^\.app-footer\s*\{(?P<body>[^}]*)\}', css)
     chat_block = re.search(
         r'(?m)^\.rag-chat \.rag-chat__toggle\s*\{(?P<body>[^}]*)\}',
         css,
@@ -361,40 +361,63 @@ def test_minimenu_brand_header_collapses_with_duralux_sidebar_width():
     assert re.search(r'overflow:\s*hidden', minimenu_brand.group('body'))
 
 
-def test_footer_follows_document_flow_at_desktop_tablet_and_mobile():
+def test_page_shells_push_the_global_footer_to_the_viewport_end():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+    base = (ROOT / 'templates' / 'base.html').read_text()
+    login = (ROOT / 'templates' / 'registration' / 'login.html').read_text()
 
-    content_block = re.search(
-        r'(?m)^\.nxl-container\s+\.nxl-content\s*\{(?P<body>[^}]*)\}',
+    assert 'class="nxl-container app-shell"' in base
+    assert '<body class="auth-page-shell">' in login
+    assert 'min-vh-100' not in login
+
+    authenticated_shell = re.search(
+        r'(?m)^\.nxl-container\.app-shell\s*\{(?P<body>[^}]*)\}',
         css,
     )
-    assert content_block is not None
-    assert re.search(r'padding-bottom:\s*0', content_block.group('body'))
+    authenticated_content = re.search(
+        r'(?m)^\.nxl-container\.app-shell\s*>\s*\.nxl-content\s*\{(?P<body>[^}]*)\}',
+        css,
+    )
+    login_shell = re.search(
+        r'(?m)^\.auth-page-shell\s*\{(?P<body>[^}]*)\}',
+        css,
+    )
+    login_content = re.search(
+        r'(?m)^\.auth-page-shell\s*>\s*\.auth-main\s*\{(?P<body>[^}]*)\}',
+        css,
+    )
 
-    footer_block = re.search(r'(?m)^\.nxl-container\s+\.footer\s*\{(?P<body>[^}]*)\}', css)
+    assert authenticated_shell is not None
+    assert authenticated_content is not None
+    assert login_shell is not None
+    assert login_content is not None
+    assert re.search(r'display:\s*flex', authenticated_shell.group('body'))
+    assert re.search(r'flex-direction:\s*column', authenticated_shell.group('body'))
+    assert re.search(
+        r'min-height:\s*calc\(100dvh\s*-\s*80px\)',
+        authenticated_shell.group('body'),
+    )
+    assert re.search(r'flex:\s*1\s+0\s+auto', authenticated_content.group('body'))
+    assert re.search(r'display:\s*flex', login_shell.group('body'))
+    assert re.search(r'flex-direction:\s*column', login_shell.group('body'))
+    assert re.search(r'min-height:\s*100dvh', login_shell.group('body'))
+    assert re.search(r'flex:\s*1\s+0\s+auto', login_content.group('body'))
+
+
+def test_global_footer_stays_in_document_flow_without_covering_content():
+    css = (ROOT / 'static' / 'css' / 'app.css').read_text()
+
+    footer_block = re.search(r'(?m)^\.app-footer\s*\{(?P<body>[^}]*)\}', css)
     assert footer_block is not None
     footer_body = footer_block.group('body')
     assert re.search(r'position:\s*static', footer_body)
+    assert re.search(r'flex:\s*0\s+0\s+auto', footer_body)
     assert not re.search(r'position:\s*fixed', footer_body)
-    assert not re.search(r'(?:left|right|bottom|z-index):', footer_body)
-
-    assert not re.search(
-        r'(?m)^html\.minimenu\s+\.nxl-container\s+\.footer\s*\{',
-        css,
-    )
-
-    responsive_footer = re.search(
-        r'@media\s+\(max-width:\s*1199\.98px\)\s*\{(?P<body>.*?)\n\}',
-        css,
-        re.S,
-    )
-    assert responsive_footer is not None
-    assert not re.search(r'\.nxl-container\s+\.footer\s*\{', responsive_footer.group('body'))
+    assert not re.search(r'(?:bottom|z-index):', footer_body)
 
 
-def test_mobile_footer_returns_to_document_flow_without_covering_content():
+def test_mobile_global_footer_stacks_its_metadata():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
-
     mobile_block = re.search(
         r'@media \(max-width: 575\.98px\)\s*\{(?P<body>.*?)'
         r'(?=\n@media \(max-width: 360px\))',
@@ -404,12 +427,12 @@ def test_mobile_footer_returns_to_document_flow_without_covering_content():
 
     assert mobile_block is not None
     assert re.search(
-        r'\.nxl-container\s+\.footer\s*\{[^}]*position:\s*static',
+        r'\.app-footer\s*\{[^}]*flex-direction:\s*column',
         mobile_block.group('body'),
         re.S,
     )
     assert re.search(
-        r'\.nxl-container\s+\.nxl-content\s*\{[^}]*padding-bottom:\s*0',
+        r'\.app-footer\s*\{[^}]*align-items:\s*flex-start',
         mobile_block.group('body'),
         re.S,
     )
