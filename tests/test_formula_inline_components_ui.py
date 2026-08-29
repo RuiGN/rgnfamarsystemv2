@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -11,6 +12,12 @@ from django.utils import timezone
 from base.ui.forms import build_resource_form
 from base.ui.registry import get_resource
 from formulations.models import FormulaComponent, MasterFormula
+from formulations.reuse import (
+    build_master_formula_reuse_form,
+    component_reuse_initial,
+    is_formula_version_conflict,
+    master_formula_reuse_initial,
+)
 from masters.models import Product, UnitOfMeasure
 
 
@@ -52,6 +59,74 @@ class FormulaInlineComponentsUiTests(TestCase):
                 start=1,
             )
         ]
+
+    def test_master_formula_reuse_builders_copy_only_approved_values(self):
+        source, component = self._formula_with_component(
+            'FRM-REUSE-SOURCE', quantity='2.5000'
+        )
+        source.status = MasterFormula.Status.APPROVED
+        source.expected_yield_percent = Decimal('98.7500')
+        source.notes = 'Origem validada.'
+        source.save()
+        MasterFormula.objects.create(
+            product=self.product,
+            code='FRM-REUSE-V3',
+            version=3,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+
+        parent_initial = master_formula_reuse_initial(source)
+        children_initial = component_reuse_initial(source)
+
+        assert parent_initial == {
+            'product': self.product.pk,
+            'version': 4,
+            'status': MasterFormula.Status.DRAFT,
+            'batch_size': source.batch_size,
+            'batch_unit': self.unit.pk,
+            'expected_yield_percent': Decimal('98.7500'),
+            'effective_from': source.effective_from,
+            'effective_to': source.effective_to,
+            'notes': 'Origem validada.',
+        }
+        assert children_initial == [
+            {
+                'line_number': component.line_number,
+                'material': component.material_id,
+                'role': component.role,
+                'quantity': component.quantity,
+                'unit': component.unit_id,
+                'expected_loss_percent': component.expected_loss_percent,
+                'conversion_factor': component.conversion_factor,
+                'is_active': component.is_active,
+            }
+        ]
+        assert 'code' not in parent_initial
+        assert 'copied_from' not in parent_initial
+
+    def test_master_formula_reuse_form_hides_source_and_locks_status(self):
+        form_class = build_master_formula_reuse_form(
+            get_resource('formulations', 'formulas')
+        )
+        form = form_class(request=type('Request', (), {'user': self.user})())
+
+        assert 'copied_from' not in form.fields
+        assert form.fields['code'].disabled is True
+        assert form.fields['status'].disabled is True
+        assert form.fields['status'].initial == MasterFormula.Status.DRAFT
+
+    def test_formula_version_conflict_classifier_is_constraint_specific(self):
+        conflict = IntegrityError(
+            'UNIQUE constraint failed: '
+            'formulations_masterformula.product_id, formulations_masterformula.version'
+        )
+        unrelated = IntegrityError(
+            'UNIQUE constraint failed: formulations_masterformula.code'
+        )
+
+        assert is_formula_version_conflict(conflict) is True
+        assert is_formula_version_conflict(unrelated) is False
 
     def test_formula_form_renders_inline_component_section(self):
         response = self.client.get(
