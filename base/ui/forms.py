@@ -351,7 +351,8 @@ def _apply_widget_metadata(name, field):
     _apply_placeholder_metadata(name, field, mask)
 
     if isinstance(widget, forms.DateInput):
-        attrs['type'] = 'date'
+        attrs.pop('type', None)
+        widget.input_type = 'date'
     elif isinstance(widget, forms.DateTimeInput):
         attrs['type'] = 'datetime-local'
     elif isinstance(widget, forms.TimeInput):

@@ -682,6 +682,18 @@ MODULES = (
                     'effective_to',
                 ),
                 ('code', 'product__code', 'product__description'),
+                update_form_fields=(
+                    'product',
+                    'code',
+                    'version',
+                    'status',
+                    'batch_size',
+                    'batch_unit',
+                    'expected_yield_percent',
+                    'effective_from',
+                    'effective_to',
+                    'notes',
+                ),
                 inlines=(
                     InlineResourceConfig(
                         'components',

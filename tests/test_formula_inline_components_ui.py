@@ -803,6 +803,21 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert 'name="components-0-line_number"' in content
         assert f'value="{component.pk}"' in content
 
+    def test_formula_edit_form_omits_copied_from_traceability_field(self):
+        formula = MasterFormula.objects.create(
+            product=self.product,
+            code='FRM-EDIT-NO-SOURCE',
+            version=1,
+            batch_size=Decimal('100.0000'),
+            batch_unit=self.unit,
+        )
+
+        response = self.client.get(self._formula_edit_url(formula))
+
+        assert response.status_code == 200
+        assert 'copied_from' not in response.context['form'].fields
+        assert 'name="copied_from"' not in response.content.decode()
+
     def test_formula_edit_updates_and_deletes_existing_components(self):
         formula, first = self._formula_with_component('FRM-EDIT-POST', quantity='2.0000')
         second = FormulaComponent.objects.create(

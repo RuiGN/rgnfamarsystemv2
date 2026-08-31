@@ -131,7 +131,10 @@ receber acesso direto.
 ## Como adicionar novos recursos ao CRUD HTML generico
 
 1. Registre o model em `base.ui.registry` com `ResourceConfig`, título, ícone,
-   campos de listagem, `form_fields` e permissões esperadas.
+   campos de listagem, `form_fields` e permissões esperadas. Quando a edição
+   precisar expor um conjunto mais restrito, declare `update_form_fields`; a
+   fórmula mestra mantém `copied_from` como rastreabilidade persistida, mas não
+   o oferece no formulário de alteração.
 2. Garanta que o usuário possua permissões Django `view`, `add`, `change` e
    `delete` conforme a ação desejada.
 3. Use validações de model e serializer já existentes; não duplique regra de

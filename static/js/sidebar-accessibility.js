@@ -20,7 +20,8 @@
             if (submenu) {
                 submenu.hidden = button.getAttribute('aria-expanded') !== 'true';
             }
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function (event) {
+                event.stopPropagation();
                 toggleMenu(button);
             });
         });

@@ -1929,6 +1929,12 @@ class AppUiSprint43ReadinessTests(TestCase):
         assert 'aria-expanded' in script
         assert 'aria-controls' in script
 
+    def test_sidebar_toggle_stops_click_before_duralux_parent_handler(self):
+        script = Path('static/js/sidebar-accessibility.js').read_text()
+
+        assert "button.addEventListener('click', function (event)" in script
+        assert 'event.stopPropagation();' in script
+
     def test_mobile_shell_preserves_duralux_main_content_contract(self):
         css = Path('static/css/app.css').read_text()
 
@@ -2146,6 +2152,17 @@ class AppUiFormEnhancementTests(TestCase):
         assert 'data-mask="phone"' in content
         assert 'name="qualification_valid_until"' in content
         assert 'type="date"' in content
+
+    def test_formula_date_inputs_have_a_single_native_date_type(self):
+        response = self.client.get('/app/formulations/formulas/new/')
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        for field_name in ('effective_from', 'effective_to'):
+            date_input = re.search(rf'<input[^>]+name="{field_name}"[^>]*>', content)
+            assert date_input is not None
+            assert date_input.group(0).count('type="date"') == 1
+            assert 'type="text"' not in date_input.group(0)
 
     def test_cpf_cnpj_fields_have_masks_and_server_validation(self):
         response = self.client.get('/app/fiscal/companies/new/')

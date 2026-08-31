@@ -55,6 +55,11 @@ inclusão de um novo módulo o torne inacessível por uma omissão de navegaçã
 Cada módulo aparece no máximo uma vez, mesmo se uma configuração futura repetir
 seu slug em mais de um domínio.
 
+Os grupos expansíveis usam botões com `aria-controls` e `aria-expanded`. O
+listener desses botões interrompe a propagação do clique antes de atualizar o
+submenu, pois o JavaScript legado do Duralux também observa o `<li>` pai; sem
+esse isolamento, os dois handlers alternam o mesmo grupo em sentidos opostos.
+
 ## Verificação mínima
 
 ```bash
