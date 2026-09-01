@@ -361,7 +361,6 @@ class GovernanceCommandTests(TestCase):
             TrainingSession,
             ApprovalTask,
             ReportDefinition,
-            AIAgentProfile,
         ]
         first_counts = {model: model.objects.count() for model in expected_models}
 
@@ -373,6 +372,7 @@ class GovernanceCommandTests(TestCase):
         assert FiscalEmailDelivery.objects.filter(
             recipient_email='cliente.demo@example.com'
         ).exists()
+        assert not AIAgentProfile.objects.exists()
         assert all(count > 0 for count in first_counts.values())
 
         call_command(
