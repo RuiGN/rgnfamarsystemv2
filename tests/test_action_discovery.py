@@ -13,10 +13,10 @@ from production.models import ProductionOrder
 def test_discovers_each_post_action_once_without_format_suffix_duplicates():
     actions = discover_post_actions()
 
-    assert len(actions) == 232
-    assert len({action.key for action in actions}) == 232
+    assert len(actions) == 233
+    assert len({action.key for action in actions}) == 233
     assert sum(action.detail for action in actions) == 227
-    assert sum(not action.detail for action in actions) == 5
+    assert sum(not action.detail for action in actions) == 6
     assert all(
         not (action.model is StockLot and action.action_name == 'print_label') for action in actions
     )

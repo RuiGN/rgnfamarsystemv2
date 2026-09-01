@@ -113,9 +113,9 @@ evidence:
     title: Igualdade entre ações POST DRF e catálogo HTML
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-08-29T00:00:00Z'
+    captured_at: '2026-09-01T00:00:00Z'
     status: approved
-    sha256: 'dde6cf77806cd8b6e527c500df5e6232c299c2cb4a5a8c18a03474c020c3b041'
+    sha256: '999f18cdb174eef57bc0321eca781887e8472a6a16df88cb63b66eb5099aaee5'
     artifact: tests/test_action_catalog_completeness.py
   - id: EV-SIA-PTBR
     requirement: SIA-PTBR
