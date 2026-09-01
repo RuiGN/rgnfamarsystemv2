@@ -3,10 +3,23 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 import hashlib
 import re
+import secrets
 from xml.etree.ElementTree import ParseError
 
 from defusedxml import ElementTree
 from defusedxml.common import DefusedXmlException
+from django.core.files.storage import default_storage
+from django.db import IntegrityError, models, transaction
+from django.utils import timezone
+
+from files.models import ProtectedFile
+from governance.models import InstitutionSettings
+from procurement.models import (
+    PurchaseOrder,
+    PurchaseReceipt,
+    PurchaseReceiptItem,
+    ZERO_QUANTITY,
+)
 
 
 MAX_NFE_XML_SIZE = 10 * 1024 * 1024
@@ -208,3 +221,188 @@ def parse_nfe_xml(xml_content):
         xml_sha256=hashlib.sha256(raw_xml).hexdigest(),
         raw_xml=raw_xml,
     )
+
+
+def _only_digits(value):
+    return re.sub(r'\D', '', str(value or ''))
+
+
+def _safe_file_name(file_name):
+    normalized = str(file_name or 'nfe.xml').replace('\\', '/')
+    return (normalized.rsplit('/', 1)[-1] or 'nfe.xml')[:180]
+
+
+def _cleanup_reserved_reference(reserved_reference):
+    if reserved_reference and default_storage.exists(reserved_reference):
+        default_storage.delete(reserved_reference)
+
+
+def _constraint_name(error):
+    cause = getattr(error, '__cause__', None)
+    diagnostic = getattr(cause, 'diag', None)
+    return getattr(diagnostic, 'constraint_name', '')
+
+
+def _locked_order(purchase_order):
+    return (
+        PurchaseOrder.objects.select_for_update()
+        .select_related('supplier')
+        .prefetch_related('items__product', 'items__unit')
+        .get(pk=purchase_order.pk)
+    )
+
+
+def _validate_import_parties(nfe, order):
+    institution = InstitutionSettings.objects.filter(is_active=True).order_by('pk').first()
+    if institution is None:
+        raise NfeImportError('Cadastre os dados ativos da instituição antes de importar NF-e.')
+    if _only_digits(institution.document) != nfe.destination_document:
+        raise NfeImportError('O destinatário da NF-e diverge da instituição ativa.')
+    if _only_digits(order.supplier.document) != nfe.supplier_document:
+        raise NfeImportError('O documento do fornecedor da NF-e diverge do pedido.')
+
+
+def _matched_order_items(nfe, order):
+    order_items_by_code = {}
+    for order_item in order.items.all():
+        code = order_item.product.code.strip()
+        if code in order_items_by_code:
+            raise NfeImportError(
+                f'O pedido possui mais de um item para o produto {code}; consolide-o antes da importação.'
+            )
+        order_items_by_code[code] = order_item
+
+    matches = []
+    incoming_by_order_item = {}
+    for nfe_item in nfe.items:
+        order_item = order_items_by_code.get(nfe_item.product_code.strip())
+        if order_item is None:
+            raise NfeImportError(
+                f'O produto {nfe_item.product_code} da NF-e não existe no pedido aprovado.'
+            )
+        accepted_units = {order_item.unit.code.casefold(), order_item.unit.symbol.casefold()}
+        if nfe_item.unit_code.casefold() not in accepted_units:
+            raise NfeImportError(
+                f'A unidade {nfe_item.unit_code} da NF-e diverge da unidade do produto '
+                f'{nfe_item.product_code} no pedido.'
+            )
+        incoming_by_order_item[order_item.pk] = (
+            incoming_by_order_item.get(order_item.pk, ZERO_QUANTITY) + nfe_item.quantity
+        )
+        matches.append((nfe_item, order_item))
+
+    for order_item in order_items_by_code.values():
+        incoming = incoming_by_order_item.get(order_item.pk, ZERO_QUANTITY)
+        if incoming == ZERO_QUANTITY:
+            continue
+        consumed = (
+            PurchaseReceiptItem.objects.filter(order_item=order_item)
+            .exclude(receipt__status=PurchaseReceipt.Status.CANCELLED)
+            .aggregate(total=models.Sum('received_quantity'))['total']
+            or ZERO_QUANTITY
+        )
+        remaining = order_item.quantity - consumed
+        if incoming > remaining:
+            raise NfeImportError(
+                f'A quantidade da NF-e para {order_item.product.code} supera o saldo '
+                f'do pedido ({remaining}).'
+            )
+    return tuple(matches)
+
+
+def _create_protected_nfe_file(nfe, receipt, user, file_name, reserved_reference):
+    protected_file = ProtectedFile.objects.create(
+        source_module=ProtectedFile.SourceModule.FISCAL,
+        source_model='PurchaseReceipt',
+        source_record_id=str(receipt.pk),
+        file_type=ProtectedFile.FileType.FISCAL_DOCUMENT,
+        origin=ProtectedFile.Origin.UPLOAD,
+        criticality=ProtectedFile.Criticality.HIGH,
+        confidentiality=ProtectedFile.Confidentiality.INTERNAL,
+        title=f'XML NF-e {nfe.number}',
+        file_name=_safe_file_name(file_name),
+        file_reference=reserved_reference,
+        mime_type='application/xml',
+        file_size=len(nfe.raw_xml),
+        content_hash=f'sha256:{nfe.xml_sha256}',
+        responsible=user,
+        uploaded_by=user,
+    )
+    protected_file.store_encrypted_content(
+        nfe.raw_xml,
+        file_name=_safe_file_name(file_name),
+        mime_type='application/xml',
+        user=user,
+        reserved_reference=reserved_reference,
+    )
+    return protected_file
+
+
+def import_nfe_into_purchase_order(
+    xml_content,
+    *,
+    purchase_order,
+    user,
+    file_name='nfe.xml',
+):
+    if not user or not getattr(user, 'is_authenticated', False) or not user.is_active:
+        raise NfeImportError('A importação exige um usuário autenticado e ativo.')
+    nfe = parse_nfe_xml(xml_content)
+    reserved_reference = ''
+    try:
+        with transaction.atomic():
+            order = _locked_order(purchase_order)
+            if order.status != PurchaseOrder.Status.APPROVED:
+                raise NfeImportError('A NF-e só pode ser importada em um pedido aprovado.')
+            _validate_import_parties(nfe, order)
+            if PurchaseReceipt.objects.filter(nfe_access_key=nfe.access_key).exists():
+                raise NfeImportError('A NF-e já foi importada no sistema.')
+            matches = _matched_order_items(nfe, order)
+
+            receipt = PurchaseReceipt.objects.create(
+                order=order,
+                status=PurchaseReceipt.Status.DRAFT,
+                fiscal_document_number=nfe.number,
+                fiscal_received_at=timezone.now(),
+                quality_status=PurchaseReceipt.QualityStatus.PENDING,
+                stock_entry_status=PurchaseReceipt.StockEntryStatus.PENDING,
+                received_by=user,
+                nfe_access_key=nfe.access_key,
+                nfe_xml_sha256=nfe.xml_sha256,
+            )
+            for nfe_item, order_item in matches:
+                receipt_item = PurchaseReceiptItem(
+                    receipt=receipt,
+                    order_item=order_item,
+                    product=order_item.product,
+                    received_quantity=nfe_item.quantity,
+                    accepted_quantity=ZERO_QUANTITY,
+                    rejected_quantity=ZERO_QUANTITY,
+                    unit=order_item.unit,
+                    lot_number=nfe_item.lot_number,
+                    manufacturing_date=nfe_item.manufacturing_date,
+                    expiry_date=nfe_item.expiry_date,
+                )
+                receipt_item.full_clean()
+                receipt_item.save()
+
+            token = secrets.token_urlsafe(18)
+            reserved_reference = f'protected/nfe-{nfe.access_key}/{token}.enc'
+            protected_file = _create_protected_nfe_file(
+                nfe,
+                receipt,
+                user,
+                file_name,
+                reserved_reference,
+            )
+            receipt.nfe_xml_file = protected_file
+            receipt.save(update_fields={'nfe_xml_file', 'updated_at'})
+            return receipt
+    except IntegrityError as error:
+        _cleanup_reserved_reference(reserved_reference)
+        if _constraint_name(error) == 'unique_purchase_receipt_nfe_access_key':
+            raise NfeImportError('A NF-e já foi importada no sistema.') from error
+        raise
+    except Exception:
+        _cleanup_reserved_reference(reserved_reference)
+        raise

@@ -1,16 +1,21 @@
 from datetime import date, timedelta
 from decimal import Decimal
 import hashlib
+from pathlib import Path
+import tempfile
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
-from files.models import ProtectedFile
+from files.models import ProtectedFile, ProtectedFileAuditTrail
+from governance.models import InstitutionSettings
+from inventory.models import StockBalance, StockLot, StockMovement
 from masters.models import BusinessPartner, Product, UnitOfMeasure
 from procurement.models import (
     PurchaseOrder,
@@ -49,6 +54,10 @@ def authorized_nfe_xml(
     unit_price='10.0000',
     item_total='25.00',
     product_total='25.00',
+    product_code='PROD-NFE-001',
+    unit_code='KG',
+    supplier_document='11222333000181',
+    destination_document='99888777000166',
     include_item=True,
 ):
     inf_key = key if inf_key is None else inf_key
@@ -57,10 +66,10 @@ def authorized_nfe_xml(
         item = f'''
         <det nItem="1">
           <prod>
-            <cProd>PROD-NFE-001</cProd>
+            <cProd>{product_code}</cProd>
             <xProd>Glicerina vegetal</xProd>
             <qCom>{quantity}</qCom>
-            <uCom>KG</uCom>
+            <uCom>{unit_code}</uCom>
             <vUnCom>{unit_price}</vUnCom>
             <vProd>{item_total}</vProd>
             <rastro>
@@ -83,10 +92,10 @@ def authorized_nfe_xml(
             <dhEmi>2026-09-01T10:15:00-03:00</dhEmi>
           </ide>
           <emit>
-            <CNPJ>11222333000181</CNPJ>
+            <CNPJ>{supplier_document}</CNPJ>
             <xNome>Fornecedor Cosmético Ltda</xNome>
           </emit>
-          <dest><CNPJ>99888777000166</CNPJ></dest>
+          <dest><CNPJ>{destination_document}</CNPJ></dest>
           {item}
           <total><ICMSTot><vProd>{product_total}</vProd></ICMSTot></total>
         </infNFe>
@@ -213,6 +222,199 @@ def test_size_limit_accepts_exactly_ten_mib_and_rejects_one_extra_byte():
         parse_nfe_xml(exact_xml + b' ')
 
     assert '10 MiB' in str(error.value)
+
+
+def nfe_import_contract():
+    from procurement import nfe_xml_import
+
+    importer = getattr(nfe_xml_import, 'import_nfe_into_purchase_order', None)
+    if importer is None:
+        pytest.fail('O serviço transacional de importação NF-e ainda não foi implementado.')
+    return nfe_xml_import.NfeImportError, importer
+
+
+class NfeImportServiceTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='nfe.import@example.com',
+            email='nfe.import@example.com',
+            password='S3curePass!123',
+        )
+        InstitutionSettings.objects.create(
+            legal_name='Indústria Cosmética Importadora Ltda',
+            trade_name='Cosmética Importadora',
+            document='99.888.777/0001-66',
+            is_active=True,
+        )
+        self.unit = UnitOfMeasure.objects.create(
+            code='KG',
+            name='Quilograma',
+            symbol='kg',
+        )
+        self.product = Product.objects.create(
+            code='PROD-NFE-001',
+            description='Glicerina vegetal',
+            item_type=Product.ItemType.RAW_MATERIAL,
+            unit=self.unit,
+            status=Product.Status.APPROVED,
+            requires_approved_supplier=False,
+        )
+        self.supplier = BusinessPartner.objects.create(
+            code='FOR-NFE-001',
+            legal_name='Fornecedor Cosmético Ltda',
+            document='11.222.333/0001-81',
+            partner_type=BusinessPartner.PartnerType.SUPPLIER,
+        )
+        self.order = PurchaseOrder.objects.create(
+            order_number='PC-NFE-001',
+            supplier=self.supplier,
+            status=PurchaseOrder.Status.APPROVED,
+            issue_date=timezone.localdate(),
+            expected_delivery_date=timezone.localdate() + timedelta(days=5),
+        )
+        self.order_item = PurchaseOrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            quantity=Decimal('10.0000'),
+            unit=self.unit,
+            unit_price=Decimal('10.0000'),
+        )
+
+    def _import(self, xml=None, **kwargs):
+        _error_class, importer = nfe_import_contract()
+        return importer(
+            xml or authorized_nfe_xml(),
+            purchase_order=self.order,
+            user=self.user,
+            file_name=kwargs.pop('file_name', 'nota-12345.xml'),
+            **kwargs,
+        )
+
+    def test_import_creates_draft_receipt_items_and_encrypted_audit_without_stock(self):
+        xml = authorized_nfe_xml()
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                receipt = self._import(xml)
+                receipt.refresh_from_db()
+                protected_file = receipt.nfe_xml_file
+                encrypted_payload = Path(media_root, protected_file.file_reference).read_bytes()
+
+                assert receipt.status == PurchaseReceipt.Status.DRAFT
+                assert receipt.quality_status == PurchaseReceipt.QualityStatus.PENDING
+                assert receipt.stock_entry_status == PurchaseReceipt.StockEntryStatus.PENDING
+                assert receipt.fiscal_document_number == '12345'
+                assert receipt.nfe_access_key == NFE_KEY
+                assert receipt.nfe_xml_sha256 == hashlib.sha256(xml).hexdigest()
+                assert receipt.received_by == self.user
+                assert receipt.physical_received_at is None
+                assert receipt.items.count() == 1
+                item = receipt.items.get()
+                assert item.order_item == self.order_item
+                assert item.product == self.product
+                assert item.received_quantity == Decimal('2.5000')
+                assert item.accepted_quantity == Decimal('0.0000')
+                assert item.rejected_quantity == Decimal('0.0000')
+                assert item.unit == self.unit
+                assert item.lot_number == 'LOTE-GLI-001'
+                assert item.manufacturing_date == date(2026, 8, 1)
+                assert item.expiry_date == date(2027, 8, 1)
+                assert protected_file.is_encrypted is True
+                assert protected_file.content_hash == f'sha256:{receipt.nfe_xml_sha256}'
+                assert protected_file.read_encrypted_content(self.user) == xml
+                assert xml not in encrypted_payload
+                assert protected_file.audit_trail.filter(
+                    action=ProtectedFileAuditTrail.Action.UPLOAD,
+                    actor=self.user,
+                ).exists()
+
+        assert StockLot.objects.count() == 0
+        assert StockBalance.objects.count() == 0
+        assert StockMovement.objects.count() == 0
+
+    def test_import_rejects_order_that_is_not_approved(self):
+        error_class, _importer = nfe_import_contract()
+        self.order.status = PurchaseOrder.Status.DRAFT
+        self.order.save(update_fields=['status', 'updated_at'])
+
+        with pytest.raises(error_class) as error:
+            self._import()
+
+        assert 'aprovado' in str(error.value).casefold()
+        assert not PurchaseReceipt.objects.exists()
+
+    def test_import_rejects_destination_and_supplier_document_mismatches(self):
+        error_class, _importer = nfe_import_contract()
+
+        for xml, fragment in (
+            (authorized_nfe_xml(destination_document='11111111000111'), 'destinatário'),
+            (authorized_nfe_xml(supplier_document='22222222000122'), 'fornecedor'),
+        ):
+            with pytest.raises(error_class) as error:
+                self._import(xml)
+            assert fragment in str(error.value).casefold()
+
+        assert not PurchaseReceipt.objects.exists()
+
+    def test_import_rejects_unknown_product_or_incompatible_unit(self):
+        error_class, _importer = nfe_import_contract()
+
+        for xml, fragment in (
+            (authorized_nfe_xml(product_code='DESCONHECIDO'), 'produto'),
+            (authorized_nfe_xml(unit_code='L'), 'unidade'),
+        ):
+            with pytest.raises(error_class) as error:
+                self._import(xml)
+            assert fragment in str(error.value).casefold()
+
+        assert not PurchaseReceipt.objects.exists()
+
+    def test_import_rejects_quantity_above_remaining_order_balance(self):
+        error_class, _importer = nfe_import_contract()
+        previous_receipt = PurchaseReceipt.objects.create(order=self.order)
+        PurchaseReceiptItem.objects.create(
+            receipt=previous_receipt,
+            order_item=self.order_item,
+            product=self.product,
+            received_quantity=Decimal('8.0000'),
+            unit=self.unit,
+        )
+
+        with pytest.raises(error_class) as error:
+            self._import()
+
+        assert 'saldo' in str(error.value).casefold()
+        assert PurchaseReceipt.objects.count() == 1
+
+    def test_import_rejects_duplicate_access_key(self):
+        error_class, _importer = nfe_import_contract()
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                first = self._import()
+                with pytest.raises(error_class) as error:
+                    self._import()
+
+                assert 'já foi importada' in str(error.value)
+                assert PurchaseReceipt.objects.filter(nfe_access_key=NFE_KEY).count() == 1
+                assert ProtectedFile.objects.count() == 1
+                assert first.nfe_xml_file.read_encrypted_content(self.user) == authorized_nfe_xml()
+
+    def test_import_cleans_reserved_encrypted_file_when_link_save_fails(self):
+        original_save = PurchaseReceipt.save
+
+        def fail_when_linking(receipt, *args, **kwargs):
+            if 'nfe_xml_file' in set(kwargs.get('update_fields') or ()):
+                raise RuntimeError('falha simulada ao vincular XML')
+            return original_save(receipt, *args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                with patch.object(PurchaseReceipt, 'save', new=fail_when_linking):
+                    with pytest.raises(RuntimeError, match='falha simulada'):
+                        self._import()
+
+                assert list(Path(media_root).rglob('*.enc')) == []
+                assert not PurchaseReceipt.objects.exists()
+                assert not ProtectedFile.objects.exists()
 
 
 class NfeImportSchemaTests(TestCase):
