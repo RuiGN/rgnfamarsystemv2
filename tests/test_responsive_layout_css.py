@@ -340,6 +340,45 @@ def test_login_brand_logo_is_isolated_from_generic_duralux_logo_class():
     )
 
 
+def test_cosmetics_login_styles_are_scoped_responsive_and_motion_safe():
+    css_path = ROOT / 'static' / 'css' / 'auth.css'
+    template = (ROOT / 'templates' / 'registration' / 'login.html').read_text()
+
+    assert css_path.exists()
+    css = css_path.read_text()
+    assert "{% static 'css/auth.css' %}" in template
+    assert '#08162b' in css.casefold()
+    assert '#3454d1' in css.casefold()
+    assert '#36d6d0' in css.casefold()
+    assert '#f4f7fb' in css.casefold()
+    assert '#283c50' in css.casefold()
+    assert '#ffffff' in css.casefold()
+    assert '@media (max-width: 991.98px)' in css
+    assert re.search(
+        r'@media \(max-width: 991\.98px\).*?\.auth-page-shell \.auth-story\s*\{'
+        r'[^}]*display:\s*none',
+        css,
+        re.S,
+    )
+    assert '@media (max-height: 640px)' in css
+    assert ':focus-visible' in css
+    assert '@media (prefers-reduced-motion: reduce)' in css
+    assert 'animation-duration: 0.01ms' in css
+    assert 'animation-iteration-count: 1' in css
+    assert 'transition-duration: 0.01ms' in css
+
+    selectors = (
+        line.strip().removesuffix('{').strip()
+        for line in css.splitlines()
+        if line.strip().endswith('{') and not line.strip().startswith('@')
+    )
+    assert all(
+        selector.startswith('.auth-page-shell')
+        for selector_group in selectors
+        for selector in selector_group.split(',')
+    )
+
+
 def test_minimenu_brand_header_collapses_with_duralux_sidebar_width():
     css = (ROOT / 'static' / 'css' / 'app.css').read_text()
 

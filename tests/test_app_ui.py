@@ -186,6 +186,24 @@ class AppUiFoundationTests(TestCase):
         assert 'resource-input-group' not in content
         assert 'data-field-icon=' not in content
 
+    def test_login_presents_cosmetics_traceability_story_without_legacy_copy(self):
+        response = self.client.get(reverse('accounts:login'))
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'data-ui="auth-login"' in content
+        assert 'data-auth-story' in content
+        assert 'data-auth-trace' in content
+        for label in ('Formulação', 'Produção', 'Qualidade', 'NF-e'):
+            assert label in content
+        assert 'logo_farm_system.png' in content
+        assert content.count('name="username"') == 1
+        assert content.count('name="password"') == 1
+        assert content.count('<button type="submit"') == 1
+        assert 'data-ui="global-footer"' in content
+        for forbidden_copy in ('Farmacovigilância', 'ERP farmacêutico', '92 Relatórios'):
+            assert forbidden_copy not in content
+
     def test_login_field_errors_use_project_validation_markup(self):
         response = self.client.post(reverse('accounts:login'), {'username': '', 'password': ''})
 
