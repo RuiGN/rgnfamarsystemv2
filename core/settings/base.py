@@ -45,7 +45,9 @@ env = environ.Env(
 env.read_env(BASE_DIR / '.env')
 
 # Bandit B105: explicit local-only default rejected by the production profile.
-DEVELOPMENT_SECRET_KEY_DEFAULT = 'django-insecure-local-rgn-farma-system'  # nosec B105
+DEVELOPMENT_SECRET_KEY_DEFAULT = (
+    'django-insecure-local-rgn-farma-system'  # nosec B105
+)
 SECRET_KEY = env('SECRET_KEY', default=DEVELOPMENT_SECRET_KEY_DEFAULT)
 DEBUG = env.bool('DEBUG', default=True)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
@@ -142,7 +144,10 @@ WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = 'core.asgi.application'
 
 DATABASES = {'default': env.db('DATABASE_URL')}
-DATABASES['default']['CONN_MAX_AGE'] = env.int('DATABASE_CONN_MAX_AGE', default=60)
+DATABASES['default']['CONN_MAX_AGE'] = env.int(
+    'DATABASE_CONN_MAX_AGE',
+    default=60,
+)
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'accounts:login'
@@ -151,16 +156,28 @@ LOGOUT_REDIRECT_URL = LOGIN_URL
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'MinimumLengthValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'CommonPasswordValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'NumericPasswordValidator'
+        ),
     },
 ]
 
@@ -173,7 +190,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
+STATICFILES_DIRS = (
+    [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
+)
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -194,41 +213,64 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': (
+        'rest_framework.pagination.PageNumberPagination'
+    ),
     'PAGE_SIZE': 50,
 }
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'RGN Farma System API',
-    'DESCRIPTION': 'APIs REST do ERP single-instance para a indústria de cosméticos.',
+    'DESCRIPTION': (
+        'APIs REST do ERP single-instance para a indústria de '
+        'cosméticos.'
+    ),
     'VERSION': '1.0.0',
     'ENUM_NAME_OVERRIDES': {
         'OperationalRoleEnum': 'base.roles.OperationalRole',
-        'AgentSourceModuleEnum': 'ai_agents.models.AIAgentProfile.SourceModule',
+        'AgentSourceModuleEnum': (
+            'ai_agents.models.AIAgentProfile.SourceModule'
+        ),
         'AgentRunStatusEnum': 'ai_agents.models.AIAgentRun.Status',
         'ActionStatusEnum': 'capa.models.CapaAction.Status',
         'AssessmentStatusEnum': 'changes.models.ChangeAssessment.Status',
         'StandardCostStatusEnum': 'costing.models.StandardCost.Status',
         'MonthlyClosingStatusEnum': 'costing.models.MonthlyCostClosing.Status',
         'ApprovalDecisionEnum': 'documents.models.DocumentApproval.Decision',
-        'AnalyticalSpecificationStatusEnum': 'fiscal.models.TaxRule.Status',
+        'AnalyticalSpecificationStatusEnum': (
+            'fiscal.models.TaxRule.Status'
+        ),
         'GovernanceModuleEnum': 'base.modules.OperationalModule',
         'StockQualityStatusEnum': 'inventory.models.StockQualityStatus',
-        'InvestigationStatusEnum': 'quality.models.LaboratoryInvestigation.Status',
+        'InvestigationStatusEnum': (
+            'quality.models.LaboratoryInvestigation.Status'
+        ),
         'PlanningSourceEnum': 'planning.models.PlanningPolicy.Source',
         'ReportModuleEnum': 'reports.models.ReportDefinition.Module',
         'ReportExecutionStatusEnum': 'reports.models.ReportExecution.Status',
-        'ReportNotificationStatusEnum': 'reports.models.ReportNotification.Status',
-        'RecallEffectivenessStatusEnum': 'recalls.models.RecallEffectivenessReport.Status',
+        'ReportNotificationStatusEnum': (
+            'reports.models.ReportNotification.Status'
+        ),
+        'RecallEffectivenessStatusEnum': (
+            'recalls.models.RecallEffectivenessReport.Status'
+        ),
         'NotificationChannelEnum': 'reports.models.ReportNotification.Channel',
         'RiskLevelEnum': 'risks.models.RiskRecord.RiskLevel',
         'AlertStatusEnum': 'risks.models.RiskAlert.Status',
-        'GxpCriticalityEnum': 'deviations.models.QualityEvent.Criticality',
+        'GxpCriticalityEnum': (
+            'deviations.models.QualityEvent.Criticality'
+        ),
         'GxpSeverityEnum': 'crm.models.CustomerComplaint.Severity',
         'FileSourceModuleEnum': 'files.models.ProtectedFile.SourceModule',
-        'WorkflowSourceModuleEnum': 'workflow.models.WorkflowNotification.SourceModule',
+        'WorkflowSourceModuleEnum': (
+            'workflow.models.WorkflowNotification.SourceModule'
+        ),
     },
 }
 
@@ -239,22 +281,35 @@ CACHES = {
     }
 }
 
-CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='amqp://guest:guest@localhost:5672//')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = env(
+    'CELERY_BROKER_URL',
+    default='amqp://guest:guest@localhost:5672//',
+)
+CELERY_RESULT_BACKEND = env(
+    'CELERY_RESULT_BACKEND',
+    default='redis://localhost:6379/0',
+)
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = env(
+    'EMAIL_BACKEND',
+    default='django.core.mail.backends.console.EmailBackend',
+)
 EMAIL_HOST = env('EMAIL_HOST', default='')
 EMAIL_PORT = env.int('EMAIL_PORT', default=587)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='no-reply@rgnfarmasystem.rgnsystems.com.br')
+DEFAULT_FROM_EMAIL = env(
+    'DEFAULT_FROM_EMAIL',
+    default='no-reply@rgnfarmasystem.rgnsystems.com.br',
+)
 
 # Configuracao de e-mail exclusiva para notificacao de erros.
-# Permite usar uma conta Gmail (ou outro SMTP) separada da conta de nota fiscal.
+# Permite usar uma conta Gmail (ou outro SMTP) separada da conta de nota
+# fiscal.
 ERROR_EMAIL_BACKEND_PATH = 'core.email_backends.ErrorEmailBackend'
 ERROR_EMAIL_HOST = env('ERROR_EMAIL_HOST', default='smtp.gmail.com')
 ERROR_EMAIL_PORT = env.int('ERROR_EMAIL_PORT', default=587)
