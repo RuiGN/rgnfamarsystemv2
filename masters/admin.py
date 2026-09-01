@@ -34,9 +34,9 @@ class ProductAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
     autocomplete_fields = (
         'unit',
         'category',
-        'therapeutic_class',
-        'pharmaceutical_form',
-        'administration_route',
+        'product_line',
+        'cosmetic_form',
+        'application_area',
     )
 
 

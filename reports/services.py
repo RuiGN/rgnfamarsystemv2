@@ -169,7 +169,7 @@ def _canonical_actor(user: Any):
         raise PermissionDenied
     try:
         actor = get_user_model()._default_manager.get(pk=user.pk)
-    except (get_user_model().DoesNotExist, TypeError, ValueError):
+    except get_user_model().DoesNotExist, TypeError, ValueError:
         raise PermissionDenied from None
     if not actor.is_active:
         raise PermissionDenied

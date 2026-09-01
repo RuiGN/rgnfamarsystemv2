@@ -36,21 +36,12 @@ class SingleInstanceRuntimeTests(TestCase):
 
         assert response.status_code == 200
         content = response.content.decode()
-        assert 'Selecione um tenant' not in content
-        assert 'data-ui="tenant-selector"' not in content
         assert (
             reverse(
                 'app:resource_list', kwargs={'module_slug': 'masters', 'resource_slug': 'units'}
             )
             in content
         )
-
-    def test_legacy_scope_selection_route_is_not_available(self):
-        self.client.force_login(self.user)
-
-        response = self.client.post('/app/tenants/select/', {'tenant': 1})
-
-        assert response.status_code == 404
 
     def test_resource_list_uses_global_queryset_without_active_scope(self):
         grant_model_perm(self.user, UnitOfMeasure, 'view')

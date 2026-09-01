@@ -35,7 +35,7 @@ version: 1.0
 | Campo | Informação |
 |---|---|
 | Produto | RGN Farma System |
-| Tipo | ERP web single-instance para indústria farmacêutica |
+| Tipo | ERP web single-instance para indústria de cosméticos |
 | Versão documental | 1.0 |
 | Data | 21/07/2026 |
 | Empresa desenvolvedora | RGN SYSTEMS TECNOLOGIA INOVA SIMPLES (I.S.) |
@@ -47,11 +47,11 @@ version: 1.0
 
 Este documento descreve a especificação técnica do RGN Farma System para apoiar homologação, operação assistida, validação técnica e transferência de conhecimento. O foco é registrar a arquitetura real do projeto, a dockerização, a estratégia de permissões baseada no Django Admin, os módulos funcionais, os controles de segurança e os critérios mínimos de aceite técnico.
 
-O sistema foi concebido para atender uma operação farmacêutica integrada, com módulos de produção, planejamento, compras, estoque, custos, financeiro, fiscal, CRM, qualidade, garantia da qualidade, documentos, desvios, CAPA, mudanças, auditorias, riscos, assuntos regulatórios, farmacovigilância, recalls, manutenção, treinamentos, workflow, relatórios, integrações, agentes de IA e base regulatória RAG.
+O sistema foi concebido para atender uma operação cosmética integrada, com módulos de produção, planejamento, compras, estoque, custos, financeiro, fiscal, CRM, controle e garantia da qualidade, documentos, desvios, CAPA, mudanças, auditorias, riscos, cosmetovigilância e recalls, treinamentos, workflow, relatórios, integrações, agentes de IA e manual RAG.
 
 ## Escopo arquitetural
 
-O runtime atual é single-instance. Isso significa que a aplicação opera como uma instância única, sem seleção de tenant, sem header de escopo por cliente e sem roteamento por subdomínio de cliente para os módulos operacionais. Usuários, grupos e permissões nativas do Django são a fonte de verdade para controle de acesso.
+O runtime atual é single-instance. Isso significa que a aplicação opera como uma instância única, sem seleção de contexto por cliente, sem header de escopo e sem roteamento por subdomínio de cliente para os módulos operacionais. Usuários, grupos e permissões nativas do Django são a fonte de verdade para controle de acesso.
 
 Os principais pontos da conversão para single-instance são:
 
@@ -85,14 +85,14 @@ O RGN Farma System segue uma arquitetura web tradicional, com aplicação Django
 
 ## Dockerização
 
-O projeto possui `Dockerfile` e composes para execução local, teste e VPS. O contrato principal de publicação em containers utiliza imagem Python 3.13 slim, instalação das dependências de sistema, instalação de `requirements.txt`, cópia do projeto e inicialização por entrypoint.
+O projeto possui `Dockerfile` e composes para execução local, teste e VPS. O contrato principal de publicação em containers utiliza imagem Python 3.14 slim, instalação das dependências de sistema, instalação de `requirements.txt`, cópia do projeto e inicialização por entrypoint.
 
 ### Dockerfile
 
 O `Dockerfile` executa:
 
 ```dockerfile
-FROM python:3.13-slim
+FROM python:3.14-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y build-essential libpq-dev postgresql-client curl
 COPY requirements.txt /app/
@@ -264,7 +264,6 @@ Alguns endpoints não são recursos de model e usam política própria:
 | audits | 8 | 9 | 8/8 |
 | risks | 7 | 8 | 7/7 |
 | regulatory | 10 | 11 | 10/10 |
-| pharmacovigilance | 7 | 8 | 7/7 |
 | recalls | 6 | 7 | 6/6 |
 | training | 9 | 10 | 9/9 |
 | files | 4 | 5 | 4/4 |
@@ -361,7 +360,7 @@ Esses recursos apoiam ALCOA+ ao reforçar rastreabilidade, atribuição, contemp
 
 ## Integrações
 
-O módulo de integrações registra conectores, clientes de API, chamadas e eventos. O projeto contempla provedores fiscais, e-mail, backup, OpenAI/Gemini/OpenCode e mecanismos de upload/criptografia. Chamadas externas devem ser configuradas por variáveis de ambiente e segredos externos, sem credenciais reais versionadas.
+O módulo de integrações registra conectores, clientes de API, chamadas e eventos. O projeto contempla provedores fiscais, e-mail, backup, OpenAI e mecanismos de upload/criptografia. Chamadas externas devem ser configuradas por variáveis de ambiente e segredos externos, sem credenciais reais versionadas.
 
 ## Observabilidade e operação
 
@@ -416,10 +415,10 @@ Antes da homologação, recomenda-se exigir evidência dos seguintes itens:
 | `/api/schema/` e `/api/docs/` públicos | Exposição do contrato da API | Restringir por ambiente em produção |
 | `/api/knowledge/chat/` | Respostas podem ser interpretadas como decisão operacional | Manter `knowledge.view_ragchatsession`, somente leitura, citações, isolamento por usuário e revisão humana |
 | Rotas `/api/*` e `/api/v1/*` | Superfície duplicada | Padronizar `/api/v1/*` como contrato externo |
-| Apps legados `tenants`/`control_plane` instalados | Ruído arquitetural após conversão single-instance | Manter somente se houver justificativa operacional/documental |
+| App legado `control_plane` instalado | Ruído arquitetural após conversão single-instance | Manter somente se houver justificativa operacional/documental |
 
 ## Conclusão técnica
 
-O RGN Farma System apresenta uma base técnica coerente para homologação funcional e técnica em ambiente farmacêutico. A arquitetura está documentada, os módulos operacionais estão cobertos por Django Admin e permissões nativas, a dockerização possui separação adequada de serviços, e existem comandos internos de aceite, segurança e prontidão.
+O RGN Farma System apresenta uma base técnica coerente para homologação funcional e técnica em uma indústria de cosméticos. A arquitetura está documentada, os módulos operacionais estão cobertos por Django Admin e permissões nativas, a dockerização possui separação adequada de serviços, e existem comandos internos de aceite, segurança e prontidão.
 
 Para avanço a produção, os pontos prioritários são endurecimento da superfície pública de documentação de API, formalização do plano de validação CSV, execução de backup/restore em ambiente alvo e definição final da matriz de grupos/permissões por perfil operacional.

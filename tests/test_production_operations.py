@@ -2206,7 +2206,6 @@ def test_calculate_cost_rejects_unfinished_order_without_mutation(
     from governance.models import GovernanceAuditLog
     from production.services import ProductionOrderOperations
 
-
     with pytest.raises(ValidationError) as error:
         ProductionOrderOperations(production_order, operations_user).calculate_cost(
             period_start=timezone.localdate().replace(day=1),
@@ -3488,9 +3487,7 @@ def test_reserve_materials_api_returns_structured_domain_validation_error(
 
 @pytest.mark.django_db
 @pytest.mark.permission_strict
-def test_calculate_cost_api_rejects_invalid_period(
-    production_order, django_user_model
-):
+def test_calculate_cost_api_rejects_invalid_period(production_order, django_user_model):
 
     user = django_user_model.objects.create_user(
         username='operador-custo-api', email='operador-custo-api@example.com'
@@ -3603,7 +3600,7 @@ def test_production_operational_resource_routes_support_crud(
         detail_url = reverse(f'production:{basename}-detail', args=[created.data['id']])
         updated = client.patch(detail_url, update_payload)
         assert updated.status_code == 200, updated.data
-        assert client.delete(detail_url).status_code == 405
+        assert client.delete(detail_url).status_code == 403
         model = {
             'output': ProductionOutput,
             'operation': ProductionOperationExecution,

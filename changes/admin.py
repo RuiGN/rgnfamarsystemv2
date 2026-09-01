@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from changes.models import (
     ChangeAction,
@@ -11,7 +12,7 @@ from changes.models import (
 
 
 @admin.register(ChangeControl)
-class ChangeControlAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class ChangeControlAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'change_number',
         'change_type',
@@ -49,7 +50,7 @@ class ChangeControlAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(ChangeAffectedItem)
-class ChangeAffectedItemAdmin(admin.ModelAdmin):
+class ChangeAffectedItemAdmin(GxpRetentionModelAdmin):
     list_display = ('change', 'item_type', 'product', 'document', 'supplier')
     list_filter = ('item_type',)
     search_fields = (
@@ -64,7 +65,7 @@ class ChangeAffectedItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChangeAssessment)
-class ChangeAssessmentAdmin(admin.ModelAdmin):
+class ChangeAssessmentAdmin(GxpRetentionModelAdmin):
     list_display = ('change', 'department', 'assessor', 'impact_level', 'status', 'completed_at')
     list_filter = ('department', 'impact_level', 'status', 'completed_at')
     search_fields = (
@@ -78,7 +79,7 @@ class ChangeAssessmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChangeAction)
-class ChangeActionAdmin(admin.ModelAdmin):
+class ChangeActionAdmin(GxpRetentionModelAdmin):
     list_display = (
         'change',
         'action_type',
@@ -111,7 +112,7 @@ class ChangeActionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChangeApproval)
-class ChangeApprovalAdmin(admin.ModelAdmin):
+class ChangeApprovalAdmin(GxpRetentionModelAdmin):
     list_display = ('change', 'role', 'approver', 'required', 'decision', 'decided_at')
     list_filter = ('role', 'required', 'decision', 'decided_at')
     search_fields = ('change__change_number', 'approver__email', 'comments')
@@ -120,7 +121,7 @@ class ChangeApprovalAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChangeStockAssessment)
-class ChangeStockAssessmentAdmin(admin.ModelAdmin):
+class ChangeStockAssessmentAdmin(GxpRetentionModelAdmin):
     list_display = (
         'change',
         'product',

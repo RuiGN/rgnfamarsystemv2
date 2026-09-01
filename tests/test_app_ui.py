@@ -53,9 +53,7 @@ def without_accents(value):
 
 
 def assert_executed_sql_orders_newest_then_pk(sql, model, timestamp_column):
-    normalized = ' '.join(
-        str(sql).lower().translate(str.maketrans('', '', '"`[]')).split()
-    )
+    normalized = ' '.join(str(sql).lower().translate(str.maketrans('', '', '"`[]')).split())
     expected_table = re.escape(model._meta.db_table.lower())
     expected_pk_column = re.escape(model._meta.pk.column.lower())
     order_pattern = (
@@ -88,10 +86,7 @@ def test_query_transform_replaces_page_and_keeps_authorized_filter_multivalues(r
 def test_datetime_advanced_filters_emit_safe_range_controls(rf):
     from base.ui.views import build_advanced_filters
 
-    request = rf.get(
-        '/app/workflow/tasks/?due_at_from=2026-08-28T09:30'
-        '&due_at_to=2026-99-99T18:00'
-    )
+    request = rf.get('/app/workflow/tasks/?due_at_from=2026-08-28T09:30&due_at_to=2026-99-99T18:00')
 
     definitions = build_advanced_filters(
         get_resource('workflow', 'tasks'),
@@ -209,40 +204,6 @@ class AppUiFoundationTests(TestCase):
         assert 'data-ui="permission-denied"' in content
         assert 'class="avatar-text' in content
 
-    def test_authenticated_user_sees_modules_without_scope_selector(self):
-        self.client.force_login(self.user)
-
-        response = self.client.get('/app/')
-
-        assert response.status_code == 200
-        content = response.content.decode()
-        assert 'Selecione um tenant' not in content
-        assert 'data-ui="tenant-selector"' not in content
-
-    def test_legacy_scope_selector_is_not_rendered(self):
-        self.client.force_login(self.user)
-
-        response = self.client.get('/app/')
-
-        assert response.status_code == 200
-        content = response.content.decode()
-        assert 'data-ui="tenant-selector"' not in content
-        assert 'name="tenant"' not in content
-
-    def test_legacy_scope_selection_route_is_not_available(self):
-        self.client.force_login(self.user)
-
-        response = self.client.post('/app/tenants/select/', {'tenant': 1})
-
-        assert response.status_code == 404
-
-    def test_inaccessible_legacy_scope_selection_route_is_not_available(self):
-        self.client.force_login(self.user)
-
-        response = self.client.post('/app/tenants/select/', {'tenant': 999})
-
-        assert response.status_code == 404
-
     def test_operational_menu_hides_legacy_access_resources(self):
         self.client.force_login(self.user)
         session = self.client.session
@@ -254,7 +215,6 @@ class AppUiFoundationTests(TestCase):
         content = response.content.decode()
         assert 'Usuários e acessos' not in content
         assert '/app/base/' not in content
-        assert '/app/tenants/tenants/' not in content
 
     def test_authenticated_layout_hides_global_rag_chat_without_permission(self):
         self.client.force_login(self.user)
@@ -315,7 +275,6 @@ class AppUiFoundationTests(TestCase):
         assert response.redirect_chain == [('/app/', 302)]
         content = response.content.decode()
         assert 'id="rag-chat-root"' not in content
-        assert 'data-tenant-slug=' not in content
         assert 'rag-chat.js' not in content
 
     def test_dashboard_hub_does_not_show_local_instance_copy(self):
@@ -337,53 +296,6 @@ class AppUiFoundationTests(TestCase):
         session.save()
 
         response = self.client.get('/app/base/')
-
-        assert response.status_code == 404
-
-    def test_foundation_legacy_scope_resource_is_not_registered(self):
-        self.client.force_login(self.user)
-        session = self.client.session
-        session.save()
-
-        response = self.client.get(
-            reverse('app:resource_list', kwargs={'module_slug': 'base', 'resource_slug': 'tenants'})
-        )
-
-        assert response.status_code == 404
-
-    def test_legacy_scope_resource_list_is_not_exposed(self):
-        self.client.force_login(self.user)
-        session = self.client.session
-        session.save()
-
-        response = self.client.get('/app/tenants/tenants/')
-
-        assert response.status_code == 404
-
-    def test_legacy_scope_resource_form_is_not_exposed(self):
-        self.client.force_login(self.admin)
-        session = self.client.session
-        session.save()
-
-        response = self.client.get('/app/tenants/tenants/new/')
-
-        assert response.status_code == 404
-
-    def test_superuser_cannot_mutate_legacy_scope_through_customer_html_crud(self):
-        self.client.force_login(self.admin)
-        session = self.client.session
-        session.save()
-
-        response = self.client.post(
-            '/app/tenants/tenants/new/',
-            {
-                'name': 'Planta Fortaleza',
-                'slug': 'planta-fortaleza',
-                'document': '',
-                'domain': '',
-                'is_active': 'on',
-            },
-        )
 
         assert response.status_code == 404
 
@@ -481,7 +393,10 @@ class AppUiFoundationTests(TestCase):
         template = Path('templates/app/resource_list.html').read_text()
         component = Path('templates/includes/components/status_badge.html').read_text()
 
-        assert "{% include 'includes/components/status_badge.html' with status=cell.status field_name=cell.field %}" in template
+        assert (
+            "{% include 'includes/components/status_badge.html' with status=cell.status field_name=cell.field %}"
+            in template
+        )
         assert 'status.label' in component
         assert 'status.icon' in component
         assert 'aria-hidden="true"' in component
@@ -504,7 +419,9 @@ class AppUiFoundationTests(TestCase):
         template = Path('templates/app/includes/pagination.html').read_text()
 
         assert '{% load ui_query %}' in template
-        assert '{% query_transform page=page_obj.previous_page_number as previous_query %}' in template
+        assert (
+            '{% query_transform page=page_obj.previous_page_number as previous_query %}' in template
+        )
         assert '{% query_transform page=i as page_query %}' in template
         assert '{% query_transform page=page_obj.next_page_number as next_query %}' in template
         assert 'status={{ status_filter }}' not in template
@@ -608,8 +525,8 @@ class AppUiFoundationTests(TestCase):
         )
 
     def test_advanced_filters_apply_choices_and_dates_but_ignore_undeclared_lookups(self):
-        unit, product, _material, formula, _component, route = (
-            create_released_manufacturing_set('advanced-filter')
+        unit, product, _material, formula, _component, route = create_released_manufacturing_set(
+            'advanced-filter'
         )
         urgent = ProductionOrder.objects.create(
             order_number='OP-FILTRO-URGENTE',
@@ -647,9 +564,7 @@ class AppUiFoundationTests(TestCase):
         self.client.force_login(self.admin)
 
         invalid_choice = self.client.get('/app/production/orders/?priority=desconhecida')
-        invalid_date = self.client.get(
-            '/app/production/orders/?scheduled_end_from=2026-99-99'
-        )
+        invalid_date = self.client.get('/app/production/orders/?scheduled_end_from=2026-99-99')
 
         for response in (invalid_choice, invalid_date):
             assert response.status_code == 200
@@ -661,27 +576,22 @@ class AppUiFoundationTests(TestCase):
     def test_invalid_advanced_date_shows_accessible_feedback_with_raw_value(self):
         self.client.force_login(self.admin)
 
-        response = self.client.get(
-            '/app/production/orders/?scheduled_end_from=2026-99-99'
-        )
+        response = self.client.get('/app/production/orders/?scheduled_end_from=2026-99-99')
 
         assert response.status_code == 200
         content = response.content.decode()
         assert 'value="2026-99-99"' in content
         assert 'data-submitted-value="2026-99-99"' in content
         assert 'aria-invalid="true"' in content
-        assert (
-            'aria-describedby="resource-advanced-scheduled_end_from-error"'
-            in content
-        )
+        assert 'aria-describedby="resource-advanced-scheduled_end_from-error"' in content
         assert 'id="resource-advanced-scheduled_end_from-error"' in content
         assert 'Valor informado: 2026-99-99.' in content
         assert 'Informe uma data válida.' in content
         assert response.context['active_filter_count'] == 0
 
     def test_invalid_advanced_filter_values_are_preserved_without_filtering(self):
-        unit, product, _material, formula, _component, route = (
-            create_released_manufacturing_set('invalid-filter')
+        unit, product, _material, formula, _component, route = create_released_manufacturing_set(
+            'invalid-filter'
         )
         orders = {
             ProductionOrder.objects.create(
@@ -765,8 +675,14 @@ class AppUiFoundationTests(TestCase):
         template = Path('templates/app/resource_detail.html').read_text()
         summary_template = Path('templates/includes/components/detail_summary.html').read_text()
 
-        assert "{% include 'includes/components/status_badge.html' with status=detail_status %}" in template
-        assert "{% include 'includes/components/status_badge.html' with status=item.status %}" in summary_template
+        assert (
+            "{% include 'includes/components/status_badge.html' with status=detail_status %}"
+            in template
+        )
+        assert (
+            "{% include 'includes/components/status_badge.html' with status=item.status %}"
+            in summary_template
+        )
 
 
 class AppUiPermissionTests(TestCase):
@@ -946,12 +862,8 @@ class WorkflowNotificationResourceScopeTests(TestCase):
 
     def test_global_view_permission_still_scopes_list_detail_and_export_to_recipient(self):
         list_response = self.client.get('/app/workflow/notifications/')
-        own_detail = self.client.get(
-            f'/app/workflow/notifications/{self.own_notification.pk}/'
-        )
-        other_detail = self.client.get(
-            f'/app/workflow/notifications/{self.other_notification.pk}/'
-        )
+        own_detail = self.client.get(f'/app/workflow/notifications/{self.own_notification.pk}/')
+        other_detail = self.client.get(f'/app/workflow/notifications/{self.other_notification.pk}/')
         export_response = self.client.get('/app/workflow/notifications/export/')
 
         assert list_response.status_code == 200
@@ -1023,9 +935,7 @@ class AppUiPersistedAuditTests(TestCase):
         DocumentAuditTrail.objects.filter(pk=older.pk).update(created_at=older_at)
         DocumentAuditTrail.objects.filter(pk=newer.pk).update(created_at=newer_at)
 
-        response = self.client.get(
-            f'/app/documents/controlled-documents/{document.pk}/'
-        )
+        response = self.client.get(f'/app/documents/controlled-documents/{document.pk}/')
 
         assert response.status_code == 200
         content = response.content.decode()
@@ -1056,15 +966,13 @@ class AppUiPersistedAuditTests(TestCase):
         )
         assert event.action in DocumentAuditTrail.Action.values
 
-        response = self.client.get(
-            f'/app/documents/controlled-documents/{document.pk}/'
-        )
+        response = self.client.get(f'/app/documents/controlled-documents/{document.pk}/')
 
         assert response.status_code == 200
         content = response.content.decode()
-        audit_html = content.split(
-            'aria-labelledby="audit-trail-title"', maxsplit=1
-        )[1].split('</section>', maxsplit=1)[0]
+        audit_html = content.split('aria-labelledby="audit-trail-title"', maxsplit=1)[1].split(
+            '</section>', maxsplit=1
+        )[0]
         assert str(escape(actor_payload)) in audit_html
         assert str(escape(snapshot_payload)) in audit_html
         assert str(escape(reason_payload)) in audit_html
@@ -1166,9 +1074,9 @@ class AppUiPersistedAuditTests(TestCase):
             actor=third_actor,
         )
         tied_at = timezone.now() + timedelta(days=1)
-        RecordStatusHistory.objects.filter(
-            pk__in=(tie_first.pk, tie_second.pk)
-        ).update(occurred_at=tied_at)
+        RecordStatusHistory.objects.filter(pk__in=(tie_first.pk, tie_second.pk)).update(
+            occurred_at=tied_at
+        )
         contaminant_at = tied_at + timedelta(days=1)
         RecordStatusHistory.objects.create(
             source_module='risks',
@@ -1228,8 +1136,7 @@ class AppUiPersistedAuditTests(TestCase):
 
         assert response.status_code == 200
         assert (
-            'Nenhum evento de auditoria disponível para este registro.'
-            in response.content.decode()
+            'Nenhum evento de auditoria disponível para este registro.' in response.content.decode()
         )
 
     def test_unauthorized_detail_does_not_build_audit_entries(self):
@@ -1242,9 +1149,7 @@ class AppUiPersistedAuditTests(TestCase):
         self.client.force_login(unauthorized)
 
         with patch('base.ui.views.get_audit_entries') as getter:
-            response = self.client.get(
-                f'/app/documents/controlled-documents/{document.pk}/'
-            )
+            response = self.client.get(f'/app/documents/controlled-documents/{document.pk}/')
 
         assert response.status_code == 403
         getter.assert_not_called()
@@ -1334,7 +1239,6 @@ class AppUiSprint38ResourceTests(TestCase):
         content = response.content.decode()
         assert 'Grama' in content
         assert 'Mililitro' in content
-        assert 'name="tenant"' not in content
         assert 'name="created_at"' not in content
 
 
@@ -1789,7 +1693,6 @@ class AppUiSprint42ResourceTests(TestCase):
             ],
             'governance': [
                 'Parametros de governanca',
-                'Responsáveis técnicos',
                 'Catalogos de governanca',
                 'Logs de governanca',
                 'Cargas demo',

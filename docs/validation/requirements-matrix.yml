@@ -18,12 +18,12 @@ requirements:
   - id: SI-001
     title: Autenticação single-instance
     framework: GAMP5
-    control: Login único e acesso por permissões Django sem escopo por tenant
+    control: Login único e acesso por permissões nativas do Django
     evidence: tests/test_single_instance_auth_access.py
   - id: SI-002
     title: Runtime operacional single-instance
     framework: ALCOA+
-    control: UI e APIs sem seleção de tenant, sem header X-Tenant-Slug e sem request.tenant
+    control: UI e APIs operam diretamente no contexto global da instalação
     evidence: tests/test_single_instance_runtime.py
   - id: SI-003
     title: PostgreSQL local isolado para testes
@@ -33,7 +33,7 @@ requirements:
   - id: SI-004
     title: Schema físico single-instance
     framework: IQ/OQ
-    control: Models, colunas, índices e constraints não possuem artefatos funcionais de tenant
+    control: Models, colunas, índices e constraints representam um único espaço operacional
     evidence: tests/test_single_instance_schema.py
   - id: SI-005
     title: Relações prioritárias no formulário principal

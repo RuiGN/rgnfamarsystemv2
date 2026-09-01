@@ -30,6 +30,4 @@ class Command(BaseCommand):
 
         counts = seed_cosmetics_auxiliary_data()
         summary = ', '.join(f'{key}={value}' for key, value in counts.items())
-        self.stdout.write(
-            self.style.SUCCESS(f'Carga auxiliar cosmética concluída: {summary}.')
-        )
+        self.stdout.write(self.style.SUCCESS(f'Carga auxiliar cosmética concluída: {summary}.'))

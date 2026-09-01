@@ -50,7 +50,7 @@ Este documento descreve o comportamento funcional esperado do RGN Farma System s
 
 ## Visão funcional do produto
 
-O RGN Farma System é um ERP farmacêutico web single-instance. A aplicação centraliza processos operacionais e regulados, permitindo que as áreas da empresa trabalhem sobre uma base única de dados, com controle de permissões, histórico, rastreabilidade e padronização de fluxos.
+O RGN Farma System é um ERP web single-instance para a indústria de cosméticos. A aplicação centraliza processos operacionais e regulados, permitindo que as áreas da empresa trabalhem sobre uma base única de dados, com controle de permissões, histórico, rastreabilidade e padronização de fluxos.
 
 ![Mapa macro dos módulos](assets/mapa_modulos.png)
 
@@ -65,8 +65,8 @@ O sistema cobre o ciclo operacional completo:
 7. controle e garantia da qualidade;
 8. documentos, desvios, CAPA, mudanças, auditorias e riscos;
 9. fiscal, financeiro, custos e CRM;
-10. regulatório, farmacovigilância, recalls e pós-mercado;
-11. manutenção, treinamentos, workflow, relatórios, integrações e IA.
+10. cosmetovigilância, recalls e pós-mercado;
+11. treinamentos, workflow, relatórios, integrações e IA.
 
 ## Perfis de usuário
 
@@ -369,15 +369,15 @@ Critérios de aceite:
 - O sistema deve controlar custo padrão, custo real e fechamento.
 - O sistema deve controlar documentos fiscais, impostos, emissão e auditoria fiscal.
 
-### Regulatório e pós-mercado
+### Cosmetovigilância e pós-mercado
 
-- O sistema deve controlar dossiês, registros, petições e exigências.
-- O sistema deve controlar farmacovigilância e recalls.
+- O sistema deve controlar reclamações, eventos adversos, investigações e recalls.
+- O sistema deve registrar comunicações regulatórias de cosmetovigilância.
 - O sistema deve gerar alertas e relatórios de acompanhamento.
 
 ### Suporte operacional
 
-- O sistema deve controlar manutenção, treinamentos, workflow e relatórios.
+- O sistema deve controlar treinamentos, workflow e relatórios.
 - O sistema deve registrar integrações e eventos técnicos.
 - O sistema oferece chat RAG somente leitura para consultar o manual ERP, com citações, histórico e revisão humana quando a orientação apoiar uma decisão regulada.
 - O chat exige `knowledge.view_ragchatsession`, mantém isolamento por usuário e não executa SQL, workflows nem alteração de registros.
@@ -459,8 +459,8 @@ Indicadores esperados:
 - mudanças em implementação;
 - auditorias e achados;
 - riscos críticos;
-- compromissos regulatórios;
-- casos de farmacovigilância;
+- comunicações regulatórias;
+- casos de cosmetovigilância;
 - recalls em andamento;
 - treinamentos vencidos;
 - jobs e integrações com falha.

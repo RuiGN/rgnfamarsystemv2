@@ -35,7 +35,7 @@ def deterministic_embedding(value, dimensions=64):
 class KnowledgeSource(SingleInstanceModel):
     class SourceType(models.TextChoices):
         REGULATION = 'regulation', 'Legislação'
-        PHARMACOPOEIA = 'pharmacopoeia', 'Farmacopeia'
+        TECHNICAL_REFERENCE = 'technical_reference', 'Referência técnica'
         GUIDELINE = 'guideline', 'Guia'
         STANDARD = 'standard', 'Norma'
         BOOK_REFERENCE = 'book_reference', 'Referência bibliográfica'
@@ -335,9 +335,7 @@ class RAGChatSession(SingleInstanceModel):
         related_name='rag_chat_sessions',
         verbose_name='criada por',
     )
-    status = models.CharField(
-        'status', max_length=24, choices=Status.choices, default=Status.OPEN
-    )
+    status = models.CharField('status', max_length=24, choices=Status.choices, default=Status.OPEN)
     last_question_at = models.DateTimeField('última pergunta em', null=True, blank=True)
 
     class Meta:
@@ -463,9 +461,7 @@ class RAGCitation(SingleInstanceModel):
     source_url = models.URLField('URL', max_length=1000, blank=True)
     section_reference = models.CharField('seção', max_length=180, blank=True)
     excerpt = models.TextField('trecho')
-    relevance_score = models.DecimalField(
-        'relevância', max_digits=6, decimal_places=4, default=0
-    )
+    relevance_score = models.DecimalField('relevância', max_digits=6, decimal_places=4, default=0)
 
     class Meta:
         ordering = ['-relevance_score', 'title']

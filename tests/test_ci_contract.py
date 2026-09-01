@@ -92,7 +92,7 @@ def test_quality_gate_runs_every_mandatory_check():
         'ruff format --check',
         'mypy',
         'bandit',
-        'pip-audit',
+        'python -m pip_audit',
         'pytest',
         '--cov-fail-under=80',
         'spectacular --file openapi-schema.yml --validate --fail-on-warn',

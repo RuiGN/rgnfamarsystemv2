@@ -26,6 +26,6 @@ Esses casos não quebram o fluxo principal, mas em operação regulada agora reg
 ## Estratégia de saneamento
 
 1. Tratar primeiro `exception_swallow` com logging estruturado e cobertura de teste.
-2. Para `validate()` de serializers, remover métodos vazios ou implementar validações de consistência entre datas, status, responsáveis, tenant e integridade ALCOA+ quando aplicável.
-3. Para `clean()` de models, priorizar módulos críticos: qualidade, QA, desvios, CAPA, regulatório, farmacovigilância e recalls.
+2. Para `validate()` de serializers, remover métodos vazios ou implementar validações de consistência entre datas, status, responsáveis e integridade ALCOA+ quando aplicável.
+3. Para `clean()` de models, priorizar módulos críticos: qualidade, QA, desvios, CAPA, cosmetovigilância e recalls.
 4. Manter classes vazias de exceção/admin/view somente quando a herança for o comportamento pretendido; nesses casos, preferir docstring em vez de `pass` quando o objetivo precisar ficar explícito.

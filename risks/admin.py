@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from risks.models import (
     RiskAlert,
@@ -12,7 +13,7 @@ from risks.models import (
 
 
 @admin.register(RiskRecord)
-class RiskRecordAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class RiskRecordAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'risk_number',
         'risk_category',
@@ -54,7 +55,7 @@ class RiskRecordAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(RiskAssessment)
-class RiskAssessmentAdmin(admin.ModelAdmin):
+class RiskAssessmentAdmin(GxpRetentionModelAdmin):
     list_display = (
         'risk',
         'assessment_type',
@@ -71,7 +72,7 @@ class RiskAssessmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(RiskControl)
-class RiskControlAdmin(admin.ModelAdmin):
+class RiskControlAdmin(GxpRetentionModelAdmin):
     list_display = ('risk', 'control_type', 'title', 'status', 'owner')
     list_filter = ('control_type', 'status')
     search_fields = (
@@ -86,7 +87,7 @@ class RiskControlAdmin(admin.ModelAdmin):
 
 
 @admin.register(RiskMitigationAction)
-class RiskMitigationActionAdmin(admin.ModelAdmin):
+class RiskMitigationActionAdmin(GxpRetentionModelAdmin):
     list_display = (
         'risk',
         'action_type',
@@ -111,7 +112,7 @@ class RiskMitigationActionAdmin(admin.ModelAdmin):
 
 
 @admin.register(RiskLink)
-class RiskLinkAdmin(admin.ModelAdmin):
+class RiskLinkAdmin(GxpRetentionModelAdmin):
     list_display = ('risk', 'link_type', 'reference_code')
     list_filter = ('link_type',)
     search_fields = ('risk__risk_number', 'risk__title', 'reference_code', 'impact_description')
@@ -128,7 +129,7 @@ class RiskLinkAdmin(admin.ModelAdmin):
 
 
 @admin.register(RiskReview)
-class RiskReviewAdmin(admin.ModelAdmin):
+class RiskReviewAdmin(GxpRetentionModelAdmin):
     list_display = ('risk', 'planned_date', 'status', 'reviewer', 'next_review_date')
     list_filter = ('status', 'planned_date', 'next_review_date')
     search_fields = ('risk__risk_number', 'risk__title', 'review_scope', 'result')
@@ -137,7 +138,7 @@ class RiskReviewAdmin(admin.ModelAdmin):
 
 
 @admin.register(RiskAlert)
-class RiskAlertAdmin(admin.ModelAdmin):
+class RiskAlertAdmin(GxpRetentionModelAdmin):
     list_display = ('risk', 'alert_type', 'severity', 'status', 'due_date', 'acknowledged_at')
     list_filter = ('alert_type', 'severity', 'status', 'due_date')
     search_fields = ('risk__risk_number', 'risk__title', 'message')

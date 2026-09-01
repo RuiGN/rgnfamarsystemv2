@@ -128,7 +128,6 @@ class IntegrationApiVersioningTests(TestCase):
         assert versioned_log.status_code == 200
         assert versioned_log.outcome == ApiCallLog.Outcome.SUCCESS
         assert versioned_log.user == user
-        assert not hasattr(versioned_log, 'tenant')
         assert versioned_log.safe_context['query_params'] == {'status': ['active']}
         assert legacy_log.api_version == 'legacy'
         assert legacy_log.safe_context['query_params'] == {'module': ['accounts']}
@@ -144,7 +143,6 @@ class IntegrationApiTests(TestCase):
     def test_rf28_integration_api_enforces_permissions_and_actions(self):
         from integrations.models import (
             ApiCallLog,
-            ApiClientApplication,
             IntegrationConnector,
             IntegrationEvent,
         )
@@ -223,7 +221,6 @@ class IntegrationApiTests(TestCase):
         events_list = client.get('/api/integrations/events/')
 
         assert connector_response.status_code == 201
-        assert 'tenant' not in connector_response.json()
         assert invalid_user_response.status_code == 400
         assert 'secret_reference' in invalid_user_response.json()
         assert activate_response.status_code == 200
@@ -242,4 +239,3 @@ class IntegrationApiTests(TestCase):
             event_type=IntegrationEvent.EventType.SECRET_ROTATED,
             api_client_application_id=api_client_id,
         ).exists()
-        assert not hasattr(ApiClientApplication.objects.get(pk=api_client_id), 'tenant')

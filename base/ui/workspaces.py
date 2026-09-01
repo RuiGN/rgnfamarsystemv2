@@ -186,9 +186,7 @@ def build_quality_content(request: Any) -> WorkspaceContent:
         metrics.append(
             WorkspaceMetric(
                 label='Amostras em análise',
-                value=QualitySample.objects.filter(
-                    status=QualitySample.Status.IN_ANALYSIS
-                ).count(),
+                value=QualitySample.objects.filter(status=QualitySample.Status.IN_ANALYSIS).count(),
                 icon='feather-droplet',
                 tone='warning',
                 badge='Amostragem',
@@ -207,9 +205,7 @@ def build_quality_content(request: Any) -> WorkspaceContent:
         metrics.append(
             WorkspaceMetric(
                 label='Análises pendentes',
-                value=QualityAnalysis.objects.filter(
-                    status=QualityAnalysis.Status.PENDING
-                ).count(),
+                value=QualityAnalysis.objects.filter(status=QualityAnalysis.Status.PENDING).count(),
                 icon='feather-activity',
                 tone='primary',
                 badge='Laboratório',

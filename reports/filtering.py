@@ -133,7 +133,7 @@ def normalize_system_filters(
     try:
         defaults = clone_json_object(default_filters)
         incoming = clone_json_object({} if incoming_filters is None else incoming_filters)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         raise ValidationError({'filters': 'Filtros devem ser um objeto JSON seguro.'}) from None
 
     known_names = {specification.name for specification in specifications}

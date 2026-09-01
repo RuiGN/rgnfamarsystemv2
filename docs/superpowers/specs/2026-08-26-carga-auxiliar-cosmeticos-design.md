@@ -20,8 +20,8 @@ Serão preenchidos:
 - `ImpactLevel`, `CatalogType` e `CatalogValue` com classificações operacionais
   em português.
 
-`BackupRun` não será alterado. Nenhum registro será criado em `masters`,
-`formulations`, `production`, `inventory`, `quality` ou qualquer outro app.
+Nenhum registro será criado em `masters`, `formulations`, `production`,
+`inventory`, `quality` ou qualquer outro app.
 
 ## Fontes oficiais
 
@@ -62,8 +62,8 @@ compras, recebimento, armazenagem e expedição.
 
 ### Funções organizacionais
 
-Serão incluídas funções sem vínculo com pessoas reais: Responsável Técnico,
-Gerente e Analista de Garantia da Qualidade, Gerente e Analista de Controle da
+Serão incluídas funções sem vínculo com pessoas reais: Gerente e Analista de
+Garantia da Qualidade, Gerente e Analista de Controle da
 Qualidade, Formulador Cosmético, Microbiologista, Supervisor de Produção,
 Operador de Fabricação, Operador de Envase, Inspetor de Embalagem, Analista de
 Assuntos Regulatórios, Comprador, Almoxarife, Planejador de Produção, Técnico de

@@ -31,15 +31,16 @@ class UnitOfMeasure(SingleInstanceModel):
 
 class MasterCategory(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'CAT'
+
     class Kind(models.TextChoices):
         FAMILY = 'family', 'Família'
         GROUP = 'group', 'Grupo'
         CATEGORY = 'category', 'Categoria'
-        THERAPEUTIC_CLASS = 'therapeutic_class', 'Classe terapêutica'
-        PHARMACEUTICAL_FORM = 'pharmaceutical_form', 'Forma farmacêutica'
+        PRODUCT_LINE = 'product_line', 'Linha de produto'
+        COSMETIC_FORM = 'cosmetic_form', 'Forma cosmética'
         PRESENTATION = 'presentation', 'Apresentação'
         CONCENTRATION = 'concentration', 'Concentração'
-        ADMINISTRATION_ROUTE = 'administration_route', 'Via de administração'
+        APPLICATION_AREA = 'application_area', 'Área de aplicação'
 
     code = models.CharField('código', max_length=40, blank=True)
     name = models.CharField('nome', max_length=160)
@@ -77,6 +78,7 @@ class MasterCategory(AutoCodeMixin, SingleInstanceModel):
 
 class Product(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'PRD'
+
     class ItemType(models.TextChoices):
         FINISHED_PRODUCT = 'finished_product', 'Produto acabado'
         SEMIFINISHED = 'semifinished', 'Semiacabado'
@@ -112,29 +114,29 @@ class Product(AutoCodeMixin, SingleInstanceModel):
         blank=True,
         verbose_name='categoria',
     )
-    therapeutic_class = models.ForeignKey(
+    product_line = models.ForeignKey(
         MasterCategory,
         on_delete=models.PROTECT,
-        related_name='therapeutic_products',
+        related_name='product_line_products',
         null=True,
         blank=True,
-        verbose_name='classe terapêutica',
+        verbose_name='linha de produto',
     )
-    pharmaceutical_form = models.ForeignKey(
+    cosmetic_form = models.ForeignKey(
         MasterCategory,
         on_delete=models.PROTECT,
         related_name='form_products',
         null=True,
         blank=True,
-        verbose_name='forma farmacêutica',
+        verbose_name='forma cosmética',
     )
-    administration_route = models.ForeignKey(
+    application_area = models.ForeignKey(
         MasterCategory,
         on_delete=models.PROTECT,
-        related_name='route_products',
+        related_name='application_area_products',
         null=True,
         blank=True,
-        verbose_name='via de administração',
+        verbose_name='área de aplicação',
     )
     status = models.CharField('status', max_length=24, choices=Status.choices, default=Status.DRAFT)
     storage_condition = models.CharField('condição de armazenamento', max_length=255, blank=True)
@@ -174,21 +176,21 @@ class Product(AutoCodeMixin, SingleInstanceModel):
         self._validate_category(errors, 'category', self.category, MasterCategory.Kind.CATEGORY)
         self._validate_category(
             errors,
-            'therapeutic_class',
-            self.therapeutic_class,
-            MasterCategory.Kind.THERAPEUTIC_CLASS,
+            'product_line',
+            self.product_line,
+            MasterCategory.Kind.PRODUCT_LINE,
         )
         self._validate_category(
             errors,
-            'pharmaceutical_form',
-            self.pharmaceutical_form,
-            MasterCategory.Kind.PHARMACEUTICAL_FORM,
+            'cosmetic_form',
+            self.cosmetic_form,
+            MasterCategory.Kind.COSMETIC_FORM,
         )
         self._validate_category(
             errors,
-            'administration_route',
-            self.administration_route,
-            MasterCategory.Kind.ADMINISTRATION_ROUTE,
+            'application_area',
+            self.application_area,
+            MasterCategory.Kind.APPLICATION_AREA,
         )
         if errors:
             raise ValidationError(errors)
@@ -207,6 +209,7 @@ class Product(AutoCodeMixin, SingleInstanceModel):
 
 class BusinessPartner(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'BP'
+
     class PartnerType(models.TextChoices):
         SUPPLIER = 'supplier', 'Fornecedor'
         MANUFACTURER = 'manufacturer', 'Fabricante'
@@ -305,6 +308,7 @@ class BusinessPartner(AutoCodeMixin, SingleInstanceModel):
 
 class Site(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'ST'
+
     class SiteType(models.TextChoices):
         PLANT = 'plant', 'Planta fabril'
         DISTRIBUTION = 'distribution', 'Distribuição'
@@ -368,6 +372,7 @@ class Site(AutoCodeMixin, SingleInstanceModel):
 
 class Warehouse(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'WH'
+
     class WarehouseType(models.TextChoices):
         RAW_MATERIAL = 'raw_material', 'Matéria-prima'
         PACKAGING = 'packaging', 'Embalagem'

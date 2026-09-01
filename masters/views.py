@@ -53,9 +53,9 @@ class ProductViewSet(SingleInstanceMasterViewSet):
     queryset = Product.objects.select_related(
         'unit',
         'category',
-        'therapeutic_class',
-        'pharmaceutical_form',
-        'administration_route',
+        'product_line',
+        'cosmetic_form',
+        'application_area',
     )
     serializer_class = ProductSerializer
     filterset_fields = (

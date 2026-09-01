@@ -15,9 +15,7 @@ User = get_user_model()
 
 
 def assert_executed_sql_orders_newest_then_pk(sql, model, timestamp_column):
-    normalized = ' '.join(
-        str(sql).lower().translate(str.maketrans('', '', '"`[]')).split()
-    )
+    normalized = ' '.join(str(sql).lower().translate(str.maketrans('', '', '"`[]')).split())
     expected_table = re.escape(model._meta.db_table.lower())
     expected_pk_column = re.escape(model._meta.pk.column.lower())
     order_pattern = (
@@ -87,9 +85,9 @@ class ControlledDocumentModelTests(TestCase):
                 )
             )
         tied_at = timezone.now() + timedelta(days=1)
-        DocumentAuditTrail.objects.filter(
-            pk__in=(created_rows[-2].pk, created_rows[-1].pk)
-        ).update(created_at=tied_at)
+        DocumentAuditTrail.objects.filter(pk__in=(created_rows[-2].pk, created_rows[-1].pk)).update(
+            created_at=tied_at
+        )
 
         with CaptureQueriesContext(connection) as queries:
             entries = get_audit_entries(document, limit=100)
@@ -231,6 +229,19 @@ class ControlledDocumentModelTests(TestCase):
 @pytest.mark.django_db
 @pytest.mark.legacy_api_permissions
 class TestControlledDocumentApi:
+    def test_regulated_document_cannot_be_physically_deleted_through_api(self):
+        from documents.models import ControlledDocument
+
+        owner, _approver, _reader = create_document_users()
+        document = create_controlled_document(owner)
+        client = APIClient()
+        client.force_authenticate(owner)
+
+        response = client.delete(f'/api/documents/controlled-documents/{document.id}/')
+
+        assert response.status_code == 403
+        assert ControlledDocument.objects.filter(pk=document.pk).exists()
+
     def test_document_api_uses_global_scope_and_enforces_published_revision_flow(self):
         from documents.models import ControlledDocument
 

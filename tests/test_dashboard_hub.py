@@ -41,9 +41,7 @@ class DashboardHubContractTests(SimpleTestCase):
 
     def test_dashboard_configuration_uses_existing_modules(self):
         modules = {config['module'] for config in DashboardHubView.dashboards.values()}
-        self.assertTrue(
-            {'production', 'inventory', 'quality', 'finance'}.issubset(modules)
-        )
+        self.assertTrue({'production', 'inventory', 'quality', 'finance'}.issubset(modules))
 
 
 class DashboardHubAccessTests(TestCase):
@@ -92,8 +90,9 @@ class DashboardHubAccessTests(TestCase):
         grant_module_view(self.user, 'inventory')
 
         for slug, dashboard in DashboardHubView.dashboards.items():
-            with self.subTest(dashboard=slug), patch.object(
-                DashboardHubView, '_build_data', return_value=data
+            with (
+                self.subTest(dashboard=slug),
+                patch.object(DashboardHubView, '_build_data', return_value=data),
             ):
                 response = self.client.get(reverse('app:dashboard_hub', args=[slug]))
 
@@ -115,7 +114,9 @@ class DashboardHubAccessTests(TestCase):
                 self.assertContains(response, label)
                 self.assertContains(response, f'>{value}<', html=False)
 
-    def test_dashboard_context_exposes_localized_timestamp_and_chart_rows_without_changing_chart(self):
+    def test_dashboard_context_exposes_localized_timestamp_and_chart_rows_without_changing_chart(
+        self,
+    ):
         chart = {'labels': ['Pendente'], 'series': [4]}
         data = {'kpis': [], 'chart': chart, 'table': []}
 
@@ -159,7 +160,9 @@ class DashboardHubAccessTests(TestCase):
         with CaptureQueriesContext(connection) as queries:
             for slug in DashboardHubView.dashboards:
                 data = view._build_data(slug, user)
-                self.assertEqual(data, {'kpis': [], 'chart': {'labels': [], 'series': []}, 'table': []})
+                self.assertEqual(
+                    data, {'kpis': [], 'chart': {'labels': [], 'series': []}, 'table': []}
+                )
 
         sql = '\n'.join(query['sql'].lower() for query in queries)
         for model in models:

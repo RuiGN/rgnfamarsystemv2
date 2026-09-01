@@ -261,5 +261,5 @@ test -f "$RESTORE_GATE" && sudo -u postgres dropdb rgnfarmasystem_restore_check
 ```
 
 Somente após esse gate promova o dump validado para o destino formal e registre
-hash, operador, horário e resultado. Preserve o dump, o banco/volume anterior e
-a evidência no Google Drive até o aceite e o fim da janela de rollback.
+hash, operador, horário e resultado. Preserve o dump e o banco/volume anterior
+até o aceite e o fim da janela de rollback.

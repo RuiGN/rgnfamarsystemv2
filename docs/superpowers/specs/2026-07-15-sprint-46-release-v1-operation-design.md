@@ -19,7 +19,7 @@ sem publicar artefatos externos nem executar deploy real sem credenciais.
 ## Fora de escopo
 
 - Push para GHCR ou outro registry.
-- Deploy em VPS, Swarm ou domínio público.
+- Deploy em VPS, orquestração de produção ou domínio público.
 - Uso de tokens, certificados ou segredos reais.
 - Alteração de modelos de negócio ou migrations de produto.
 

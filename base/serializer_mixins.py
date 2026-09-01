@@ -10,7 +10,7 @@ class ModelSerializerContractMixin:
     Meta: Any
 
     def get_fields(self):
-        fields = super().get_fields()
+        fields = getattr(super(), 'get_fields')()
         from base.automatic_fields import automatic_generated_fields
 
         for field_name in automatic_generated_fields(self.Meta.model):

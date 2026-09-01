@@ -1,5 +1,5 @@
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 line-length = 100
 exclude = ["**/migrations/**", ".worktrees", "staticfiles"]
 
@@ -13,7 +13,7 @@ select = ["E4", "E7", "E9", "F"]
 quote-style = "single"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 ignore_missing_imports = true
 check_untyped_defs = true
 warn_unused_ignores = true

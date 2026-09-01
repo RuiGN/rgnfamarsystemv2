@@ -1,9 +1,4 @@
-"""Deterministic settings for automated tests and validation pipelines.
-
-Aceita PostgreSQL (quando ``TEST_DATABASE_URL`` aponta para um banco Postgres
-isolado, usado em CI) ou SQLite (default local quando ``TEST_DATABASE_URL``
-nao e definido). String vazia continua sendo rejeitada com erro.
-"""
+"""Deterministic PostgreSQL settings for automated tests and validation pipelines."""
 
 import environ
 
@@ -11,19 +6,15 @@ from .base import *  # noqa: F403
 
 
 test_env = environ.Env()
-# Default SQLite local permite rodar a suite sem Postgres. Em CI, scripts/test.sh
-# exporta TEST_DATABASE_URL apontando para um Postgres isolado.
-TEST_DATABASE_URL = test_env('TEST_DATABASE_URL', default='sqlite:///test_db.sqlite3')
-if not TEST_DATABASE_URL or not TEST_DATABASE_URL.startswith(
-    ('postgresql://', 'postgres://', 'sqlite://')
-):
+TEST_DATABASE_URL = test_env('TEST_DATABASE_URL', default='')
+if not TEST_DATABASE_URL or not TEST_DATABASE_URL.startswith(('postgresql://', 'postgres://')):
     raise environ.ImproperlyConfigured(
-        'TEST_DATABASE_URL must reference an isolated PostgreSQL or SQLite database.'
+        'TEST_DATABASE_URL must reference an isolated PostgreSQL database.'
     )
 
 DATABASES = {'default': test_env.db_url_config(TEST_DATABASE_URL)}
 DATABASES['default']['CONN_MAX_AGE'] = 0
-DATABASES['default']['TEST'] = {'NAME': DATABASES['default']['NAME']}
+DATABASES['default']['TEST'] = {'NAME': f'test_{DATABASES["default"]["NAME"]}'}
 
 CACHES = {
     'default': {

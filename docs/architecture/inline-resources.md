@@ -43,7 +43,7 @@ relação.
 | Achado de auditoria | ações de acompanhamento |
 | Risco | avaliações, controles, mitigações, revisões e alertas |
 | Dossiê regulatório | registros, petições, exigências, evidências e compromissos |
-| Caso de farmacovigilância | classificações, causalidade, investigações, ações e relatos |
+| Reclamação de cosmetovigilância | triagem, investigação, comunicação, ações e relatos |
 | Campanha de recall | clientes impactados, comunicações e relatório de efetividade |
 
 As ações de auditoria ficam no formulário do achado porque o vínculo de domínio

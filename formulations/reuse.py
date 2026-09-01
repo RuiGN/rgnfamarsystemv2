@@ -1,3 +1,5 @@
+from typing import Any
+
 from django import forms
 from django.db import IntegrityError
 from django.db.models import Max
@@ -7,8 +9,7 @@ from formulations.models import MasterFormula
 
 
 VERSION_CONFLICT_MESSAGE = (
-    'Esta versão já foi utilizada para o produto selecionado. '
-    'Atualize a versão e tente novamente.'
+    'Esta versão já foi utilizada para o produto selecionado. Atualize a versão e tente novamente.'
 )
 
 COMPONENT_REUSE_FIELDS = (
@@ -22,9 +23,9 @@ COMPONENT_REUSE_FIELDS = (
 
 
 def next_formula_version(product_id: int) -> int:
-    maximum = MasterFormula.objects.filter(product_id=product_id).aggregate(
-        maximum=Max('version')
-    )['maximum']
+    maximum = MasterFormula.objects.filter(product_id=product_id).aggregate(maximum=Max('version'))[
+        'maximum'
+    ]
     return (maximum or 0) + 1
 
 
@@ -53,7 +54,7 @@ def component_reuse_initial(source: MasterFormula) -> list[dict[str, object]]:
 
 
 def build_master_formula_reuse_form(resource) -> type[forms.ModelForm]:
-    parent_form = build_resource_form(resource)
+    parent_form: Any = build_resource_form(resource)
 
     class MasterFormulaReuseForm(parent_form):
         def __init__(self, *args, **kwargs):

@@ -54,21 +54,20 @@ def evaluate_backup_restore_readiness(project_root=None):
     restore_path = root / 'scripts' / 'restore.sh'
     restore_script = _read(restore_path)
     restore_media_helper = _read(root / 'scripts' / 'restore_media.py')
-    backup_to_drive_script = _read(root / 'scripts' / 'backup_to_drive.sh')
+    backup_scheduler_script = _read(root / 'scripts' / 'backup_scheduler.sh')
     deployment_docs = _read(root / 'docs' / 'deployment.md')
     backup_restore_docs = _read(root / 'docs' / 'architecture' / 'backup-restore.md')
     mkdocs_source = _read(root / 'mkdocs.yml')
-    docker_stack = _read(root / 'docker-stack.yml')
+    vps_compose = _read(root / 'docker-compose.vps.yml')
     env_example = _read(root / '.env.example')
-    requirements = _read(root / 'requirements.txt')
     scan_source = '\n'.join(
         [
             backup_script,
             restore_script,
-            backup_to_drive_script,
+            backup_scheduler_script,
             deployment_docs,
             backup_restore_docs,
-            docker_stack,
+            vps_compose,
             env_example,
         ]
     )
@@ -168,51 +167,34 @@ def evaluate_backup_restore_readiness(project_root=None):
             'scripts/restore.sh nao comprova restore de media.',
         ),
         _check(
-            'backup.drive_orchestrator',
-            'Orquestrador de backup para Google Drive',
-            backup_to_drive_script.startswith('#!/usr/bin/env bash')
-            and 'set -euo pipefail' in backup_to_drive_script
-            and 'scripts/backup.sh' in backup_to_drive_script
-            and 'BACKUP_GDRIVE_ENABLED' in backup_to_drive_script
-            and 'GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON' in backup_to_drive_script,
-            'scripts/backup_to_drive.sh orquestra o ciclo diario, valida configuracao e reutiliza scripts/backup.sh.',
-            'scripts/backup_to_drive.sh ausente ou nao atende os requisitos de orquestracao.',
+            'backup.local_scheduler',
+            'Agendador de backup local',
+            backup_scheduler_script.startswith('#!/usr/bin/env bash')
+            and 'set -euo pipefail' in backup_scheduler_script
+            and 'scripts/backup.sh' in backup_scheduler_script
+            and 'flock' in backup_scheduler_script
+            and 'last_backup_ok' in backup_scheduler_script,
+            'scripts/backup_scheduler.sh agenda ciclos locais, usa lock e valida os artefatos produzidos.',
+            'scripts/backup_scheduler.sh ausente ou nao atende ao contrato local.',
         ),
         _check(
-            'backup.drive_stack_service',
-            'Servico backup_uploader no Swarm',
-            'backup_uploader:' in docker_stack
-            and 'GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON' in docker_stack
-            and 'replicas: 1' in docker_stack
-            and 'scripts/backup_to_drive.sh' in docker_stack,
-            'docker-stack.yml declara o servico backup_uploader com replicas: 1 e secret da service account.',
-            'docker-stack.yml nao expoe o servico de backup diario para o Google Drive.',
+            'backup.local_compose_service',
+            'Servico backup_scheduler no Compose VPS',
+            'backup_scheduler:' in vps_compose
+            and 'scripts/backup_scheduler.sh' in vps_compose
+            and 'media:/app/media:ro' in vps_compose
+            and '/var/run/docker.sock' not in vps_compose,
+            'docker-compose.vps.yml declara backup_scheduler com banco privado e midia somente leitura.',
+            'docker-compose.vps.yml nao comprova o servico diario de backup local.',
         ),
         _check(
-            'backup.drive_dependencies',
-            'Dependencias do Google Drive',
-            'google-api-python-client' in requirements and 'google-auth' in requirements,
-            'requirements.txt inclui google-api-python-client e google-auth para o cliente do Drive.',
-            'requirements.txt nao declara as bibliotecas do Google Drive.',
-        ),
-        _check(
-            'backup.drive_environment',
-            'Variaveis de ambiente do backup',
-            'BACKUP_GDRIVE_ENABLED' in env_example
-            and 'BACKUP_GDRIVE_FOLDER_ID' in env_example
-            and 'BACKUP_CRON_HOUR' in env_example
-            and 'BACKUP_GDRIVE_CREDENTIALS_PATH' in env_example,
-            '.env.example documenta BACKUP_GDRIVE_ENABLED, BACKUP_GDRIVE_FOLDER_ID, BACKUP_CRON_HOUR e credenciais.',
-            '.env.example nao expoe as variaveis necessarias para o backup diario.',
-        ),
-        _check(
-            'backup.audit_trail',
-            'Trilha de auditoria BackupRun',
-            'class BackupRun' in (root / 'auxiliary' / 'models.py').read_text(encoding='utf-8')
-            if (root / 'auxiliary' / 'models.py').exists()
-            else False,
-            'auxiliary.models.BackupRun registrado para trilha BPF/ALCOA+ do backup diario.',
-            'auxiliary.models.BackupRun ausente; trilha de auditoria nao implementada.',
+            'backup.local_environment',
+            'Variaveis de ambiente do backup local',
+            'BACKUP_CRON_HOUR' in env_example
+            and 'BACKUP_CRON_MINUTE' in env_example
+            and 'BACKUP_RETENTION_DAYS' in env_example,
+            '.env.example documenta janela e retencao do backup local.',
+            '.env.example nao expoe janela e retencao necessarias ao backup local.',
         ),
         _docs_check(deployment_docs, backup_restore_docs, mkdocs_source),
         _security_check(scan_source),

@@ -61,9 +61,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         ]
 
     def test_master_formula_reuse_builders_copy_only_approved_values(self):
-        source, component = self._formula_with_component(
-            'FRM-REUSE-SOURCE', quantity='2.5000'
-        )
+        source, component = self._formula_with_component('FRM-REUSE-SOURCE', quantity='2.5000')
         source.status = MasterFormula.Status.APPROVED
         source.expected_yield_percent = Decimal('98.7500')
         source.notes = 'Origem validada.'
@@ -106,9 +104,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert 'copied_from' not in parent_initial
 
     def test_master_formula_reuse_form_hides_source_and_locks_status(self):
-        form_class = build_master_formula_reuse_form(
-            get_resource('formulations', 'formulas')
-        )
+        form_class = build_master_formula_reuse_form(get_resource('formulations', 'formulas'))
         form = form_class(request=type('Request', (), {'user': self.user})())
 
         assert 'copied_from' not in form.fields
@@ -121,9 +117,7 @@ class FormulaInlineComponentsUiTests(TestCase):
             'UNIQUE constraint failed: '
             'formulations_masterformula.product_id, formulations_masterformula.version'
         )
-        unrelated = IntegrityError(
-            'UNIQUE constraint failed: formulations_masterformula.code'
-        )
+        unrelated = IntegrityError('UNIQUE constraint failed: formulations_masterformula.code')
 
         assert is_formula_version_conflict(conflict) is True
         assert is_formula_version_conflict(unrelated) is False
@@ -198,9 +192,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         audit_count = GovernanceAuditLog.objects.count()
         sequence_count = IdentifierSequence.objects.count()
 
-        response = self.client.get(
-            reverse('app:master_formula_reuse', kwargs={'pk': source.pk})
-        )
+        response = self.client.get(reverse('app:master_formula_reuse', kwargs={'pk': source.pk}))
 
         assert response.status_code == 200
         form = response.context['form']
@@ -209,9 +201,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert form.initial['version'] == 5
         assert form.initial['status'] == MasterFormula.Status.DRAFT
         assert 'copied_from' not in form.fields
-        copied_rows = [
-            row.initial for row in formset.forms if row.initial.get('line_number')
-        ]
+        copied_rows = [row.initial for row in formset.forms if row.initial.get('line_number')]
         assert [row['line_number'] for row in copied_rows] == [10, 20]
         assert [row['material'] for row in copied_rows] == [
             first.material_id,
@@ -224,9 +214,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         assert IdentifierSequence.objects.count() == sequence_count
 
     def test_formula_reuse_missing_source_returns_404(self):
-        response = self.client.get(
-            reverse('app:master_formula_reuse', kwargs={'pk': 999999})
-        )
+        response = self.client.get(reverse('app:master_formula_reuse', kwargs={'pk': 999999}))
 
         assert response.status_code == 404
 
@@ -297,9 +285,7 @@ class FormulaInlineComponentsUiTests(TestCase):
             ),
         }
 
-        with patch.object(
-            FormulaComponent, 'save', side_effect=RuntimeError('storage failure')
-        ):
+        with patch.object(FormulaComponent, 'save', side_effect=RuntimeError('storage failure')):
             with self.assertRaisesMessage(RuntimeError, 'storage failure'):
                 self.client.post(
                     reverse('app:master_formula_reuse', kwargs={'pk': source.pk}),
@@ -379,7 +365,7 @@ class FormulaInlineComponentsUiTests(TestCase):
         template = Path('templates/app/resource_form.html').read_text()
 
         assert "event.target.closest('[data-inline-formset-delete]')" in template
-        assert "deleteField.checked = true;" in template
+        assert 'deleteField.checked = true;' in template
         assert "row.classList.add('d-none');" in template
 
     def test_priority_parent_forms_render_registered_inline_sections(self):

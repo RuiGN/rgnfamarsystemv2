@@ -1,14 +1,14 @@
-from django.conf import settings
+from typing import ClassVar
+
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
-from base.models import SingleInstanceModel, TimeStampedModel
+from base.models import SingleInstanceModel
 from base.sequences import AutoCodeMixin
 
 
 class AuxiliaryCatalog(AutoCodeMixin, SingleInstanceModel):
-    CODE_PREFIX = 'AUX'
+    CODE_PREFIX: ClassVar[str | None] = 'AUX'
     code = models.CharField('código', max_length=80, blank=True)
     name = models.CharField('nome', max_length=180)
     description = models.TextField('descrição', blank=True)
@@ -32,6 +32,7 @@ class AuxiliaryCatalog(AutoCodeMixin, SingleInstanceModel):
 
 class BusinessArea(AuxiliaryCatalog):
     CODE_PREFIX = 'BA'
+
     class Meta(AuxiliaryCatalog.Meta):
         verbose_name = 'área operacional'
         verbose_name_plural = 'áreas operacionais'
@@ -87,6 +88,7 @@ class Department(AuxiliaryCatalog):
 
 class OrganizationalRole(AuxiliaryCatalog):
     CODE_PREFIX = 'ORG'
+
     class Meta(AuxiliaryCatalog.Meta):
         verbose_name = 'função organizacional'
         verbose_name_plural = 'funções organizacionais'
@@ -168,6 +170,7 @@ class Currency(AuxiliaryCatalog):
 
 class CommercialTerm(AuxiliaryCatalog):
     CODE_PREFIX = 'CTM'
+
     class TermType(models.TextChoices):
         PAYMENT = 'payment', 'Pagamento'
         DELIVERY = 'delivery', 'Entrega'
@@ -225,6 +228,7 @@ class SystemModel(AuxiliaryCatalog):
 
 class ImpactLevel(AuxiliaryCatalog):
     CODE_PREFIX = 'IL'
+
     class LevelType(models.TextChoices):
         SEVERITY = 'severity', 'Severidade'
         CRITICALITY = 'criticality', 'Criticidade'
@@ -278,110 +282,3 @@ class CatalogValue(AuxiliaryCatalog):
             raise ValidationError(
                 {'catalog_type': 'O tipo de catálogo é incompatível com o registro.'}
             )
-
-
-class BackupRun(TimeStampedModel):
-    """Trilha de auditoria (BPF/ALCOA+) para execucoes do backup automatico.
-
-    Registra cada artefato (PostgreSQL e media) enviado para o Google Drive,
-    permitindo rastrear quem executou, quando, o tamanho, o SHA-256 e o ID
-    do arquivo na nuvem. E um modelo single-instance porque o backup cobre a
-    stack inteira.
-    """
-
-    class Kind(models.TextChoices):
-        POSTGRES = 'postgres', 'PostgreSQL'
-        MEDIA = 'media', 'Mídia'
-
-    class Status(models.TextChoices):
-        RUNNING = 'running', 'Em execução'
-        SUCCESS = 'success', 'Sucesso'
-        FAILED = 'failed', 'Falha'
-        SKIPPED = 'skipped', 'Ignorado'
-
-    run_number = models.CharField('número da execução', max_length=64, unique=True)
-    kind = models.CharField('tipo', max_length=16, choices=Kind.choices)
-    source_path = models.CharField('caminho de origem', max_length=512)
-    encrypted_path = models.CharField('caminho cifrado', max_length=512, blank=True)
-    size_bytes = models.BigIntegerField('tamanho (bytes)', default=0)
-    sha256 = models.CharField('SHA-256', max_length=64, blank=True)
-    encryption_key_id = models.CharField('KID de criptografia', max_length=64, blank=True)
-    encrypted = models.BooleanField('cifrado', default=True)
-    drive_folder_id = models.CharField('ID da pasta no Drive', max_length=128, blank=True)
-    drive_file_id = models.CharField('ID do arquivo no Drive', max_length=128, blank=True)
-    drive_file_name = models.CharField('nome do arquivo no Drive', max_length=255, blank=True)
-    drive_web_view_link = models.URLField('link de visualização', max_length=500, blank=True)
-    drive_mime_type = models.CharField('mime type no Drive', max_length=128, blank=True)
-    drive_md5_checksum = models.CharField('md5 do Drive', max_length=64, blank=True)
-    status = models.CharField(
-        'status',
-        max_length=16,
-        choices=Status.choices,
-        default=Status.RUNNING,
-    )
-    started_at = models.DateTimeField('iniciado em', default=timezone.now)
-    finished_at = models.DateTimeField('finalizado em', null=True, blank=True)
-    duration_seconds = models.PositiveIntegerField('duração (s)', default=0)
-    actor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        related_name='backup_runs',
-        null=True,
-        blank=True,
-        verbose_name='executor',
-    )
-    triggered_by = models.CharField('origem da execução', max_length=32, default='cron')
-    error_message = models.TextField('mensagem de erro', blank=True)
-
-    class Meta:
-        ordering = ['-started_at']
-        verbose_name = 'execução de backup'
-        verbose_name_plural = 'execuções de backup'
-        indexes = [
-            models.Index(fields=['status', 'kind']),
-            models.Index(fields=['started_at']),
-            models.Index(fields=['sha256']),
-        ]
-
-    def __str__(self):
-        return f'{self.run_number} ({self.kind}) - {self.status}'
-
-    def mark_success(
-        self, *, drive_file=None, encrypted_path='', encryption_key_id='', duration_seconds=0
-    ):
-        self.status = self.Status.SUCCESS
-        if drive_file is not None:
-            self.drive_file_id = drive_file.file_id
-            self.drive_file_name = drive_file.name
-            self.drive_web_view_link = drive_file.web_view_link
-            self.drive_mime_type = drive_file.mime_type
-            self.drive_md5_checksum = drive_file.md5_checksum
-            self.size_bytes = drive_file.size_bytes or self.size_bytes
-        if encrypted_path:
-            self.encrypted_path = encrypted_path
-        if encryption_key_id:
-            self.encryption_key_id = encryption_key_id
-        if duration_seconds:
-            self.duration_seconds = duration_seconds
-        self.finished_at = timezone.now()
-        self.error_message = ''
-
-    def mark_failed(self, message, *, duration_seconds=0):
-        self.status = self.Status.FAILED
-        self.error_message = str(message)[:4000]
-        self.finished_at = timezone.now()
-        if duration_seconds:
-            self.duration_seconds = duration_seconds
-
-    def mark_skipped(self, message, *, duration_seconds=0):
-        self.status = self.Status.SKIPPED
-        self.error_message = str(message)[:4000]
-        self.finished_at = timezone.now()
-        if duration_seconds:
-            self.duration_seconds = duration_seconds
-
-    @property
-    def duration(self):
-        if self.finished_at and self.started_at:
-            return (self.finished_at - self.started_at).total_seconds()
-        return None

@@ -328,7 +328,6 @@ class WorkflowApiTests(TestCase):
         history_response = client.get('/api/workflow/history/')
 
         assert queue_response.status_code == 201
-        assert 'tenant' not in queue_response.json()
         assert task_response.status_code == 201
         assert task_response.json()['requested_by'] == requester.id
         assert comment_response.status_code == 201

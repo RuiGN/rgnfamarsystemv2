@@ -11,13 +11,16 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_production_stack_uses_native_postgres():
-    stack = yaml.safe_load((ROOT / 'docker-stack.yml').read_text(encoding='utf-8'))
-    services = stack['services']
-    assert 'db' not in services
-    assert 'postgres_data' not in stack.get('volumes', {})
-    for name in ('app', 'celery_worker', 'celery_beat', 'backup_uploader'):
-        assert 'host.docker.internal:host-gateway' in services[name]['extra_hosts']
+def test_production_compose_uses_private_containerized_postgres():
+    compose = yaml.safe_load((ROOT / 'docker-compose.vps.yml').read_text(encoding='utf-8'))
+    services = compose['services']
+
+    assert services['db']['image'].startswith('postgres:')
+    assert services['db']['networks'] == ['backend']
+    assert 'ports' not in services['db']
+    assert 'postgres_data' in compose['volumes']
+    assert services['app']['environment']['DB_DEPLOYMENT'] == 'container'
+    assert services['app']['environment']['DB_HOST'] == 'db'
 
 
 def test_production_image_contains_postgres_client():
@@ -25,13 +28,13 @@ def test_production_image_contains_postgres_client():
     assert 'postgresql-client' in dockerfile
 
 
-def test_example_env_declares_external_database_without_real_secret():
+def test_example_env_declares_container_database_without_real_secret():
     source = (ROOT / '.env.example').read_text(encoding='utf-8')
-    assert 'DB_DEPLOYMENT=external' in source
-    assert 'DB_HOST=host.docker.internal' in source
+    assert 'DB_DEPLOYMENT=container' in source
+    assert 'DB_HOST=db' in source
     assert 'MEDIA_DEPLOYMENT=container' in source
     assert 'DB_PORT=5432' in source
-    assert '@host.docker.internal:5432/rgnfarmasystem' in source
+    assert '@db:5432/rgnfarmasystem' in source
     assert 'POSTGRES_PASSWORD=change-me' in source
 
 
@@ -274,7 +277,7 @@ def test_backup_fails_when_no_app_container_or_media_directory_exists(tmp_path):
             'BACKUP_DIR': str(tmp_path / 'backups'),
             'DB_DEPLOYMENT': 'external',
             'MEDIA_DIR': str(tmp_path / 'missing-media'),
-            'STACK_NAME': 'rgnfarmasystem-test-no-app',
+            'COMPOSE_PROJECT_NAME': 'rgnfarmasystem-test-no-app',
             'PATH': f'{bin_dir}:/usr/bin:/bin',
         },
         capture_output=True,
@@ -286,13 +289,13 @@ def test_backup_fails_when_no_app_container_or_media_directory_exists(tmp_path):
     assert not list((tmp_path / 'backups').glob('media-*.tar.gz'))
 
 
-def test_deploy_checks_native_postgres_without_printing_password():
+def test_deploy_uses_compose_with_env_file_without_sourcing_secrets():
     source = (ROOT / 'scripts' / 'deploy-vps.sh').read_text(encoding='utf-8')
-    assert 'check_native_postgres' in source
-    assert 'pg_isready' in source
-    assert 'DB_DEPLOYMENT' in source
-    assert 'host.docker.internal' in source
-    assert '<redacted>' in source
+
+    assert 'docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE"' in source
+    assert 'source "$ENV_FILE"' not in source
+    assert 'compose config --quiet' in source
+    assert 'compose up -d --build --remove-orphans --wait' in source
 
 
 def test_deploy_rejects_duplicate_env_keys_without_leaking_values(tmp_path):
@@ -322,67 +325,27 @@ def test_deploy_rejects_duplicate_env_keys_without_leaking_values(tmp_path):
     assert 'second-secret' not in result.stdout + result.stderr
 
 
-def test_native_postgres_preflight_bypasses_image_entrypoint_and_authenticates():
-    source = (ROOT / 'scripts' / 'deploy-vps.sh').read_text(encoding='utf-8')
-    function = source[source.index('check_native_postgres()') : source.index('# Faz o deploy')]
-
-    assert function.count('--entrypoint') == 2
-    assert '--entrypoint pg_isready' in function
-    assert '--entrypoint psql' in function
-    assert function.count('-e PGPASSWORD="$postgres_password"') == 2
-    assert function.count('-h "$db_host"') == 2
-    assert '-c "SELECT 1"' in function
-
-
-def test_deploy_validates_before_creating_networks():
+def test_deploy_validates_backup_before_promoting_revision():
     source = (ROOT / 'scripts' / 'deploy-vps.sh').read_text(encoding='utf-8')
     main = source[source.index('main()') :]
 
-    assert main.index('check_env_file') < main.index('check_native_postgres')
-    assert main.index('check_native_postgres') < main.index('ensure_networks')
+    assert main.index('require_command docker') < main.index('check_env_file')
+    assert main.index('validate_compose') < main.index('create_release_backup')
+    assert main.index('create_release_backup') < main.index('promote_revision')
+    assert main.index('promote_revision') < main.index('deploy_compose')
+    assert 'gzip -t -- "$postgres_backup"' in source
+    assert 'tar -tzf "$media_backup"' in source
+    assert 'sha256sum -c' in source
 
 
-def test_inactive_swarm_fails_without_trying_to_initialize_it(tmp_path):
-    docker_calls = tmp_path / 'docker-calls'
-    result = subprocess.run(
-        [
-            'bash',
-            '-c',
-            r"""
-source <(sed '$d' "$1")
-docker() {
-    printf '%s\n' "$*" >> "$DOCKER_CALLS"
-    if [[ "$1 $2" == "info --format" ]]; then
-        printf 'false\n'
-        return 0
-    fi
-    return 99
-}
-check_docker_swarm
-""",
-            'bash',
-            ROOT / 'scripts' / 'deploy-vps.sh',
-        ],
-        env={'DOCKER_CALLS': str(docker_calls), 'PATH': '/usr/bin:/bin'},
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    assert result.returncode != 0
-    assert 'docker swarm init' in result.stdout + result.stderr
-    assert 'swarm init' not in docker_calls.read_text(encoding='utf-8')
-
-
-def test_deploy_checks_manager_before_swarm_resources():
+def test_deploy_rollback_redeploys_code_without_automatic_data_restore():
     source = (ROOT / 'scripts' / 'deploy-vps.sh').read_text(encoding='utf-8')
-    main = source[source.index('main()') :]
+    rollback = source[source.index('rollback_release()') : source.index('main()')]
 
-    assert main.index('check_docker') < main.index('check_env_file')
-    assert main.index('check_env_file') < main.index('check_native_postgres')
-    assert main.index('check_native_postgres') < main.index('check_docker_swarm')
-    assert main.index('check_docker_swarm') < main.index('check_secrets')
-    assert main.index('check_secrets') < main.index('ensure_networks')
+    assert 'git switch --detach "$PREVIOUS_SHA"' in rollback
+    assert 'compose up -d --build --remove-orphans --wait' in rollback
+    assert 'Banco e midia nao foram restaurados automaticamente.' in rollback
+    assert 'scripts/restore.sh' not in rollback
 
 
 def test_vps_docs_cover_native_postgres_security_migration_and_restore():
@@ -402,7 +365,7 @@ def test_vps_docs_cover_native_postgres_security_migration_and_restore():
         'scram-sha-256',
         'pg_dump',
         'psql',
-        'Google Drive',
+        'backup_scheduler',
         'rollback',
     ):
         assert marker in sources
@@ -464,23 +427,21 @@ def test_migration_backup_uses_legacy_database_container_client():
     assert '-e DB_DEPLOYMENT=container' not in migration
 
 
-def test_public_docs_do_not_run_external_database_scripts_without_env_wrapper():
+def test_public_docs_use_the_containerized_postgresql_contract():
     for path in ('README.md', 'docs/deployment.md'):
         source = (ROOT / path).read_text(encoding='utf-8')
-        assert 'docker run --rm --env-file .env' in source
-        assert '--add-host host.docker.internal:host-gateway' in source
-        assert 'DB_DEPLOYMENT=external bash scripts/backup.sh' not in source
-        assert 'DB_DEPLOYMENT=external bash scripts/restore.sh' not in source
-        assert 'DB_DEPLOYMENT=external STACK_NAME=' not in source
+        assert 'DB_DEPLOYMENT=container' in source
+        assert 'COMPOSE_PROJECT_NAME=rgnfarmasystem' in source
+        assert 'host.docker.internal:host-gateway' not in source
 
 
-def test_host_cron_uses_production_env_and_host_gateway_wrapper():
+def test_host_cron_uses_the_private_compose_database():
     source = (ROOT / 'docs/deployment.md').read_text(encoding='utf-8')
     cron = source[source.index('```cron') : source.index('```', source.index('```cron') + 7)]
 
-    assert 'docker run --rm --env-file /opt/rgnfarmasystem/.env' in cron
-    assert '--add-host host.docker.internal:host-gateway' in cron
-    assert '/workspace/scripts/backup.sh' in cron
+    assert 'DB_DEPLOYMENT=container' in cron
+    assert 'COMPOSE_PROJECT_NAME=rgnfarmasystem' in cron
+    assert 'bash scripts/backup.sh' in cron
 
 
 def test_restore_gate_is_created_only_when_every_validation_succeeds():

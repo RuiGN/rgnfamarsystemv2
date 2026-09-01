@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from quality.models import (
     AnalyticalSpecification,
@@ -11,7 +12,7 @@ from quality.models import (
 
 
 @admin.register(AnalyticalSpecification)
-class AnalyticalSpecificationAdmin(admin.ModelAdmin):
+class AnalyticalSpecificationAdmin(GxpRetentionModelAdmin):
     list_display = (
         'product',
         'parameter_name',
@@ -35,7 +36,7 @@ class AnalyticalSpecificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(QualitySample)
-class QualitySampleAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class QualitySampleAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'sample_number',
         'sample_type',
@@ -79,7 +80,7 @@ class QualitySampleAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(QualityAnalysis)
-class QualityAnalysisAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class QualityAnalysisAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'analysis_number',
         'sample',
@@ -108,7 +109,7 @@ class QualityAnalysisAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin)
 
 
 @admin.register(QualityResult)
-class QualityResultAdmin(admin.ModelAdmin):
+class QualityResultAdmin(GxpRetentionModelAdmin):
     list_display = (
         'analysis',
         'parameter_name',
@@ -129,7 +130,7 @@ class QualityResultAdmin(admin.ModelAdmin):
 
 
 @admin.register(LaboratoryInvestigation)
-class LaboratoryInvestigationAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class LaboratoryInvestigationAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'investigation_number',
         'sample',
@@ -146,7 +147,7 @@ class LaboratoryInvestigationAdmin(AutomaticGeneratedFieldsAdminMixin, admin.Mod
 
 
 @admin.register(QualityDocument)
-class QualityDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class QualityDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'document_number',
         'document_type',

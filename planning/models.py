@@ -104,6 +104,7 @@ class PlanningPolicy(SingleInstanceModel):
 
 class MasterProductionSchedule(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'MPS'
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         APPROVED = 'approved', 'Aprovado'
@@ -562,6 +563,7 @@ class MRPSuggestion(SingleInstanceModel):
 
 class CapacityResource(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'CAP'
+
     class ResourceType(models.TextChoices):
         LINE = 'line', 'Linha'
         WORK_CENTER = 'work_center', 'Centro de trabalho'

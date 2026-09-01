@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from files.models import (
     ProtectedFile,
@@ -9,7 +10,7 @@ from files.models import (
 
 
 @admin.register(ProtectedFile)
-class ProtectedFileAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class ProtectedFileAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'file_number',
         'title',
@@ -65,7 +66,7 @@ class ProtectedFileAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(ProtectedFileAccessRule)
-class ProtectedFileAccessRuleAdmin(admin.ModelAdmin):
+class ProtectedFileAccessRuleAdmin(GxpRetentionModelAdmin):
     list_display = (
         'protected_file',
         'rule_type',
@@ -88,7 +89,7 @@ class ProtectedFileAccessRuleAdmin(admin.ModelAdmin):
 
 
 @admin.register(SecureFileLink)
-class SecureFileLinkAdmin(admin.ModelAdmin):
+class SecureFileLinkAdmin(GxpRetentionModelAdmin):
     list_display = (
         'protected_file',
         'purpose',
@@ -110,7 +111,7 @@ class SecureFileLinkAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProtectedFileAuditTrail)
-class ProtectedFileAuditTrailAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
+class ProtectedFileAuditTrailAdmin(ImmutableAuditAdminMixin, GxpRetentionModelAdmin):
     list_display = ('protected_file', 'action', 'actor', 'occurred_at')
     list_filter = ('action', 'occurred_at')
     search_fields = (

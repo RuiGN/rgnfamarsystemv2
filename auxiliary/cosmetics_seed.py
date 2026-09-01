@@ -115,7 +115,6 @@ DEPARTMENTS = (
 )
 
 ORGANIZATIONAL_ROLES = (
-    ('ORG-COS-RT', 'Responsável Técnico'),
     ('ORG-COS-GGQ', 'Gerente de Garantia da Qualidade'),
     ('ORG-COS-AGQ', 'Analista de Garantia da Qualidade'),
     ('ORG-COS-GCQ', 'Gerente de Controle da Qualidade'),
@@ -302,8 +301,7 @@ def seed_cosmetics_auxiliary_data():
             code,
             name=name,
             description=(
-                f'Condição comercial de {name.lower()}; validar o instrumento '
-                'contratual aplicável.'
+                f'Condição comercial de {name.lower()}; validar o instrumento contratual aplicável.'
             ),
             term_type=term_type,
             days=days,

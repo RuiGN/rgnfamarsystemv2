@@ -4,7 +4,7 @@
 
 Disponibilizar um ambiente Docker Compose local reproduzível para o RGN Farma
 System, com healthchecks, diagnóstico e smoke tests das rotas críticas, sem
-depender de Swarm, Cloudflare, GHCR ou credenciais de produção.
+depender da orquestração da VPS, Cloudflare, GHCR ou credenciais de produção.
 
 ## Escopo
 
@@ -19,7 +19,7 @@ depender de Swarm, Cloudflare, GHCR ou credenciais de produção.
 
 ## Fora de escopo
 
-- Deploy em VPS, Docker Swarm ou domínio público.
+- Deploy em VPS, orquestração de produção ou domínio público.
 - Uso de Cloudflare, GHCR privado ou certificados reais.
 - Credenciais, tokens ou segredos reais.
 - Alteração de modelos de negócio ou geração de migrations.
@@ -40,7 +40,8 @@ permitindo diagnóstico por `docker compose ps` e `docker compose logs`.
 
 - Healthchecks terão timeout, retries e período de inicialização explícitos.
 - Logs serão consultáveis por serviço, sem imprimir variáveis sensíveis.
-- O backup para Google Drive permanecerá desabilitado no perfil local.
+- O backup local permanecerá desabilitado no perfil de desenvolvimento e será
+  agendado apenas no Compose de produção.
 - O segredo de cifragem local será gerado/documentado fora do controle de
   versão.
 - O perfil Cloudflare não será iniciado por padrão.

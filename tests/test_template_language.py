@@ -71,4 +71,6 @@ def test_documentation_defines_operational_design_system_contracts_in_ptbr():
     ):
         assert contract in documentation
 
-    assert 'Todo texto visível deve usar português do Brasil com acentuação correta.' in documentation
+    assert (
+        'Todo texto visível deve usar português do Brasil com acentuação correta.' in documentation
+    )

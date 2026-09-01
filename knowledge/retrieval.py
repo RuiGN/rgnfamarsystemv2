@@ -77,7 +77,7 @@ def retrieve_context(question, *, filters=None, limit=8, as_of=None):
         for hit in hits:
             try:
                 hit_ids.append(int(hit['chunk_id']))
-            except (KeyError, TypeError, ValueError):
+            except KeyError, TypeError, ValueError:
                 continue
         chunks = {
             chunk.pk: chunk
@@ -93,7 +93,7 @@ def retrieve_context(question, *, filters=None, limit=8, as_of=None):
         for hit in hits:
             try:
                 chunk = chunks[int(hit['chunk_id'])]
-            except (KeyError, TypeError, ValueError):
+            except KeyError, TypeError, ValueError:
                 continue
             results.append(
                 RetrievedChunk(

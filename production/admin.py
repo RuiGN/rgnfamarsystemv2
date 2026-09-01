@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from production.models import MaterialConsumption, ProductionOrder
 
@@ -21,7 +22,7 @@ class MaterialConsumptionInline(admin.TabularInline):
 
 
 @admin.register(ProductionOrder)
-class ProductionOrderAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class ProductionOrderAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = ('order_number', 'batch_number', 'product', 'status', 'planned_quantity', 'unit')
     list_filter = ('status', 'product__item_type')
     search_fields = ('order_number', 'batch_number', 'product__code', 'product__description')
@@ -49,7 +50,7 @@ class ProductionOrderAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin)
 
 
 @admin.register(MaterialConsumption)
-class MaterialConsumptionAdmin(admin.ModelAdmin):
+class MaterialConsumptionAdmin(GxpRetentionModelAdmin):
     list_display = (
         'order',
         'material',

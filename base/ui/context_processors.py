@@ -66,7 +66,7 @@ def _institution_brand_context():
             .order_by('-updated_at', '-created_at', '-pk')
             .first()
         )
-    except (OperationalError, ProgrammingError):
+    except OperationalError, ProgrammingError:
         institution = None
 
     logo_url = ''
@@ -92,7 +92,7 @@ def sidebar_menu(request):
         'active_resource_slug': route_kwargs.get('resource_slug', ''),
     }
     brand_context = _institution_brand_context()
-    if not getattr(user, 'is_authenticated', False):
+    if user is None or not getattr(user, 'is_authenticated', False):
         return {
             'sidebar_modules': (),
             'sidebar_domains': (),
@@ -107,7 +107,6 @@ def sidebar_menu(request):
             **navigation_context,
             **brand_context,
         }
-
     modules = get_visible_modules(user)
     sidebar_domains = group_sidebar_modules(modules)
     visible_module_slugs = {module.slug for module in modules}
@@ -129,14 +128,15 @@ def sidebar_menu(request):
     can_view_workflow_workspace = any(
         workspace.slug == 'workflow' for workspace in sidebar_workspaces
     )
-    can_preview_workflow_notifications = (
-        can_view_workflow_workspace
-        and user.has_perm('workflow.view_workflownotification')
+    can_preview_workflow_notifications = can_view_workflow_workspace and user.has_perm(
+        'workflow.view_workflownotification'
     )
-    workflow_notification_previews = ()
+    workflow_notification_previews: tuple[NotificationPreview, ...] = ()
     unread_notifications = 0
     if can_preview_workflow_notifications:
-        notifications = WorkflowNotification.objects.filter(recipient=user).order_by('-created_at')[:5]
+        notifications = WorkflowNotification.objects.filter(recipient=user).order_by('-created_at')[
+            :5
+        ]
         workflow_notification_previews = tuple(
             NotificationPreview.from_model(notification) for notification in notifications
         )

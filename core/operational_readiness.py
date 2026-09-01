@@ -50,15 +50,15 @@ class OperationalReadinessReport:
 
 def evaluate_operational_readiness(project_root=None):
     root = Path(project_root or settings.BASE_DIR)
-    stack = _load_yaml(root / 'docker-stack.yml')
-    compose = _load_yaml(root / 'docker-compose.yml')
+    vps_compose = _load_yaml(root / 'docker-compose.vps.yml')
+    local_compose = _load_yaml(root / 'docker-compose.yml')
     settings_source = _settings_source(root)
     entrypoint_source = _read(root / 'entrypoint.sh')
     worker_entrypoint_source = _read(root / 'worker-entrypoint.sh')
     css_source = _read(root / 'static' / 'css' / 'app.css')
     base_template_source = _read(root / 'templates' / 'base.html')
     deployment_docs = _read(root / 'docs' / 'deployment.md')
-    deploy_script = _read(root / 'scripts' / 'deploy.sh')
+    deploy_script = _read(root / 'scripts' / 'deploy-vps.sh')
     backup_script = _read(root / 'scripts' / 'backup.sh')
     restore_script = _read(root / 'scripts' / 'restore.sh')
 
@@ -79,7 +79,7 @@ def evaluate_operational_readiness(project_root=None):
         ),
         _check(
             'settings.secure_proxy_ssl_header',
-            'Proxy SSL atras do Traefik',
+            'Proxy SSL atras do Nginx e Cloudflare Tunnel',
             "SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')" in settings_source
             and 'SECURE_SSL_REDIRECT = env.bool' in settings_source,
             'SECURE_PROXY_SSL_HEADER e SECURE_SSL_REDIRECT estao configurados.',
@@ -87,13 +87,13 @@ def evaluate_operational_readiness(project_root=None):
         ),
         _entrypoint_check(entrypoint_source),
         _worker_entrypoint_check(worker_entrypoint_source),
-        _stack_resilience_check(stack),
-        _network_isolation_check(stack),
-        _traefik_dns_check(stack),
-        _compose_services_check(compose),
-        _startup_window_check(stack, compose, worker_entrypoint_source),
+        _vps_resilience_check(vps_compose, deploy_script),
+        _network_isolation_check(vps_compose),
+        _tunnel_readiness_check(vps_compose, deploy_script),
+        _compose_services_check(local_compose),
+        _startup_window_check(vps_compose, local_compose, worker_entrypoint_source),
         _ui_check(css_source, base_template_source),
-        _celery_check(settings_source, stack, compose, worker_entrypoint_source),
+        _celery_check(settings_source, vps_compose, local_compose, worker_entrypoint_source),
         _filter_performance_check(settings_source),
         _docs_check(deployment_docs, deploy_script, backup_script, restore_script),
     ]
@@ -153,59 +153,67 @@ def _worker_entrypoint_check(source):
     )
 
 
-def _stack_resilience_check(stack):
+def _vps_resilience_check(compose, deploy_script):
     missing = []
-    for service_name, service in (stack.get('services') or {}).items():
-        deploy = service.get('deploy') or {}
-        update_config = deploy.get('update_config') or {}
+    for service_name, service in (compose.get('services') or {}).items():
         if not service.get('healthcheck'):
             missing.append(f'{service_name}:healthcheck')
-        if not deploy.get('restart_policy'):
-            missing.append(f'{service_name}:restart_policy')
-        if not deploy.get('resources'):
-            missing.append(f'{service_name}:resources')
-        if update_config.get('failure_action') != 'rollback':
-            missing.append(f'{service_name}:rollback')
+        if service.get('restart') != 'unless-stopped':
+            missing.append(f'{service_name}:restart')
+    rollback_is_safe = (
+        'rollback_release()' in deploy_script
+        and 'git switch --detach "$PREVIOUS_SHA"' in deploy_script
+        and 'Banco e midia nao foram restaurados automaticamente.' in deploy_script
+        and deploy_script.find('create_release_backup') < deploy_script.find('promote_revision')
+    )
+    if not rollback_is_safe:
+        missing.append('deploy-vps:rollback')
     return _check(
-        'docker_stack.swarm_resilience',
-        'Resiliencia do Docker Swarm',
+        'docker_compose.vps_resilience',
+        'Resiliencia do Compose VPS',
         not missing,
-        'Todos os servicos do docker-stack.yml possuem healthcheck, restart_policy, resources e rollback.',
-        'Pendencias no docker-stack.yml: ' + ', '.join(missing),
+        'Todos os servicos da VPS possuem healthcheck e restart; deploy preserva backup e rollback de codigo.',
+        'Pendencias no Compose VPS: ' + ', '.join(missing),
     )
 
 
-def _network_isolation_check(stack):
-    services = stack.get('services') or {}
-    worker_networks = set(services.get('celery_worker', {}).get('networks') or [])
-    beat_networks = set(services.get('celery_beat', {}).get('networks') or [])
-    networks = stack.get('networks') or {}
+def _network_isolation_check(compose):
+    services = compose.get('services') or {}
+    networks = compose.get('networks') or {}
     passed = (
-        'traefik_public' not in worker_networks
-        and 'traefik_public' not in beat_networks
-        and networks.get('rgnfarmasystem_internal', {}).get('internal') is True
-        and networks.get('traefik_public', {}).get('external') is True
+        networks.get('backend', {}).get('driver') == 'bridge'
+        and all('ports' not in services.get(name, {}) for name in ('db', 'redis', 'rabbitmq'))
+        and services.get('nginx', {}).get('ports') == ['127.0.0.1:8081:80']
+        and services.get('cloudflared', {}).get('network_mode') == 'host'
+        and all(
+            services.get(name, {}).get('networks') == ['backend']
+            for name in ('app', 'celery_worker', 'celery_beat', 'db', 'redis', 'rabbitmq')
+        )
     )
     return _check(
-        'docker_stack.network_isolation',
-        'Isolamento de redes Swarm',
+        'docker_compose.vps_network_isolation',
+        'Isolamento da rede de producao',
         passed,
-        'celery_worker/celery_beat ficam fora da traefik_public; rgnfarmasystem_internal e interna.',
-        'Redes Swarm nao atendem ao isolamento esperado entre traefik_public e workers.',
+        'Banco, filas, cache, app e workers ficam na rede backend; apenas Nginx usa loopback do host.',
+        'A topologia da VPS nao isola os servicos internos ou publica portas indevidas.',
     )
 
 
-def _traefik_dns_check(stack):
-    command = stack.get('services', {}).get('traefik', {}).get('command') or []
-    passed = any('dnschallenge=true' in item for item in command) and not any(
-        'tlschallenge=true' in item for item in command
+def _tunnel_readiness_check(compose, deploy_script):
+    tunnel = compose.get('services', {}).get('cloudflared', {})
+    command = tunnel.get('command') or []
+    passed = (
+        tunnel.get('network_mode') == 'host'
+        and '127.0.0.1:20241' in command
+        and 'http://127.0.0.1:20241/ready' in deploy_script
+        and 'https://${PUBLIC_HOST}/health/' in deploy_script
     )
     return _check(
-        'docker_stack.traefik_dns01',
-        'Traefik DNS-01',
+        'cloudflare_tunnel.readiness',
+        'Prontidao do Cloudflare Tunnel',
         passed,
-        'Traefik usa Cloudflare DNS-01 e nao habilita tlschallenge em paralelo.',
-        'Traefik deve usar DNS-01 sem tlschallenge simultaneo.',
+        'O conector expoe /ready apenas no loopback e o deploy valida origem, conector e dominio publico.',
+        'O conector ou o script de deploy nao comprovam prontidao ponta a ponta.',
     )
 
 
@@ -226,19 +234,19 @@ def _compose_services_check(compose):
     )
 
 
-def _startup_window_check(stack, compose, worker_entrypoint_source):
-    stack_services = stack.get('services') or {}
-    compose_services = compose.get('services') or {}
+def _startup_window_check(vps_compose, local_compose, worker_entrypoint_source):
+    vps_services = vps_compose.get('services') or {}
+    local_services = local_compose.get('services') or {}
     required_windows = [
-        ('compose.app', compose_services.get('app', {}).get('healthcheck', {}).get('start_period')),
-        ('stack.app', stack_services.get('app', {}).get('healthcheck', {}).get('start_period')),
+        ('local.app', local_services.get('app', {}).get('healthcheck', {}).get('start_period')),
+        ('vps.app', vps_services.get('app', {}).get('healthcheck', {}).get('start_period')),
         (
-            'stack.celery_worker',
-            stack_services.get('celery_worker', {}).get('healthcheck', {}).get('start_period'),
+            'vps.celery_worker',
+            vps_services.get('celery_worker', {}).get('healthcheck', {}).get('start_period'),
         ),
         (
-            'stack.celery_beat',
-            stack_services.get('celery_beat', {}).get('healthcheck', {}).get('start_period'),
+            'vps.celery_beat',
+            vps_services.get('celery_beat', {}).get('healthcheck', {}).get('start_period'),
         ),
     ]
     short = [
@@ -310,14 +318,14 @@ def _ui_check(css_source, base_template_source):
     )
 
 
-def _celery_check(settings_source, stack, compose, worker_entrypoint_source):
-    stack_services = stack.get('services') or {}
-    compose_services = compose.get('services') or {}
+def _celery_check(settings_source, vps_compose, local_compose, worker_entrypoint_source):
+    vps_services = vps_compose.get('services') or {}
+    local_services = local_compose.get('services') or {}
     passed = (
         'CELERY_BROKER_URL' in settings_source
         and 'CELERY_RESULT_BACKEND' in settings_source
-        and {'celery_worker', 'celery_beat'}.issubset(stack_services)
-        and {'celery_worker', 'celery_beat'}.issubset(compose_services)
+        and {'celery_worker', 'celery_beat'}.issubset(vps_services)
+        and {'celery_worker', 'celery_beat'}.issubset(local_services)
         and 'wait_for_migrations' in worker_entrypoint_source
         and 'migrate_with_lock' not in worker_entrypoint_source
     )
@@ -325,7 +333,7 @@ def _celery_check(settings_source, stack, compose, worker_entrypoint_source):
         'async.celery_services',
         'Processamento assincrono',
         passed,
-        'Celery configurado com celery_worker e celery_beat em Compose/Swarm aguardando migrations sem executa-las nos workers.',
+        'Celery configurado com celery_worker e celery_beat nos perfis local e VPS, aguardando migrations sem executa-las.',
         'Celery worker/beat ou escopo dos workers nao estao configurados corretamente.',
     )
 

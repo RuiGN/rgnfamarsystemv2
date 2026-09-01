@@ -13,7 +13,7 @@ MAX_AUDIT_ENTRIES = 25
 def _normalized_limit(limit: int) -> int:
     try:
         requested = int(limit)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         requested = MAX_AUDIT_ENTRIES
     return max(0, min(requested, MAX_AUDIT_ENTRIES))
 
@@ -39,18 +39,13 @@ def _readable_snapshot(snapshot: Any) -> str:
         return ''
     try:
         structured = json.loads(text)
-    except (TypeError, ValueError, json.JSONDecodeError):
+    except TypeError, ValueError, json.JSONDecodeError:
         return text
     return json.dumps(structured, ensure_ascii=False, sort_keys=True)
 
 
-def _document_audit_entries(
-    document: ControlledDocument, limit: int
-) -> tuple[AuditEntry, ...]:
-    rows = (
-        document.audit_trail.select_related('actor')
-        .order_by('-created_at', '-pk')[:limit]
-    )
+def _document_audit_entries(document: ControlledDocument, limit: int) -> tuple[AuditEntry, ...]:
+    rows = document.audit_trail.select_related('actor').order_by('-created_at', '-pk')[:limit]
     return tuple(
         AuditEntry(
             occurred_at=row.created_at,

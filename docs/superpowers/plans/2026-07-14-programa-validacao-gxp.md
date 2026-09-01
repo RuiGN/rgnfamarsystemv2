@@ -6,15 +6,15 @@
 
 **Architecture:** O programa usa gates G0–G4 e separa controles transversais dos pacotes de validação por domínio. Evidências são vinculadas bidirecionalmente a requisitos, riscos, especificações, execuções e desvios; nenhum pacote de módulo avança sem aprovação de Qualidade e sem os controles transversais dos quais depende.
 
-**Tech Stack:** Python 3.13, Django 5.2, Django REST Framework, PostgreSQL 15, Redis 7, Celery 5.6, RabbitMQ 3, Docker/Swarm, Nginx ou Traefik mediante ADR, Bootstrap 5, pytest, GitHub Actions, Ruff, mypy, Bandit, pip-audit, Gitleaks, drf-spectacular e MkDocs.
+**Tech Stack:** Python, Django, Django REST Framework, PostgreSQL, Redis, Celery, RabbitMQ, Docker Compose, Nginx, Cloudflare Tunnel, Bootstrap 5, pytest, GitHub Actions, Ruff, mypy, Bandit, pip-audit, Gitleaks, drf-spectacular e MkDocs. As versoes vigentes sao definidas pelos manifests do repositorio.
 
 ## Global Constraints
 
-- Preservar a arquitetura modular e o isolamento por tenant existentes.
+- Preservar a arquitetura modular e a segregação de funções existentes.
 - PostgreSQL é obrigatório nos testes de integração e validação; SQLite não comprova compatibilidade de produção.
 - Nenhum segredo real pode existir em Git, imagem, log, fixture, evidência ou documentação.
 - Toda mudança de regra de negócio começa com teste reprovado e termina com teste aprovado.
-- Todo modelo novo deve possuir migration, integridade referencial, índices para consultas frequentes e isolamento por tenant quando aplicável.
+- Todo modelo novo deve possuir migration, integridade referencial e índices para consultas frequentes.
 - Requisitos críticos exigem 100% de rastreabilidade e execução aprovada.
 - Vulnerabilidade crítica, teste mandatório reprovado ou desvio crítico/maior aberto bloqueia o gate.
 - Dados de validação devem ser sintéticos ou anonimizados.
@@ -103,7 +103,7 @@ Expected: FAIL listando o backup de ambiente e os artefatos Playwright rastreado
 
 - [ ] **Step 4: Revogar e rotacionar credenciais em janela aprovada**
 
-Rotacionar, nesta ordem, acesso Google OAuth/Drive, chaves de criptografia com plano de recriptografia, banco, RabbitMQ, SMTP, Cloudflare, OpenAI/Gemini e demais tokens inventariados. Registrar somente identificador, proprietário, data, evidência de revogação e novo `key_id` no inventário externo.
+Rotacionar, nesta ordem, acesso Google OAuth/Drive, chaves de criptografia com plano de recriptografia, banco, RabbitMQ, SMTP, Cloudflare, provedores de IA e demais tokens inventariados. Registrar somente identificador, proprietário, data, evidência de revogação e novo `key_id` no inventário externo.
 
 - [ ] **Step 5: Remover artefatos do índice e preparar saneamento do histórico**
 
@@ -232,8 +232,8 @@ python manage.py check --deploy
 python manage.py makemigrations --check --dry-run
 ruff check .
 ruff format --check .
-mypy core accounts tenants governance compliance
-bandit -r core accounts tenants governance compliance -q
+mypy core accounts governance compliance
+bandit -r core accounts governance compliance -q
 pip-audit --strict
 pytest --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 python manage.py spectacular --file openapi-schema.yml --validate --fail-on-warn
@@ -266,15 +266,15 @@ git commit -m "ci: establish reproducible G1 quality gate"
 **Files:**
 - Modify: `Dockerfile`
 - Modify: `docker-compose.yml`
-- Modify: `docker-stack.yml`
-- Modify: `deploy/traefik/dynamic.yml`
+- Modify: `docker-compose.vps.yml`
+- Modify: `deploy/nginx/rgnfarmasystem.conf`
 - Create: `docs/architecture/adr/ADR-0001-edge-proxy.md`
 - Create: `docs/architecture/container-hardening.md`
 - Test: `tests/test_deployment_hardening.py`
 
 **Interfaces:**
 - Consumes: imagem identificada por SHA/tag imutável e secrets do orquestrador.
-- Produces: runtime sem root, imagens pinadas, healthchecks, TLS/headers e decisão formal Nginx/Traefik.
+- Produces: runtime sem root, imagens pinadas, healthchecks e TLS/headers com Nginx e Cloudflare Tunnel.
 
 - [ ] **Step 1: Testar o contrato de hardening**
 
@@ -286,7 +286,7 @@ Criar usuário `rgn` com UID/GID fixos, copiar apenas artefatos necessários, to
 
 - [ ] **Step 3: Aprovar ADR de borda**
 
-Escolher Nginx, atendendo a stack obrigatória, ou aprovar formalmente Traefik como exceção. O ADR registrará contexto, ameaças, TLS, headers, healthcheck, logs, rollback, responsável e aprovação.
+Formalizar Nginx e Cloudflare Tunnel como borda autorizada. O ADR registrará contexto, ameaças, TLS, headers, healthcheck, logs, rollback, responsável e aprovação.
 
 - [ ] **Step 4: Gerar SBOM e assinar imagem**
 
@@ -306,7 +306,7 @@ Expected: exit 0; processo da aplicação executa como UID não zero.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add Dockerfile docker-compose.yml docker-stack.yml deploy docs/architecture tests/test_deployment_hardening.py
+git add Dockerfile docker-compose.yml docker-compose.vps.yml deploy docs/architecture tests/test_deployment_hardening.py
 git commit -m "security: harden container supply chain and edge"
 ```
 
@@ -389,7 +389,7 @@ git commit -m "docs: establish CSV validation baseline"
 
 - [ ] **Step 1: Escrever testes de integridade e bloqueio**
 
-Cobrir unicidade de IDs, isolamento tenant, proibição de alterar evidência aprovada, bloqueio por desvio crítico/maior, rastreabilidade crítica incompleta e aprovação de risco residual apenas por papel autorizado.
+Cobrir unicidade de IDs, segregação de funções, proibição de alterar evidência aprovada, bloqueio por desvio crítico/maior, rastreabilidade crítica incompleta e aprovação de risco residual apenas por papel autorizado.
 
 - [ ] **Step 2: Confirmar reprovação**
 
@@ -398,13 +398,13 @@ Expected: FAIL porque o ciclo ainda não existe.
 
 - [ ] **Step 3: Implementar modelos e constraints**
 
-Todos os registros usam UUID, `TenantOwnedModel`, estado, versão, timestamps, autor e hash SHA-256. Evidência aprovada é append-only; correção cria nova revisão ligada por `supersedes`.
+Todos os registros usam UUID, `SingleInstanceModel`, estado, versão, timestamps, autor e hash SHA-256. Evidência aprovada é append-only; correção cria nova revisão ligada por `supersedes`.
 
 - [ ] **Step 4: Implementar o avaliador de gates**
 
 `evaluate_gxp_gate` retorna checks com código, status, evidência e bloqueadores. O comando aceita `--gate G0|G1|G2|G3|G4`, `--format json` e `--fail-on-error`.
 
-- [ ] **Step 5: Expor API somente autenticada e tenant-scoped**
+- [ ] **Step 5: Expor API autenticada e protegida por permissões Django**
 
 Permitir leitura aos papéis de validação, execução aos testadores designados e aprovação somente a QA. Não expor binários diretamente; usar download protegido e auditado.
 
@@ -437,18 +437,18 @@ git commit -m "feat: add GxP validation lifecycle and gate evaluator"
 - Modify: `compliance/services.py`
 - Test: `tests/test_electronic_signatures.py`
 - Test: `tests/test_audit_trail_integrity.py`
-- Test: `tests/test_cross_tenant_isolation.py`
+- Test: `tests/test_authorization_isolation.py`
 
 **Interfaces:**
 - Produces: `require_electronic_signature(request, meaning, object_ref)` e `record_audit_event(...)`.
 
 - [ ] **Step 1: Criar testes adversariais**
 
-Cobrir senha/MFA inválidos, sessão expirada, assinatura reutilizada, significado ausente, alteração de evento, quebra da cadeia de hashes, exclusão, timestamp inconsistente e leitura/escrita cruzada entre tenants.
+Cobrir senha/MFA inválidos, sessão expirada, assinatura reutilizada, significado ausente, alteração de evento, quebra da cadeia de hashes, exclusão, timestamp inconsistente e leitura/escrita sem a permissão exigida.
 
 - [ ] **Step 2: Confirmar reprovação**
 
-Run: `.venv/bin/pytest tests/test_electronic_signatures.py tests/test_audit_trail_integrity.py tests/test_cross_tenant_isolation.py -q`
+Run: `.venv/bin/pytest tests/test_electronic_signatures.py tests/test_audit_trail_integrity.py tests/test_authorization_isolation.py -q`
 Expected: FAIL nos controles ainda ausentes.
 
 - [ ] **Step 3: Implementar assinatura de uso único**
@@ -457,7 +457,7 @@ Vincular identidade, MFA/reautenticação, significado controlado, objeto, hash 
 
 - [ ] **Step 4: Implementar audit trail encadeado e append-only**
 
-Registrar valor anterior/posterior para campos críticos, motivo, ator, tenant, objeto, origem, request ID, `previous_hash` e `event_hash`. Bloquear update/delete na aplicação e retirar permissões de banco do usuário runtime.
+Registrar valor anterior/posterior para campos críticos, motivo, ator, objeto, origem, request ID, `previous_hash` e `event_hash`. Bloquear update/delete na aplicação e retirar permissões de banco do usuário runtime.
 
 - [ ] **Step 5: Integrar primeiro nas ações transversais críticas**
 
@@ -465,13 +465,13 @@ Aplicar a mudança de permissão, suporte com escrita, aprovação QA, liberaç�
 
 - [ ] **Step 6: Verificar controles**
 
-Run: `.venv/bin/pytest tests/test_electronic_signatures.py tests/test_audit_trail_integrity.py tests/test_cross_tenant_isolation.py -q`
+Run: `.venv/bin/pytest tests/test_electronic_signatures.py tests/test_audit_trail_integrity.py tests/test_authorization_isolation.py -q`
 Expected: PASS.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add governance accounts/services.py core/middleware.py compliance/services.py tests/test_electronic_signatures.py tests/test_audit_trail_integrity.py tests/test_cross_tenant_isolation.py
+git add governance accounts/services.py core/middleware.py compliance/services.py tests/test_electronic_signatures.py tests/test_audit_trail_integrity.py tests/test_authorization_isolation.py
 git commit -m "feat: enforce electronic signatures and immutable audit trail"
 ```
 

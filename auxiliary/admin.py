@@ -1,7 +1,6 @@
 from django.contrib import admin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from auxiliary.models import (
-    BackupRun,
     BusinessArea,
     BusinessProcess,
     CatalogType,
@@ -104,32 +103,3 @@ class CatalogTypeAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin
 class CatalogValueAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatalogAdmin):
     list_display = ('code', 'name', 'catalog_type', 'value', 'order', 'is_active')
     list_filter = ('catalog_type', 'is_active')
-
-
-@admin.register(BackupRun)
-class BackupRunAdmin(admin.ModelAdmin):
-    list_display = (
-        'run_number',
-        'kind',
-        'status',
-        'size_bytes',
-        'drive_file_id',
-        'started_at',
-        'finished_at',
-        'duration_seconds',
-        'triggered_by',
-    )
-    list_filter = ('status', 'kind', 'triggered_by', 'encrypted', 'encryption_key_id')
-    search_fields = ('run_number', 'source_path', 'sha256', 'drive_file_id', 'drive_file_name')
-    readonly_fields = (
-        'run_number',
-        'created_at',
-        'updated_at',
-        'started_at',
-        'finished_at',
-        'duration_seconds',
-        'drive_file_id',
-        'drive_web_view_link',
-        'drive_md5_checksum',
-    )
-    ordering = ('-started_at',)

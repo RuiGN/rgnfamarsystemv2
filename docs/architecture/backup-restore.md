@@ -17,41 +17,34 @@ aceite público.
 
 ## Topologia do banco
 
-Em produção, `app`, workers e scripts usam `host.docker.internal:5432`. A entrada
-`host-gateway` da stack encaminha o TCP à interface Docker do host, onde o
-PostgreSQL escuta apenas os endereços necessários. `pg_hba.conf` restringe a
-subnet do gateway com autenticação `scram-sha-256`; a porta 5432 permanece
-bloqueada externamente.
+Em produção, `app` e workers usam `db:5432` na rede privada `backend` do
+Docker Compose. O serviço `db` não publica portas no host; somente os serviços
+da mesma rede alcançam o PostgreSQL.
 
 ```mermaid
 flowchart LR
-    S[Serviço no Swarm] -->|TCP host.docker.internal:5432| G[Gateway Docker]
-    G -->|regra pg_hba.conf| P[PostgreSQL nativo]
+    A[App e workers] -->|TCP db:5432| P[PostgreSQL em container]
+    P --> V[Volume postgres_data]
 ```
 
-No modo `external`, `scripts/backup.sh` executa `pg_dump` e
-`scripts/restore.sh` executa `psql` diretamente com as variáveis `DB_HOST`,
-`DB_PORT`, `POSTGRES_USER`, `POSTGRES_DB` e `POSTGRES_PASSWORD`. A senha é
-passada somente pelo ambiente do processo e os dry-runs exibem `<redacted>`.
-No modo `container`, os mesmos scripts localizam o serviço `db` e executam os
-clientes dentro do container.
+No modo canônico `container`, os scripts localizam `db` pelas labels do Docker
+Compose e executam os clientes dentro do container. O modo `external` permanece
+apenas para recuperação de instalações legadas.
 
 ## Execução local
 
-O template `.env.development.example` já configura `DB_DEPLOYMENT=external`,
-`DB_HOST=127.0.0.1`, as credenciais do PostgreSQL de desenvolvimento,
-`MEDIA_DIR=media` e `BACKUP_DIR=backups`. Depois de ajustar as credenciais ao
-banco criado localmente, carregue o ambiente e execute:
+O ambiente local usa `.env.local` e `docker-compose.local.yml`. Depois de subir
+os serviços, execute o backup no host, apontando para a topologia Compose:
 
 ```bash
-.venv/bin/python scripts/run_with_env.py --env-file .env -- bash scripts/backup.sh
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem-local BACKUP_DIR=backups bash scripts/backup.sh
 ```
 
 Os dumps locais ficam em `backups/`, diretório ignorado pelo Git. Para conferir
 um artefato sem alterar o banco, use o restore em modo de simulação:
 
 ```bash
-.venv/bin/python scripts/run_with_env.py --env-file .env -- \
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem-local BACKUP_DIR=backups \
   bash scripts/restore.sh \
   --postgres backups/postgres-AAAAMMDD-HHMMSS.sql.gz \
   --dry-run
@@ -64,8 +57,8 @@ um artefato sem alterar o banco, use o restore em modo de simulação:
   artefatos de backup.
 - Escopo mínimo: PostgreSQL e `/app/media`.
 - Evidência obrigatória: execução de `check_backup_restore_readiness`.
-- Evidência auditável: registros em `auxiliary.BackupRun` para cada artefato
-  enviado ao Google Drive (BPF/ALCOA+).
+- Evidência auditável: artefatos com timestamp, hashes SHA-256, logs do scheduler
+  e marcadores locais de último ciclo íntegro.
 
 ## Artefatos
 
@@ -80,71 +73,40 @@ atômica somente quando não está vazio. Se o container `app` não estiver
 disponível, o script usa `MEDIA_DIR` quando esse diretório existe; sem nenhuma
 das duas fontes, o ciclo falha sem publicar um artefato de mídia incompleto.
 
-## Backup para Google Drive (diário)
+## Backup local diário
 
-O serviço `backup_uploader` definido em `docker-stack.yml` é responsável por
-manter uma cópia off-site dos artefatos:
+O serviço `backup_scheduler` definido em `docker-compose.vps.yml` mantém os
+artefatos no volume local de backups:
 
-- Permanece em loop aguardando a janela configurada (padrão 03:00 `America/Recife`).
-- Reaproveita `scripts/backup.sh` para gerar dumps consistentes.
-- Cifra cada artefato em AES-256-GCM (chave de `DATA_ENCRYPTION_KEYS`) antes de
-  subir, garantindo confidencialidade mesmo que a pasta do Drive seja acessada
-  por terceiros.
-- Gera sidecar `<arquivo>.enc.sha256` para verificação ALCOA+ pós-download.
-- Sobe o arquivo via `google-api-python-client` usando Service Account
-  (`GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON` Docker secret).
-- Registra cada execução em `auxiliary.BackupRun` (status, SHA-256, `drive_file_id`,
-  duração, `triggered_by`).
-- Faz rotação local por `BACKUP_RETENTION_DAYS` e remove versões antigas do
-  Drive quando a pasta é gerenciada pelo conector.
-- Se qualquer upload falhar, o ciclo retorna erro e não atualiza os marcadores
-  de saúde nem registra a mensagem de ciclo concluído.
-- Quando o upload está habilitado e a pasta está configurada, credenciais
-  ausentes também fazem o ciclo falhar. Execução sem upload só é sucesso quando
-  `BACKUP_GDRIVE_ENABLED=false` ou durante pre-restore com
-  `BACKUP_SKIP_UPLOAD_DURING_RESTORE=true`.
-- Com upload habilitado fora de pre-restore, `BACKUP_GDRIVE_FOLDER_ID` vazio é
-  configuração inválida e encerra o ciclo antes dos marcadores de saúde.
+- aguarda a janela configurada, por padrão 03:00 em `America/Recife`;
+- usa `flock` para impedir ciclos concorrentes;
+- reaproveita `scripts/backup.sh` para gerar dumps consistentes;
+- exige um arquivo novo e não vazio de PostgreSQL e outro de mídia;
+- só atualiza `/tmp/backup_scheduler_ready` e `last_backup_ok` após validar os
+  dois artefatos do ciclo atual;
+- aplica a retenção local definida por `BACKUP_RETENTION_DAYS`.
+
+O scheduler não depende do ORM ou da disponibilidade HTTP da aplicação. Essa
+separação permite preservar o banco e a mídia em cenários de degradação do app.
 
 ### Configuração obrigatória
 
 | Variável | Descrição |
 |---|---|
-| `BACKUP_GDRIVE_ENABLED` | `true` para habilitar upload. |
-| `BACKUP_GDRIVE_FOLDER_ID` | ID da pasta no Google Drive (compartilhada com a service account). |
-| `BACKUP_GDRIVE_CREDENTIALS_PATH` | Caminho do JSON da service account. Padrão: `/run/secrets/GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON`. |
-| `BACKUP_GDRIVE_CREDENTIALS_BASE64` | Alternativa base64 (dev local). |
 | `BACKUP_CRON_HOUR` / `BACKUP_CRON_MINUTE` | Janela de execução diária (timezone `TZ`). |
 | `BACKUP_RETENTION_DAYS` | Dias para manter artefatos locais. |
-| `BACKUP_TRIGGERED_BY` | Rótulo da origem (padrão `cron`). |
-
-### Provisionar a Service Account
-
-```bash
-# 1. Criar Service Account no Google Cloud Console com papel
-#    "Google Drive File Owner" restrito a pasta alvo.
-# 2. Baixar o JSON.
-# 3. Criar Docker secret no manager Swarm:
-docker secret create GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON gdrive-sa.json
-# 4. Compartilhar a pasta do Drive com o client_email do JSON.
-# 5. Definir BACKUP_GDRIVE_FOLDER_ID com o ID da pasta.
-```
 
 ### Sequência do backup diário
 
 ```mermaid
 flowchart TD
-    A[Loop espera proxima 03:00] --> B[Adquirir lock /var/lock/rgn_backup.lock]
+    A[Loop espera próxima janela] --> B[Adquirir lock com flock]
     B --> C[Executar scripts/backup.sh]
-    C --> D{Sucesso?}
-    D -- Nao --> E[Registrar BackupRun failed]
-    D -- Sim --> F[Cifrar cada artefato com AES-256-GCM]
-    F --> G[Gerar sidecar SHA-256]
-    G --> H[Upload via google-api-python-client]
-    H --> I[Registrar BackupRun success]
-    I --> J[Limpar .enc local e sidecar]
-    J --> K[Rotacionar RETENTION_DAYS]
-    K --> L[Voltar para o loop]
+    C --> D{PostgreSQL e mídia novos e não vazios?}
+    D -- Não --> E[Remover marcador de saúde e registrar falha]
+    D -- Sim --> F[Atualizar marcadores de saúde]
+    F --> G[Rotacionar RETENTION_DAYS]
+    G --> H[Voltar para o loop]
 ```
 
 ## Restore Controlado
@@ -154,7 +116,7 @@ flowchart TD
 ```bash
 bash scripts/restore.sh --postgres /backup/postgres.sql.gz --media /backup/media.tar.gz --dry-run
 bash scripts/restore.sh --postgres /backup/postgres.sql.gz --media /backup/media.tar.gz --yes
-# arquivos .enc baixados do Drive:
+# artefatos históricos cifrados:
 bash scripts/restore.sh --postgres /backup/postgres.sql.gz.enc --media /backup/media.tar.gz.enc --yes
 ```
 
@@ -162,8 +124,7 @@ O restore real sem `--dry-run` é bloqueado quando `--yes` não é informado.
 
 Antes de restaurar, o script executa `scripts/backup.sh` apontando para um
 diretório `pre-restore-*`. Esse backup preserva o estado imediatamente anterior
-à restauração e é gerado com `BACKUP_SKIP_UPLOAD_DURING_RESTORE=true` para
-evitar uploads durante o restore.
+à restauração e usa exclusivamente o armazenamento local.
 
 Na restauração de banco, o schema `public` é recriado antes da importação do
 dump para evitar conflito com objetos já existentes. Esse passo só ocorre após
@@ -205,14 +166,13 @@ flowchart TD
 .venv/bin/python manage.py check_backup_restore_readiness
 .venv/bin/python manage.py check_backup_restore_readiness --format json
 .venv/bin/python manage.py check_backup_restore_readiness --fail-on-error
-.venv/bin/python manage.py upload_backup --source /var/backups/rgnfarmasystem/postgres-YYYYMMDD-HHMMSS.sql.gz --kind postgres --json
 .venv/bin/python manage.py decrypt_backup --source /var/backups/rgnfarmasystem/postgres-YYYYMMDD-HHMMSS.sql.gz.enc --kind postgres
 ```
 
 ## Critério de Aceitação
 
-- Produção usa `DB_DEPLOYMENT=external` e `host.docker.internal`.
-- Backup e restore usam `pg_dump`/`psql` diretamente no modo externo.
+- Produção usa `DB_DEPLOYMENT=container` e o host privado `db`.
+- Backup e restore usam `pg_dump`/`psql` dentro do container PostgreSQL.
 - Credenciais nunca aparecem no log nem nos artefatos versionados.
 - Um restore isolado comprova cada ciclo de backup antes da expiração da retenção.
 - Backup de PostgreSQL usa `pg_dump` com compactação `gzip`.
@@ -226,7 +186,7 @@ flowchart TD
 - Todo gzip, inclusive após decifragem, é validado antes de qualquer operação
   destrutiva do restore.
 - Restore de PostgreSQL recria o schema `public` antes de importar o dump.
-- Backup diário para o Google Drive é executado por serviço dedicado e cifra
-  cada artefato com AES-256-GCM antes do upload.
-- Cada execução de upload é registrada em `auxiliary.BackupRun`.
+- Backup diário local é executado pelo serviço dedicado `backup_scheduler`.
+- Marcadores de saúde só são publicados após artefatos novos e não vazios de
+  PostgreSQL e mídia.
 - Documentação e MKDocs incluem este plano.

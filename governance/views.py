@@ -10,7 +10,6 @@ from governance.models import (
     GovernanceCatalogItem,
     GovernanceParameter,
     InstitutionSettings,
-    TechnicalResponsible,
 )
 from governance.serializers import (
     DemoScenarioLoadSerializer,
@@ -18,7 +17,6 @@ from governance.serializers import (
     GovernanceCatalogItemSerializer,
     GovernanceParameterSerializer,
     InstitutionSettingsSerializer,
-    TechnicalResponsibleSerializer,
 )
 from base.permissions import SingleInstanceDjangoModelPermissions
 
@@ -80,39 +78,6 @@ class InstitutionSettingsViewSet(SingleInstanceGovernanceViewSet):
         'state_ref__name',
     )
     ordering = ('legal_name',)
-
-
-class TechnicalResponsibleViewSet(SingleInstanceGovernanceViewSet):
-    queryset = TechnicalResponsible.objects.select_related(
-        'institution',
-        'fiscal_company',
-        'user',
-        'council_state',
-    )
-    serializer_class = TechnicalResponsibleSerializer
-    filterset_fields = (
-        'institution',
-        'fiscal_company',
-        'profession',
-        'council',
-        'council_state',
-        'registration_type',
-        'registration_status',
-        'responsibility_type',
-        'is_active',
-    )
-    search_fields = (
-        'full_name',
-        'cpf',
-        'email',
-        'council_registration_number',
-        'regularity_certificate_number',
-        'institution__legal_name',
-        'institution__trade_name',
-        'fiscal_company__legal_name',
-        'fiscal_company__document',
-    )
-    ordering = ('full_name',)
 
 
 class GovernanceCatalogItemViewSet(SingleInstanceGovernanceViewSet):

@@ -235,7 +235,6 @@ class TestProductionApi:
         )
 
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert create_response.json()['status'] == ProductionOrder.Status.DRAFT
 
         list_response = client.get('/api/production/orders/')

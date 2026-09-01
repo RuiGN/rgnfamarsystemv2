@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- O sistema é single-instance e não pode reintroduzir tenant, organização ou domínio por cliente.
+- O sistema é single-instance e não pode reintroduzir segmentação ou domínio por cliente.
 - O único domínio público é `rgnfarmasystem.rgnsystems.com.br`.
 - O Django Admin permanece em `/admin/` com autenticação padrão `is_active` e `is_staff`.
 - A API existente permanece como executora única de regras de domínio, transações e auditoria.
@@ -28,7 +28,7 @@
 1. [Sprint 1 — remoção segura do Control Plane](2026-07-19-sprint-1-control-plane-removal.md)
 2. [Sprint 2 — infraestrutura genérica das ações](2026-07-19-sprint-2-action-framework.md)
 3. [Sprint 3 — catálogo completo das 253 ações](2026-07-19-sprint-3-action-catalog.md)
-4. [Sprint 4 — documentação, Contabo e aceite final](2026-07-19-sprint-4-contabo-release.md)
+4. [Sprint 4 — runbook de deploy, Contabo e aceite final](../../DEPLOY_VPS.md)
 
 Uma sprint somente avança após testes relevantes verdes, `git diff --check`, revisão de menus/permissões e commit próprio. O gate final da Sprint 4 executa toda a suíte e verifica o domínio público; saúde interna sem túnel estável não caracteriza deploy concluído.
 

@@ -39,7 +39,7 @@ def test_test_script_starts_waits_and_runs_pytest_safely():
     assert 'export TEST_DATABASE_URL="$TEST_DATABASE_URL"' in source
     assert 'export DATABASE_URL="$TEST_DATABASE_URL"' in source
     assert 'export CSRF_TRUSTED_ORIGINS="http://localhost"' in source
-    assert 'export STACK_NAME="rgnfarmasystem-test"' in source
+    assert 'export COMPOSE_PROJECT_NAME="rgnfarmasystem-test"' in source
     assert 'exec "$PYTHON" -m pytest "$@"' in source
     assert 'source .env' not in source
     assert SCRIPT_PATH.stat().st_mode & 0o111
@@ -50,6 +50,13 @@ def test_pytest_uses_isolated_postgresql_settings_profile():
 
     assert 'DJANGO_SETTINGS_MODULE = core.settings.test' in source
     assert 'core.test_settings' not in source
+    assert '--reuse-db' not in source
+
+
+def test_quality_gate_recreates_the_test_database_after_an_interrupted_run():
+    source = (ROOT / 'scripts' / 'ci' / 'quality-gate.sh').read_text(encoding='utf-8')
+
+    assert 'python -m pytest --create-db ' in source
 
 
 def test_readme_documents_isolated_test_workflow():

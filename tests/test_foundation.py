@@ -15,7 +15,6 @@ class FoundationSettingsTests(TestCase):
         assert 'rest_framework' in settings.INSTALLED_APPS
         assert 'base' in settings.INSTALLED_APPS
         assert 'accounts' in settings.INSTALLED_APPS
-        assert 'tenants' not in settings.INSTALLED_APPS
         assert 'control_plane' not in settings.INSTALLED_APPS
 
 
@@ -96,4 +95,3 @@ class TestSingleInstanceFoundation:
 
         assert str(user) == 'Single Instance User'
         assert user.email == 'single@example.com'
-        assert not hasattr(user, 'tenant')

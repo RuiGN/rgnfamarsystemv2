@@ -74,7 +74,6 @@ staticfiles/
 /screenshots/
 /tmp/
 /gcp-*.png
-/google-drive-*.png
 /login-page.png
 
 # Flask stuff:

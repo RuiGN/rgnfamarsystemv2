@@ -7,7 +7,6 @@ from django.core.management import call_command
 
 from auxiliary.cosmetics_seed import seed_cosmetics_auxiliary_data
 from auxiliary.models import (
-    BackupRun,
     BusinessArea,
     BusinessProcess,
     CatalogType,
@@ -43,7 +42,6 @@ def _managed_counts():
 
 def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
     product_count = Product.objects.count()
-    backup_count = BackupRun.objects.count()
 
     result = seed_cosmetics_auxiliary_data()
 
@@ -51,18 +49,16 @@ def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
     assert production.name == 'Produção'
     assert BusinessProcess.objects.get(code='BPC-COS-FAB').area == production
     assert Department.objects.get(code='DEP-COS-ENV').area == production
-    assert OrganizationalRole.objects.filter(code='ORG-COS-RT').exists()
     assert CommercialTerm.objects.get(code='CTM-COS-PG30').days == 30
     assert ImpactLevel.objects.get(code='IL-COS-RISK-4').name == 'Crítico'
     material_type = CatalogType.objects.get(code='CTG-COS-MATERIAL')
     assert CatalogValue.objects.get(code='CV-COS-MAT-MP').catalog_type == material_type
     assert SystemModule.objects.filter(app_label='auxiliary').exists()
     assert SystemModel.objects.filter(app_label='auxiliary', model_name='currency').exists()
-    assert result['business_areas'] == BusinessArea.objects.filter(
-        code__startswith='BA-COS-'
-    ).count()
+    assert (
+        result['business_areas'] == BusinessArea.objects.filter(code__startswith='BA-COS-').count()
+    )
     assert Product.objects.count() == product_count
-    assert BackupRun.objects.count() == backup_count
 
 
 def test_seed_is_idempotent_and_preserves_unmanaged_records():

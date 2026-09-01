@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from training.models import (
     Competency,
@@ -14,14 +15,14 @@ from training.models import (
 
 
 @admin.register(JobPosition)
-class JobPositionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class JobPositionAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = ('code', 'title', 'area', 'department', 'is_active')
     list_filter = ('area', 'department', 'is_active')
     search_fields = ('code', 'title', 'area', 'department', 'description')
 
 
 @admin.register(WorkFunction)
-class WorkFunctionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class WorkFunctionAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = ('code', 'name', 'job_position', 'area', 'process', 'is_critical', 'is_active')
     list_filter = ('area', 'process', 'is_critical', 'is_active')
     search_fields = ('code', 'name', 'area', 'process', 'description', 'job_position__title')
@@ -29,14 +30,14 @@ class WorkFunctionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Competency)
-class CompetencyAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class CompetencyAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = ('code', 'name', 'competency_type', 'is_active')
     list_filter = ('competency_type', 'is_active')
     search_fields = ('code', 'name', 'description')
 
 
 @admin.register(TrainingRequirement)
-class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'code',
         'title',
@@ -68,7 +69,7 @@ class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAd
 
 
 @admin.register(TrainingMatrixRequirement)
-class TrainingMatrixRequirementAdmin(admin.ModelAdmin):
+class TrainingMatrixRequirementAdmin(GxpRetentionModelAdmin):
     list_display = (
         'job_position',
         'function',
@@ -90,7 +91,7 @@ class TrainingMatrixRequirementAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrainingSession)
-class TrainingSessionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class TrainingSessionAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'session_number',
         'requirement',
@@ -124,7 +125,7 @@ class TrainingSessionAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin)
 
 
 @admin.register(TrainingEnrollment)
-class TrainingEnrollmentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class TrainingEnrollmentAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'enrollment_number',
         'requirement',
@@ -169,7 +170,7 @@ class TrainingEnrollmentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdm
 
 
 @admin.register(CriticalActivityRule)
-class CriticalActivityRuleAdmin(admin.ModelAdmin):
+class CriticalActivityRuleAdmin(GxpRetentionModelAdmin):
     list_display = (
         'activity_code',
         'name',
@@ -194,7 +195,7 @@ class CriticalActivityRuleAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrainingIndicatorReport)
-class TrainingIndicatorReportAdmin(admin.ModelAdmin):
+class TrainingIndicatorReportAdmin(GxpRetentionModelAdmin):
     list_display = (
         'title',
         'report_type',

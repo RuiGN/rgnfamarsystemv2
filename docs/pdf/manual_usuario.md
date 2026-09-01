@@ -47,7 +47,7 @@ version: 1.2
 
 ## Finalidade do sistema
 
-O RGN Farma System é uma aplicação web para gestão integrada de processos da indústria farmacêutica. O sistema centraliza cadastros, produção, planejamento, compras, estoque, custos, financeiro, fiscal, CRM, controle de qualidade, garantia da qualidade, documentos, desvios, CAPA, mudanças, auditorias, riscos, regulatório, farmacovigilância, recalls, manutenção, treinamentos, workflow, relatórios, integrações, agentes de IA e base de conhecimento regulatória.
+O RGN Farma System é uma aplicação web para gestão integrada de processos da indústria de cosméticos. O sistema centraliza cadastros, formulações, produção, planejamento, compras, estoque, custos, financeiro, fiscal, CRM, controle de qualidade, garantia da qualidade, documentos, desvios, CAPA, mudanças, auditorias, riscos, cosmetovigilância, recalls, treinamentos, workflow, relatórios, integrações, agentes de IA e manual RAG.
 
 O objetivo é permitir que cada área registre suas atividades de forma padronizada, rastreável e controlada por permissões.
 
@@ -356,7 +356,7 @@ Use para:
 - movimentações;
 - genealogia de lotes.
 
-Registre entradas, saídas, transferências, ajustes, reservas, perdas, segregações, descartes e expedições com motivo apropriado. Em ambiente farmacêutico, lote, validade, origem e status de qualidade são informações críticas.
+Registre entradas, saídas, transferências, ajustes, reservas, perdas, segregações, descartes e expedições com motivo apropriado. Na indústria de cosméticos, lote, validade, origem e status de qualidade são informações críticas.
 
 O status de qualidade de um lote e o status, a quantidade e a reserva de um
 saldo não podem ser alterados nos formulários genéricos de Estoque. A API
@@ -588,11 +588,11 @@ Use para:
 
 Controle prazos regulatórios, renovações, exigências, compromissos e evidências protocoladas.
 
-### Farmacovigilância
+### Cosmetovigilância
 
 Use para:
 
-- casos de farmacovigilância;
+- reclamações e eventos adversos de cosméticos;
 - classificação;
 - avaliação de causalidade;
 - investigação;

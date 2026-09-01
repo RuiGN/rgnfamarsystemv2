@@ -58,9 +58,7 @@ class SidebarDomainGroupingTests(SimpleTestCase):
     def test_does_not_duplicate_module_declared_in_more_than_one_domain(self):
         domains = group_sidebar_modules((module('production'),))
 
-        grouped_slugs = [
-            item.slug for _key, _label, modules in domains for item in modules
-        ]
+        grouped_slugs = [item.slug for _key, _label, modules in domains for item in modules]
 
         self.assertEqual(grouped_slugs, ['production'])
 
@@ -95,9 +93,7 @@ class SidebarDomainContextTests(SimpleTestCase):
         context = sidebar_menu(self.request)
 
         grouped_modules = tuple(
-            item
-            for _key, _label, modules in context['sidebar_domains']
-            for item in modules
+            item for _key, _label, modules in context['sidebar_domains'] for item in modules
         )
         self.assertEqual(grouped_modules, (production, quality))
         visible_modules.assert_called_once_with(self.request.user)

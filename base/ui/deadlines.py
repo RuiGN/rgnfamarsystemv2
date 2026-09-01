@@ -116,7 +116,9 @@ def _workflow_deadlines(user) -> list[DeadlineItem]:
     return deadlines
 
 
-def build_workspace_deadlines(request, workspace_slug: str, limit: int = 5) -> tuple[DeadlineItem, ...]:
+def build_workspace_deadlines(
+    request, workspace_slug: str, limit: int = 5
+) -> tuple[DeadlineItem, ...]:
     """Retorna prazos do workspace apenas para fontes que o usuário pode consultar."""
 
     user = request.user

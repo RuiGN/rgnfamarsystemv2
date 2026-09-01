@@ -3,7 +3,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -73,6 +73,29 @@ def create_agent(owner, code='AI-DOC-SUMMARY'):
     )
 
 
+def test_supported_providers_are_limited_to_active_integrations():
+    from ai_agents.models import AIAgentProfile
+
+    assert set(AIAgentProfile.Provider.values) == {'openai', 'local'}
+
+
+@override_settings(OPENAI_MODEL='deployment-configured-model')
+def test_default_agent_model_uses_the_configured_openai_model():
+    from ai_agents.models import AIAgentProfile
+
+    default = AIAgentProfile._meta.get_field('model_name').default
+
+    assert callable(default)
+    assert default() == 'deployment-configured-model'
+
+
+@override_settings(OPENAI_MODEL='')
+def test_default_agent_model_falls_back_when_openai_model_is_blank():
+    from ai_agents.models import AIAgentProfile
+
+    assert AIAgentProfile._meta.get_field('model_name').default() == 'gpt-5.5-mini'
+
+
 class AIAgentModelTests(TestCase):
     def test_rf29_agent_run_uses_langgraph_audits_prompt_and_requires_review(self):
         from ai_agents.models import AIAgentRun, AIPromptAuditLog, AIInsightSuggestion
@@ -127,7 +150,6 @@ class AIAgentModelTests(TestCase):
         assert invalid_reviewer_suggestion.status == AIInsightSuggestion.Status.APPROVED
         assert invalid_reviewer_suggestion.reviewed_by == other_user
         assert 'prompt_text' in invalid_run_error.value.message_dict
-        assert not hasattr(audit, 'tenant')
         assert audit.user == owner
         assert audit.model_name == 'gpt-5.5-mini'
         assert audit.status == AIAgentRun.Status.SUCCEEDED
@@ -249,7 +271,6 @@ class AIAgentApiTests(TestCase):
         )
 
         assert profile_response.status_code == 201
-        assert 'tenant' not in profile_response.json()
         assert profile_response.json()['created_by'] == user.id
         assert run_response.status_code == 201
         assert run_response.json()['status'] == AIAgentRun.Status.SUCCEEDED

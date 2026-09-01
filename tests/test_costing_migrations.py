@@ -24,9 +24,10 @@ def restore_latest_migrations():
 def test_standard_cost_state_machine_trigger_applies_and_unapplies(restore_latest_migrations):
     old_target = ('costing', '0002_initial')
     new_target = ('costing', '0003_standard_cost_state_machine')
+    masters_target = ('masters', '0002_cosmetics_product_taxonomy')
     executor = MigrationExecutor(connection)
-    executor.migrate([old_target])
-    old_apps = executor.loader.project_state([old_target]).apps
+    executor.migrate([old_target, masters_target])
+    old_apps = executor.loader.project_state([old_target, masters_target]).apps
     StandardCost = old_apps.get_model('costing', 'StandardCost')
     Product = old_apps.get_model('masters', 'Product')
     UnitOfMeasure = old_apps.get_model('masters', 'UnitOfMeasure')
@@ -52,7 +53,7 @@ def test_standard_cost_state_machine_trigger_applies_and_unapplies(restore_lates
     )
 
     executor.loader.build_graph()
-    executor.migrate([new_target])
+    executor.migrate([new_target, masters_target])
 
     with connection.cursor() as cursor:
         cursor.execute(
@@ -83,7 +84,7 @@ def test_standard_cost_state_machine_trigger_applies_and_unapplies(restore_lates
     assert migrated.approved_at == approved_at
 
     executor.loader.build_graph()
-    executor.migrate([old_target])
+    executor.migrate([old_target, masters_target])
 
     with connection.cursor() as cursor:
         cursor.execute(

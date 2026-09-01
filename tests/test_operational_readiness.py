@@ -24,9 +24,9 @@ class OperationalReadinessTests(SimpleTestCase):
             'settings.secure_proxy_ssl_header',
             'entrypoint.app_startup_order',
             'entrypoint.worker_startup_scope',
-            'docker_stack.swarm_resilience',
-            'docker_stack.network_isolation',
-            'docker_stack.traefik_dns01',
+            'docker_compose.vps_resilience',
+            'docker_compose.vps_network_isolation',
+            'cloudflare_tunnel.readiness',
             'docker_compose.local_services',
             'startup.initial_migration_window',
             'ui.responsive_design_system',
@@ -39,7 +39,7 @@ class OperationalReadinessTests(SimpleTestCase):
         assert all(check.status == OperationalCheckStatus.PASS for check in checks.values())
         assert '--clear' in checks['entrypoint.app_startup_order'].evidence
         assert 'celery_worker' in checks['async.celery_services'].evidence
-        assert 'traefik_public' in checks['docker_stack.network_isolation'].evidence
+        assert 'rede backend' in checks['docker_compose.vps_network_isolation'].evidence
 
     def test_nfr_command_outputs_json_report_for_operational_readiness(self):
         stdout = StringIO()
@@ -49,28 +49,20 @@ class OperationalReadinessTests(SimpleTestCase):
         payload = json.loads(stdout.getvalue())
         assert payload['passed'] is True
         assert {item['status'] for item in payload['checks']} == {'pass'}
-        assert 'docker_stack.swarm_resilience' in {item['code'] for item in payload['checks']}
+        assert 'docker_compose.vps_resilience' in {item['code'] for item in payload['checks']}
 
-    def test_nfr_docker_stack_declares_resilience_for_every_service(self):
-        stack_path = Path(settings.BASE_DIR) / 'docker-stack.yml'
-        stack = yaml.safe_load(stack_path.read_text(encoding='utf-8'))
-        services = stack['services']
+    def test_nfr_vps_compose_declares_resilience_for_every_service(self):
+        compose_path = Path(settings.BASE_DIR) / 'docker-compose.vps.yml'
+        compose = yaml.safe_load(compose_path.read_text(encoding='utf-8'))
+        services = compose['services']
 
         for service_name, service in services.items():
-            deploy = service.get('deploy') or {}
-            update_config = deploy.get('update_config') or {}
             assert service.get('healthcheck'), f'{service_name} sem healthcheck'
-            assert deploy.get('restart_policy'), f'{service_name} sem restart_policy'
-            assert deploy.get('resources'), f'{service_name} sem resources'
-            assert update_config.get('failure_action') == 'rollback', f'{service_name} sem rollback'
+            assert service.get('restart') == 'unless-stopped', f'{service_name} sem restart'
 
-        assert 'traefik_public' not in services['celery_worker']['networks']
-        assert 'traefik_public' not in services['celery_beat']['networks']
-        assert any(
-            '--certificatesresolvers.cloudflare.acme.dnschallenge=true' in item
-            for item in services['traefik']['command']
-        )
-        assert not any('tlschallenge=true' in item for item in services['traefik']['command'])
+        assert services['nginx']['ports'] == ['127.0.0.1:8081:80']
+        assert services['cloudflared']['network_mode'] == 'host'
+        assert '127.0.0.1:20241' in services['cloudflared']['command']
 
     def test_worker_entrypoint_waits_for_migrations_without_running_them(self):
         source = (Path(settings.BASE_DIR) / 'worker-entrypoint.sh').read_text(encoding='utf-8')
@@ -90,18 +82,22 @@ class OperationalReadinessTests(SimpleTestCase):
         compose = yaml.safe_load(
             (Path(settings.BASE_DIR) / 'docker-compose.yml').read_text(encoding='utf-8')
         )
-        stack = yaml.safe_load(
-            (Path(settings.BASE_DIR) / 'docker-stack.yml').read_text(encoding='utf-8')
+        vps_compose = yaml.safe_load(
+            (Path(settings.BASE_DIR) / 'docker-compose.vps.yml').read_text(encoding='utf-8')
         )
 
         assert _duration_seconds(compose['services']['app']['healthcheck']['start_period']) >= 600
-        assert _duration_seconds(stack['services']['app']['healthcheck']['start_period']) >= 600
         assert (
-            _duration_seconds(stack['services']['celery_worker']['healthcheck']['start_period'])
+            _duration_seconds(vps_compose['services']['app']['healthcheck']['start_period']) >= 600
+        )
+        assert (
+            _duration_seconds(
+                vps_compose['services']['celery_worker']['healthcheck']['start_period']
+            )
             >= 600
         )
         assert (
-            _duration_seconds(stack['services']['celery_beat']['healthcheck']['start_period'])
+            _duration_seconds(vps_compose['services']['celery_beat']['healthcheck']['start_period'])
             >= 600
         )
 

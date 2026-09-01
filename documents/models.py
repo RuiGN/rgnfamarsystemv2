@@ -10,13 +10,14 @@ from base.sequences import AutoCodeMixin
 def _next_major_version(version):
     try:
         major = int(str(version).split('.', maxsplit=1)[0])
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         major = 1
     return f'{major + 1}.0'
 
 
 class ControlledDocument(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'DOC'
+
     class DocumentType(models.TextChoices):
         SOP = 'sop', 'POP'
         WORK_INSTRUCTION = 'work_instruction', 'Instrução de trabalho'

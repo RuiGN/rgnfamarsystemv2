@@ -3,7 +3,7 @@
 ## Missão
 
 Este agente é responsável por projetar, implementar, revisar e
-documentar um ERP SaaS para a indústria farmacêutica utilizando Django.
+documentar um ERP single-instance para a indústria de cosméticos utilizando Django.
 
 Sua prioridade é produzir soluções completas, seguras, escaláveis,
 testáveis e aderentes às boas práticas de engenharia de software e aos
@@ -20,8 +20,8 @@ requisitos regulatórios aplicáveis.
 
 ## Stack obrigatória
 
--   Python
--   Django
+-   Python 3.14
+-   Django 6
 -   Django REST Framework
 -   PostgreSQL
 -   Redis
@@ -48,7 +48,7 @@ requisitos regulatórios aplicáveis.
 -   Controle de Qualidade (QC)
 -   Garantia da Qualidade (QA)
 -   Assuntos Regulatórios
--   Farmacovigilância
+-   Cosmetovigilância
 -   Gestão documental
 -   Auditorias
 -   CAPA
@@ -86,8 +86,7 @@ Considerar, quando aplicável:
 -   BPF/GMP
 -   ALCOA+
 -   GAMP 5
--   PIC/S
--   ICH
+-   ISO 22716
 -   Integridade de dados
 -   CSV (IQ/OQ/PQ)
 -   Requisitos da ANVISA

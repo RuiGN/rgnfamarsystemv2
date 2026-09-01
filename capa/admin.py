@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from capa.models import (
     CapaAction,
@@ -11,7 +12,7 @@ from capa.models import (
 
 
 @admin.register(CapaRecord)
-class CapaRecordAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class CapaRecordAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'capa_number',
         'source_type',
@@ -42,7 +43,7 @@ class CapaRecordAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(CapaAction)
-class CapaActionAdmin(admin.ModelAdmin):
+class CapaActionAdmin(GxpRetentionModelAdmin):
     list_display = (
         'capa',
         'action_type',
@@ -65,7 +66,7 @@ class CapaActionAdmin(admin.ModelAdmin):
 
 
 @admin.register(CapaEvidence)
-class CapaEvidenceAdmin(admin.ModelAdmin):
+class CapaEvidenceAdmin(GxpRetentionModelAdmin):
     list_display = ('capa', 'action', 'title', 'content_hash', 'uploaded_by')
     list_filter = ('uploaded_by',)
     search_fields = ('capa__capa_number', 'title', 'file_reference', 'content_hash', 'notes')
@@ -73,7 +74,7 @@ class CapaEvidenceAdmin(admin.ModelAdmin):
 
 
 @admin.register(EffectivenessCheck)
-class EffectivenessCheckAdmin(admin.ModelAdmin):
+class EffectivenessCheckAdmin(GxpRetentionModelAdmin):
     list_display = ('capa', 'planned_date', 'status', 'verified_by', 'verified_at')
     list_filter = ('status', 'planned_date', 'verified_at')
     search_fields = ('capa__capa_number', 'criteria', 'result', 'evidence_reference')
@@ -82,7 +83,7 @@ class EffectivenessCheckAdmin(admin.ModelAdmin):
 
 
 @admin.register(CapaApproval)
-class CapaApprovalAdmin(admin.ModelAdmin):
+class CapaApprovalAdmin(GxpRetentionModelAdmin):
     list_display = ('capa', 'role', 'approver', 'required', 'decision', 'decided_at')
     list_filter = ('role', 'required', 'decision', 'decided_at')
     search_fields = ('capa__capa_number', 'approver__email', 'comments')
@@ -91,7 +92,7 @@ class CapaApprovalAdmin(admin.ModelAdmin):
 
 
 @admin.register(CapaNotification)
-class CapaNotificationAdmin(admin.ModelAdmin):
+class CapaNotificationAdmin(GxpRetentionModelAdmin):
     list_display = ('capa', 'notification_type', 'recipient', 'due_date', 'status', 'sent_at')
     list_filter = ('notification_type', 'status', 'due_date', 'sent_at')
     search_fields = ('capa__capa_number', 'recipient__email', 'message')

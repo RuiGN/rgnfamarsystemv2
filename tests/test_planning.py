@@ -259,7 +259,6 @@ class TestPlanningApi:
             {'schedule': schedule.id, 'notes': 'Simulacao RF-05'},
         )
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert create_response.json()['status'] == MRPRun.Status.DRAFT
 
         calculate_response = client.post(
@@ -272,7 +271,6 @@ class TestPlanningApi:
         suggestions_response = client.get('/api/planning/suggestions/')
         assert suggestions_response.status_code == 200
         suggestion = suggestions_response.json()['results'][0]
-        assert 'tenant' not in suggestion
         assert suggestion['product'] == product.id
         assert suggestion['suggestion_type'] == PlanningPolicy.Source.BUY
         assert suggestion['suggested_quantity'] == '100.0000'

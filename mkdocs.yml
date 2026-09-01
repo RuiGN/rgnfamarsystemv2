@@ -1,5 +1,5 @@
 site_name: RGN Farma System
-site_description: Documentação técnica e funcional do ERP SaaS farmacêutico.
+site_description: Documentação técnica e funcional do ERP single-instance para a indústria de cosméticos.
 theme:
   name: material
   language: pt-BR

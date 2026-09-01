@@ -21,11 +21,11 @@ docker compose version >/dev/null 2>&1 || {
 }
 
 export TEST_POSTGRES_PORT
+export COMPOSE_PROJECT_NAME="rgnfarmasystem-test"
 docker compose -f "$COMPOSE_FILE" up -d --wait postgres_test
 
 export TEST_DATABASE_URL="$TEST_DATABASE_URL"
 export DATABASE_URL="$TEST_DATABASE_URL"
 export CSRF_TRUSTED_ORIGINS="http://localhost"
-export STACK_NAME="rgnfarmasystem-test"
 cd "$ROOT_DIR"
 exec "$PYTHON" -m pytest "$@"

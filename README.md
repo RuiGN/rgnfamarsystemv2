@@ -1,7 +1,7 @@
 # RGN Farma System
 
-ERP farmacêutico single-instance para a indústria farmacêutica, desenvolvido
-com Django, Django REST Framework, PostgreSQL, Redis, Celery e RabbitMQ.
+ERP single-instance para a indústria de cosméticos, executado com Python 3.14,
+Django 6, Django REST Framework, PostgreSQL em Docker, Redis, Celery e RabbitMQ.
 
 O sistema suporta impressão direta de etiquetas TSPL2 pela VPN para uma
 impressora ativa, com porta TCP 9100 por padrão. A etiqueta de lote contém
@@ -13,19 +13,21 @@ operacionais e protegidos como somente leitura na API e no Django Admin.
 
 ## Ambiente local
 
-Para desenvolvimento e validação imediata, use PostgreSQL local configurado em
-`.env` por `DATABASE_URL`. Docker não é requisito nesta fase.
+O ambiente suportado é autocontido em Docker Compose, inclusive o PostgreSQL.
+Somente o Nginx é publicado no host; banco, aplicação, Redis e RabbitMQ ficam na
+rede interna do Compose.
 
 ```bash
-cp .env.development.example .env
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python manage.py migrate
-.venv/bin/python manage.py runserver
+cp .env.local.example .env.local
+docker compose --env-file .env.local -f docker-compose.local.yml up -d --build
+docker compose --env-file .env.local -f docker-compose.local.yml ps
 ```
 
-O arquivo `.env.example` permanece reservado ao contrato de publicação em
-containers. Para desenvolvimento nativo, use exclusivamente
-`.env.development.example` e ajuste as credenciais locais.
+Aplicação local: `http://erp.localhost:4127/`. O perfil de testes também inicia
+um PostgreSQL isolado em Docker, por padrão na porta `5433`.
+
+Para diagnóstico excepcional com `runserver`, conecte-o ao PostgreSQL do
+Compose e mantenha no ambiente local:
 
 Para executar com `runserver` em HTTP local, mantenha no `.env`:
 
@@ -50,18 +52,16 @@ http://127.0.0.1:8000/accounts/login/
 O acesso usa o nome de usuário único cadastrado no Django Admin. O e-mail é
 obrigatório para contato, mas não autentica.
 
-Painel administrativo interno (adicione `control.localhost` ao arquivo hosts quando
-necessário):
+Painel administrativo interno:
 
 ```text
-http://control.localhost:8000/platform/
+http://erp.localhost:4127/admin/
 ```
 
-O primeiro operador deve ser concedido por comando e cadastrar MFA antes de
-usar o painel administrativo ou o Django Admin:
+Crie o primeiro administrador pelo comando nativo do Django dentro do container:
 
 ```bash
-.venv/bin/python manage.py platform_operator grant --email operador@example.com
+docker compose --env-file .env.local -f docker-compose.local.yml exec app python manage.py createsuperuser
 ```
 
 Usuários, grupos e permissões são administrados pelo Django Admin. O runtime
@@ -219,7 +219,7 @@ Carga demo por comando Django:
 O cenário `full_demo` cria uma massa ampla e idempotente com prefixo `DEMO-*`
 para cadastros, produção, MRP, compras, estoque, custos, financeiro, fiscal,
 CRM, qualidade, QA, documentos, desvios, CAPA, riscos, auditorias,
-recalls, manutenção, treinamentos, workflow, relatórios, integrações e IA.
+cosmetovigilância, recalls, treinamentos, workflow, relatórios, integrações e IA.
 Usuários demo usam a senha local `Demo@12345`.
 
 Criptografia AES-256-GCM para arquivos protegidos:
@@ -244,7 +244,7 @@ Check de requisitos não funcionais e prontidão operacional:
 .venv/bin/python manage.py check_operational_readiness --format json
 ```
 
-No Docker Compose/Swarm, o app executa migrations com advisory lock. Celery
+No Docker Compose, o app executa migrations com advisory lock. Celery
 worker e Celery beat aguardam banco e migrations aplicadas, sem executar
 migrations nem collectstatic.
 
@@ -283,26 +283,24 @@ local antes de promover a versão.
 Backup e restore operacional:
 
 ```bash
-APP_IMAGE=$(docker service inspect rgnfarmasystem_app --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
-docker run --rm --env-file .env --add-host host.docker.internal:host-gateway -e DB_DEPLOYMENT=external -e BACKUP_DIR=/backups -v /var/backups/rgnfarmasystem:/backups -v "$PWD:/workspace:ro" --entrypoint bash "$APP_IMAGE" /workspace/scripts/backup.sh
-docker run --rm --env-file .env --add-host host.docker.internal:host-gateway -e DB_DEPLOYMENT=external -e BACKUP_DIR=/backups -v /var/backups/rgnfarmasystem:/backups -v "$PWD:/workspace:ro" --entrypoint bash "$APP_IMAGE" /workspace/scripts/restore.sh --postgres /backups/postgres-20260708-020000.sql.gz --dry-run
-docker run --rm --env-file .env --add-host host.docker.internal:host-gateway -e DB_DEPLOYMENT=external -e BACKUP_DIR=/backups -v /var/backups/rgnfarmasystem:/backups -v "$PWD:/workspace:ro" --entrypoint bash "$APP_IMAGE" /workspace/scripts/restore.sh --postgres /backups/postgres-20260708-020000.sql.gz --yes
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem BACKUP_DIR=/var/backups/rgnfarmasystem bash scripts/backup.sh
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem BACKUP_DIR=/var/backups/rgnfarmasystem bash scripts/restore.sh --postgres /var/backups/rgnfarmasystem/postgres-20260831-020000.sql.gz --dry-run
+# Após validar hash, janela e backup pré-restore:
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem BACKUP_DIR=/var/backups/rgnfarmasystem bash scripts/restore.sh --postgres /var/backups/rgnfarmasystem/postgres-20260831-020000.sql.gz --yes
 ```
 
-Na VPS, a produção usa PostgreSQL nativo por
-`host.docker.internal`. Siga o [runbook de provisionamento, migração e
+Na VPS, a produção usa o serviço privado `db` do Docker Compose. Siga o [runbook de provisionamento, migração e
 rollback](docs/DEPLOY_VPS.md) e o
 [contrato canônico de backup e restauração](docs/architecture/backup-restore.md).
 
-Backup automatico diario para o Google Drive:
+Backup automático diário local:
 
-- Servico `backup_uploader` declarado em `docker-stack.yml` (janela padrao
-  03:00 `America/Recife`, RPO de ate 24h).
-- Cifra cada artefato em AES-256-GCM (chave vinda de `DATA_ENCRYPTION_KEYS`)
-  antes do upload via `google-api-python-client` e Service Account.
-- Cada execucao e registrada em `auxiliary.models.BackupRun` (BPF/ALCOA+).
-- Para provisionar, siga `docs/deployment.md` (Docker secret
-  `GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON` + `BACKUP_GDRIVE_FOLDER_ID`).
+- O serviço `backup_scheduler` executa `scripts/backup.sh` na janela configurada.
+- PostgreSQL e mídia são obrigatórios; artefatos ausentes ou vazios mantêm o
+  serviço sem marcador de saúde.
+- `flock` impede ciclos concorrentes e `BACKUP_RETENTION_DAYS` controla a
+  retenção no volume local.
+- Para operação e restauração, siga `docs/deployment.md`.
 
 ## Testes automatizados
 

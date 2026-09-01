@@ -18,7 +18,7 @@ Este arquivo define apenas o esquema. O inventário preenchido deve ficar no cof
 
 O inventário externo deve incluir, sem valores: credencial do administrador
 `Rui`, `SECRET_KEY`, PostgreSQL, RabbitMQ, SMTP, provedores de IA, chave de
-criptografia, Google Drive e token do Cloudflare Tunnel. Arquivos temporários
+criptografia e token do Cloudflare Tunnel. Arquivos temporários
 usados para provisionar senha devem ser `0600` e destruídos após validação.
 
 Critério G0: todos os itens encontrados devem possuir revogação confirmada, validação pós-rotação e aprovação.

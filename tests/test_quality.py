@@ -410,7 +410,6 @@ class TestQualityApi:
         list_response = client.get('/api/quality/specifications/')
 
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert {item['product'] for item in list_response.json()['results']} == {
             product.id,
             other_product.id,

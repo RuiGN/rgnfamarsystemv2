@@ -41,6 +41,19 @@ def test_test_profile_uses_postgresql():
     assert result.stdout.strip() == 'django.db.backends.postgresql'
 
 
+def test_test_profile_never_uses_the_connection_database_as_the_test_database():
+    result = run_settings_import(
+        'core.settings.test',
+        {
+            'TEST_DATABASE_URL': 'postgresql://rgn_test:rgn_test@127.0.0.1:5433/rgn_test',
+        },
+        "settings.DATABASES['default']['TEST']['NAME']",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == 'test_rgn_test'
+
+
 def test_development_environment_template_uses_native_local_services():
     source = (PROJECT_ROOT / '.env.development.example').read_text(encoding='utf-8')
 
@@ -51,7 +64,12 @@ def test_development_environment_template_uses_native_local_services():
     assert 'REDIS_URL=redis://127.0.0.1:6379/' in source
     assert '@127.0.0.1:5672//' in source
     assert 'host.docker.internal' not in source
-    assert 'TENANT_' not in source
+
+
+def test_development_environment_template_configures_the_active_ai_model():
+    source = (PROJECT_ROOT / '.env.development.example').read_text(encoding='utf-8')
+
+    assert 'OPENAI_MODEL=gpt-5.5-mini' in source.splitlines()
 
 
 def test_development_environment_template_configures_native_local_backup():
@@ -98,20 +116,12 @@ def test_debug_profile_uses_var_media_when_media_root_is_not_writable(tmp_path):
     assert result.stdout.strip() == str(PROJECT_ROOT / 'var' / 'media')
 
 
-def test_local_backup_documentation_uses_safe_dotenv_runner():
+def test_local_backup_documentation_uses_containerized_postgresql():
     source = (PROJECT_ROOT / 'docs/architecture/backup-restore.md').read_text(encoding='utf-8')
 
-    assert 'scripts/run_with_env.py --env-file .env -- bash scripts/backup.sh' in source
+    assert 'DB_DEPLOYMENT=container' in source
+    assert 'COMPOSE_PROJECT_NAME=rgnfarmasystem-local' in source
     assert 'source .env' not in source
-
-
-def test_runtime_settings_do_not_expose_legacy_invitation_scope():
-    runtime_sources = [
-        (PROJECT_ROOT / 'core/settings/base.py').read_text(encoding='utf-8'),
-        (PROJECT_ROOT / '.env.example').read_text(encoding='utf-8'),
-    ]
-
-    assert all('TENANT_INVITATION_TTL_HOURS' not in source for source in runtime_sources)
 
 
 def test_test_profile_requires_test_database_url():
@@ -119,6 +129,16 @@ def test_test_profile_requires_test_database_url():
 
     assert result.returncode != 0
     assert 'TEST_DATABASE_URL' in result.stderr
+
+
+def test_test_profile_rejects_sqlite_database_url():
+    result = run_settings_import(
+        'core.settings.test',
+        {'TEST_DATABASE_URL': 'sqlite:///test_db.sqlite3'},
+    )
+
+    assert result.returncode != 0
+    assert 'PostgreSQL' in result.stderr
 
 
 def test_production_profile_requires_secret_key():

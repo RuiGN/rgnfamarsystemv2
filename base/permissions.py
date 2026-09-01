@@ -1,5 +1,7 @@
 from rest_framework.permissions import DjangoModelPermissions
 
+from base.retention import requires_gxp_retention
+
 
 class SingleInstanceDjangoModelPermissions(DjangoModelPermissions):
     perms_map = {
@@ -10,6 +12,11 @@ class SingleInstanceDjangoModelPermissions(DjangoModelPermissions):
     }
 
     def has_permission(self, request, view):
+        if request.method == 'DELETE':
+            queryset = self._queryset(view)
+            if requires_gxp_retention(queryset.model):
+                return False
+
         action = getattr(view, 'action', None)
         configured_permissions = getattr(view, 'action_permission_map', {}).get(action)
         if configured_permissions is not None:

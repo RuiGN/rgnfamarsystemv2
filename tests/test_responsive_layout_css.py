@@ -15,8 +15,7 @@ def test_mobile_navigation_toggle_has_an_accessible_pt_br_label():
     template = (ROOT / 'templates' / 'base.html').read_text()
 
     assert (
-        'class="nxl-head-mobile-toggler" id="mobile-collapse" '
-        'aria-label="Abrir menu de navegação"'
+        'class="nxl-head-mobile-toggler" id="mobile-collapse" aria-label="Abrir menu de navegação"'
     ) in template
 
 
@@ -491,9 +490,7 @@ def test_resource_tables_contain_intrinsic_width_without_page_overflow():
 
 
 def test_audit_trail_uses_intrinsic_height_inside_responsive_detail_column():
-    audit_template = (
-        ROOT / 'templates' / 'app' / 'includes' / 'audit_trail.html'
-    ).read_text()
+    audit_template = (ROOT / 'templates' / 'app' / 'includes' / 'audit_trail.html').read_text()
     detail_template = (ROOT / 'templates' / 'app' / 'resource_detail.html').read_text()
 
     opening_section = re.search(r'<section\s+class="([^"]+)"', audit_template)

@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Não usar VPS, Swarm, Cloudflare, GHCR privado ou credenciais reais.
+- Não usar VPS, orquestração de produção, Cloudflare, GHCR privado ou credenciais reais.
 - Não criar models nem migrations.
 - Não versionar `.env.local` nem segredos.
 - Manter comandos e documentação em português quando forem voltados ao operador.

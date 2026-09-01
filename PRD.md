@@ -2,8 +2,8 @@
 
 - Versão: 3.0
 - Status: vigente
-- Atualização: 20/07/2026
-- Arquitetura: ERP farmacêutico single-instance
+- Atualização: 31/08/2026
+- Arquitetura: ERP para a indústria de cosméticos, single-instance
 
 ## 1. Fontes de verdade
 
@@ -19,20 +19,20 @@ runtime.
 
 ## 2. Visão do produto
 
-O RGN Farma System é um ERP para uma instalação farmacêutica, cobrindo os
+O RGN Farma System é um ERP para uma indústria de cosméticos, cobrindo os
 processos industriais, logísticos, financeiros, fiscais, comerciais,
 regulatórios e da qualidade em uma única instância. O produto deve preservar
 integridade de dados, rastreabilidade, segregação de funções e evidências
-compatíveis com BPF/GMP, ALCOA+, GAMP 5, PIC/S, ICH, CSV e requisitos da
-ANVISA quando aplicáveis.
+compatíveis com BPF de cosméticos, ALCOA+, GAMP 5, ISO 22716, CSV,
+cosmetovigilância e requisitos da ANVISA quando aplicáveis.
 
 ## 3. Stack obrigatória
 
-- Python, Django e Django REST Framework.
+- Python 3.14, Django 6 e Django REST Framework.
 - PostgreSQL como único banco relacional suportado.
 - Redis, Celery e RabbitMQ para cache e processamento assíncrono.
 - Bootstrap 5, JavaScript, HTML5 e CSS3 na interface.
-- Docker e Nginx para publicação; execução nativa local sem Docker suportada.
+- Docker e Nginx para execução e publicação; PostgreSQL sempre em container.
 - MkDocs e Mermaid para documentação técnica e funcional.
 
 ## 4. Arquitetura e acesso
@@ -71,8 +71,8 @@ ANVISA quando aplicáveis.
 | RF-17 | Mudanças | Avaliações de impacto, ações, aprovações, estoque afetado e implantação. |
 | RF-18 | Auditorias | Programas, planos, checklist, achados, evidências, ações e relatórios. |
 | RF-19 | Riscos | Avaliações, controles, mitigação, revisões, alertas e risco residual. |
+| RF-21 | Cosmetovigilância | Reclamações, eventos adversos, investigação, comunicação regulatória e tendências. |
 | RF-22 | Recall | Reclamações, devoluções, campanhas, clientes, comunicações e efetividade. |
-| RF-23 | Manutenção | Ativos, planos, ordens, indisponibilidade, qualificação e calibração. |
 | RF-24 | Treinamentos | Cargos, competências, matriz, turmas, avaliações e autorização de atividades críticas. |
 | RF-25 | Arquivos protegidos | Criptografia, hash, regras de acesso, links temporários e trilha de acesso. |
 | RF-26 | Relatórios e BI | Dashboards, definições, execuções, agendas, exportações e notificações. |
@@ -89,7 +89,7 @@ ANVISA quando aplicáveis.
 - Sidebar, módulos, recursos e botões respeitam permissões reais.
 - Relações prioritárias 1-N são editadas no formulário principal por formsets
   genéricos, com rollback integral em falha e permissão por ação do filho.
-- As 240 ações `POST` de domínio possuem representação na UI operacional; ações
+- As 258 ações `POST` de domínio possuem representação na UI operacional; ações
   de detalhe respeitam permissões e ciclo de vida antes de exibir o botão, e o
   endpoint DRF revalida todas as regras no envio.
 - Textos exibidos ao usuário são em português brasileiro.
@@ -104,7 +104,7 @@ ANVISA quando aplicáveis.
 - Registros críticos exigem autoria, timestamps, motivo, evidência e trilha de
   auditoria conforme risco regulatório.
 - Migrations devem ser revisáveis, reversíveis quando possível e executáveis
-  no PostgreSQL local.
+  no PostgreSQL containerizado.
 
 ## 8. Segurança e compliance
 
@@ -120,8 +120,8 @@ ANVISA quando aplicáveis.
 
 ## 9. Operação local e continuidade
 
-- Desenvolvimento imediato usa PostgreSQL em `127.0.0.1`, sem exigir Docker.
-- Redis e RabbitMQ locais suportam cache e Celery.
+- Desenvolvimento e testes usam PostgreSQL em Docker Compose.
+- Redis e RabbitMQ em containers suportam cache e Celery.
 - Backup inclui PostgreSQL e mídia, possui retenção e pode ser criptografado
   para cópia off-site.
 - Restore exige artefato explícito, confirmação, validação gzip e backup
@@ -131,11 +131,11 @@ ANVISA quando aplicáveis.
 ## 10. Critérios de aceite
 
 - `manage.py check`, migrations, lint e suíte automatizada passam.
-- PostgreSQL local é comprovado sem Docker.
+- PostgreSQL containerizado é comprovado nos perfis local, teste e VPS.
 - Models e schema não contêm artefatos funcionais de escopo por cliente.
 - Login por nome de usuário e controle de acesso pelo Django Admin funcionam.
 - UI, APIs, CRUD e relações prioritárias respeitam permissões.
-- O catálogo HTML e as ações `POST` DRF possuem exatamente as mesmas 240 chaves,
+- O catálogo HTML e as ações `POST` DRF possuem exatamente as mesmas 258 chaves,
   sem ações órfãs, duplicadas ou expostas em estado incompatível.
 - IA, backup, arquivos e criptografia funcionam no escopo global.
 - Documentação, matriz de requisitos e catálogo de evidências estão atualizados.

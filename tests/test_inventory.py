@@ -417,7 +417,6 @@ class TestInventoryApi:
             },
         )
         assert lot_response.status_code == 201, lot_response.json()
-        assert 'tenant' not in lot_response.json()
 
         lot = StockLot.objects.get(pk=lot_response.json()['id'])
         balance = StockBalance.objects.create(

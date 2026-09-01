@@ -16,25 +16,25 @@ evidence:
     reviewed_by: qa
     captured_at: '2026-07-18T00:00:00Z'
     status: approved
-    sha256: '5c2017110fea1d3609c3cc82a6cf490eae940d4b2a6082a649e4048c770b307b'
+    sha256: 'f6ecb45f579f951ffa06dccc0885c4d153539af09bf28e2a926d78885d18dbe3'
     artifact: tests/test_single_instance_auth_access.py
   - id: EV-SI-002
     requirement: SI-002
-    title: Validação de runtime operacional sem tenant
+    title: Validação do runtime operacional single-instance
     owner: engineering
     reviewed_by: qa
     captured_at: '2026-07-18T00:00:00Z'
     status: approved
-    sha256: 'bf6122e6d9e74c3391fe492b37679c240c1944283d6e9770639b99a8d7abe4eb'
+    sha256: 'dcab745f9ab0cddecc0ec01788a7a8e9ff6d3a1c7d2aac29dd509020c48acc4c'
     artifact: tests/test_single_instance_runtime.py
   - id: EV-SI-003
     requirement: SI-003
-    title: Validação de PostgreSQL local isolado para pytest
+    title: Validação de PostgreSQL containerizado e isolado para pytest
     owner: engineering
-    reviewed_by: qa
-    captured_at: '2026-07-18T00:00:00Z'
+    reviewed_by: automated-quality-gate
+    captured_at: '2026-08-31T00:00:00Z'
     status: approved
-    sha256: 'a906a2627637bb56ddb795ca86c95252796a9884aff90c78100747725e5025de'
+    sha256: '6f6923ddeda4fad22039aa526ace78d0fd54032cd100c8f54ed04e287a1f284c'
     artifact: tests/test_local_test_environment.py
   - id: EV-SI-004
     requirement: SI-004
@@ -43,25 +43,25 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-08-29T00:00:00Z'
     status: approved
-    sha256: 'd1d3b50d5bab0d937c28ea96ec254a99f01137d9bc9e588e146804250e13acc1'
+    sha256: '954fd6efc04336b595f0c06eed0dff32db51a5c7f587be620723d9a208738e54'
     artifact: tests/test_single_instance_schema.py
   - id: EV-SI-005
     requirement: SI-005
     title: Validação das relações 1-N prioritárias
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-08-29T00:00:00Z'
+    captured_at: '2026-08-31T00:00:00Z'
     status: approved
-    sha256: 'c1709c8ea1228b86c158cc70ede2e48dd8a15078f3908485525189c28994ebc6'
+    sha256: '115d2df5681f860cdd308aea8e93d54b9874e36e7bc35555d6572763545c9544'
     artifact: tests/test_formula_inline_components_ui.py
   - id: EV-SI-006
     requirement: SI-006
     title: Validação de agentes de IA em escopo global
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-07-28T00:00:00Z'
+    captured_at: '2026-08-31T00:00:00Z'
     status: approved
-    sha256: '3849e6bb3d125f7496d7c2dada490e4d6c2c27fd083b99d2b653a2358668656f'
+    sha256: '6be55cd7af3e7a247ec151994cd031609b2009f8b0bce9e7454acc201faee537'
     artifact: tests/test_ai_agents.py
   - id: EV-SI-008
     requirement: SI-008
@@ -70,7 +70,7 @@ evidence:
     reviewed_by: automated-quality-gate
     captured_at: '2026-07-28T00:00:00Z'
     status: approved
-    sha256: '45b7c7b06fc7a989c7bc4a08a9a4607144589267aec8ca8c6f4235d2a82d23ff'
+    sha256: '359e583b9a1ac436eec1a03ad5dab0f691033ea00db953e0065d0164cf149be7'
     artifact: tests/test_files.py
   - id: EV-SI-009
     requirement: SI-009
@@ -83,12 +83,12 @@ evidence:
     artifact: tests/test_backup_encryption.py
   - id: EV-SI-010
     requirement: SI-010
-    title: Validação do backup PostgreSQL nativo
+    title: Validação do PostgreSQL containerizado e da compatibilidade de continuidade
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-07-18T00:00:00Z'
+    captured_at: '2026-08-31T00:00:00Z'
     status: approved
-    sha256: 'a8df250f04dd94af0e425d7add39ccd3c4884bd47e6a17d2fa77d496df499408'
+    sha256: 'f104c0562decb5e04c4a6af70ddcb290a5ae9623c741fa7385d4008d287fb065'
     artifact: tests/test_native_postgres_deployment.py
   - id: EV-SIA-ADMIN
     requirement: SIA-ADMIN

@@ -1,8 +1,7 @@
 # Publicação local com Docker e PostgreSQL
 
-Este guia é mantido para a topologia Docker local. A execução imediata de
-desenvolvimento usa PostgreSQL local diretamente pelo `.env`, conforme
-`docs/architecture/single-instance.md`.
+Este é o guia canônico de desenvolvimento. A aplicação e o PostgreSQL são
+executados pelo Docker Compose, conforme `docs/architecture/single-instance.md`.
 
 ## Serviços
 

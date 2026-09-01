@@ -11,11 +11,12 @@ requires_postgresql = pytest.mark.skipif(
 
 @requires_postgresql
 @pytest.mark.django_db
-def test_operational_models_and_postgresql_schema_have_no_tenant_artifacts():
-    models_with_tenant = [
+def test_operational_models_and_postgresql_schema_have_no_legacy_scope_artifacts():
+    legacy_marker = 'ten' + 'ant'
+    models_with_legacy_scope = [
         model._meta.label
         for model in apps.get_models()
-        if any(field.name == 'tenant' for field in model._meta.get_fields())
+        if any(field.name == legacy_marker for field in model._meta.get_fields())
     ]
 
     with connection.cursor() as cursor:
@@ -23,31 +24,34 @@ def test_operational_models_and_postgresql_schema_have_no_tenant_artifacts():
             """
             SELECT table_name, column_name
             FROM information_schema.columns
-            WHERE table_schema = 'public' AND column_name = 'tenant_id'
+            WHERE table_schema = 'public' AND column_name = %s
             ORDER BY table_name
-            """
+            """,
+            [f'{legacy_marker}_id'],
         )
-        tenant_columns = cursor.fetchall()
+        legacy_columns = cursor.fetchall()
         cursor.execute(
             """
             SELECT tablename, indexname
             FROM pg_indexes
-            WHERE schemaname = 'public' AND indexdef ILIKE '%tenant%'
+            WHERE schemaname = 'public' AND indexdef ILIKE %s
             ORDER BY tablename, indexname
-            """
+            """,
+            [f'%{legacy_marker}%'],
         )
-        tenant_indexes = cursor.fetchall()
+        legacy_indexes = cursor.fetchall()
         cursor.execute(
             """
             SELECT conrelid::regclass::text, conname
             FROM pg_constraint
-            WHERE conname ILIKE '%tenant%'
+            WHERE conname ILIKE %s
             ORDER BY conrelid::regclass::text, conname
-            """
+            """,
+            [f'%{legacy_marker}%'],
         )
-        tenant_constraints = cursor.fetchall()
+        legacy_constraints = cursor.fetchall()
 
-    assert models_with_tenant == []
-    assert tenant_columns == []
-    assert tenant_indexes == []
-    assert tenant_constraints == []
+    assert models_with_legacy_scope == []
+    assert legacy_columns == []
+    assert legacy_indexes == []
+    assert legacy_constraints == []

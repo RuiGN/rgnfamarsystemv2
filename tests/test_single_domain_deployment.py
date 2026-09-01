@@ -11,10 +11,8 @@ TRACKED_RUNTIME_FILES = (
     '.env.development.example',
     '.env.local.example',
     'docker-compose.vps.yml',
-    'docker-stack.yml',
     'deploy/nginx/local.conf',
     'deploy/nginx/rgnfarmasystem.conf',
-    'deploy/traefik/dynamic.yml',
     'deploy/cloudflared/config.yml',
     'docs/deployment.md',
     'docs/DEPLOY_VPS.md',
@@ -43,15 +41,6 @@ def test_vps_django_services_enforce_production_settings_profile():
 
     for service_name in ('app', 'celery_worker', 'celery_beat'):
         assert compose['services'][service_name]['environment']['DJANGO_SETTINGS_MODULE'] == (
-            'core.settings.production'
-        )
-
-
-def test_swarm_django_services_enforce_production_settings_profile():
-    stack = yaml.safe_load((ROOT / 'docker-stack.yml').read_text(encoding='utf-8'))
-
-    for service_name in ('app', 'celery_worker', 'celery_beat'):
-        assert stack['services'][service_name]['environment']['DJANGO_SETTINGS_MODULE'] == (
             'core.settings.production'
         )
 

@@ -78,18 +78,9 @@ def _invoke_model(state: AgentGraphState) -> AgentGraphState:
     try:
         from langchain_core.messages import HumanMessage, SystemMessage
 
-        if state.get('provider') == 'gemini':
-            from langchain_google_genai import ChatGoogleGenerativeAI
+        from langchain_openai import ChatOpenAI
 
-            model = ChatGoogleGenerativeAI(
-                model=state['model_name'] or getattr(settings, 'GEMINI_MODEL', 'gemini-1.5-pro'),
-                temperature=0,
-                google_api_key=getattr(settings, 'GEMINI_API_KEY', ''),
-            )
-        else:
-            from langchain_openai import ChatOpenAI
-
-            model = ChatOpenAI(model=state['model_name'], temperature=0)
+        model = ChatOpenAI(model=state['model_name'], temperature=0)
 
         response = model.invoke(
             [
@@ -140,8 +131,6 @@ def _should_use_local(state: AgentGraphState):
         return True
     if state.get('provider') == 'local':
         return True
-    if state.get('provider') == 'gemini':
-        return not bool(getattr(settings, 'GEMINI_API_KEY', ''))
     return not bool(getattr(settings, 'OPENAI_API_KEY', ''))
 
 

@@ -11,7 +11,6 @@
 ## Global Constraints
 
 - Não alterar `auxiliary.City.state`; esse campo é o relacionamento normalizado, não um campo legado de UF.
-- Não alterar `governance.TechnicalResponsible.council_state`; esse campo representa UF do conselho profissional e já é uma FK normalizada.
 - Não adicionar logradouro completo em registros que só armazenam cidade/UF de origem/notificador sem `street` existente.
 - Labels finais em formulários/listas/API browsable: `*_state_ref` deve aparecer como `UF`; `*_city_ref` deve aparecer como `Cidade`.
 - Campos legados textuais removidos não podem permanecer em serializers, registry, listagens, filtros, busca, admin ou testes.

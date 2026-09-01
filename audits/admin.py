@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from audits.models import (
     AuditChecklistItem,
@@ -13,7 +14,7 @@ from audits.models import (
 
 
 @admin.register(AuditProgram)
-class AuditProgramAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class AuditProgramAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = ('program_number', 'audit_type', 'title', 'year', 'status', 'owner')
     list_filter = ('audit_type', 'status', 'year')
     search_fields = ('program_number', 'title', 'scope', 'criteria', 'owner__email')
@@ -22,7 +23,7 @@ class AuditProgramAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(AuditPlan)
-class AuditPlanAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class AuditPlanAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'audit_number',
         'audit_type',
@@ -70,7 +71,7 @@ class AuditPlanAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(AuditChecklistItem)
-class AuditChecklistItemAdmin(admin.ModelAdmin):
+class AuditChecklistItemAdmin(GxpRetentionModelAdmin):
     list_display = ('audit', 'section', 'required', 'status', 'answered_by')
     list_filter = ('section', 'required', 'status')
     search_fields = (
@@ -85,7 +86,7 @@ class AuditChecklistItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditFinding)
-class AuditFindingAdmin(admin.ModelAdmin):
+class AuditFindingAdmin(GxpRetentionModelAdmin):
     list_display = (
         'audit',
         'classification',
@@ -101,7 +102,7 @@ class AuditFindingAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditEvidence)
-class AuditEvidenceAdmin(admin.ModelAdmin):
+class AuditEvidenceAdmin(GxpRetentionModelAdmin):
     list_display = ('audit', 'finding', 'title', 'content_hash', 'uploaded_by')
     list_filter = ('uploaded_by',)
     search_fields = (
@@ -116,7 +117,7 @@ class AuditEvidenceAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditFollowUpAction)
-class AuditFollowUpActionAdmin(admin.ModelAdmin):
+class AuditFollowUpActionAdmin(GxpRetentionModelAdmin):
     list_display = ('finding', 'title', 'responsible', 'due_date', 'mandatory', 'status')
     list_filter = ('mandatory', 'evidence_required', 'status', 'due_date')
     search_fields = (
@@ -133,7 +134,7 @@ class AuditFollowUpActionAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditFindingLink)
-class AuditFindingLinkAdmin(admin.ModelAdmin):
+class AuditFindingLinkAdmin(GxpRetentionModelAdmin):
     list_display = ('finding', 'link_type', 'reference_code')
     list_filter = ('link_type',)
     search_fields = ('finding__audit__audit_number', 'finding__title', 'reference_code')
@@ -148,7 +149,7 @@ class AuditFindingLinkAdmin(admin.ModelAdmin):
 
 
 @admin.register(AuditReport)
-class AuditReportAdmin(admin.ModelAdmin):
+class AuditReportAdmin(GxpRetentionModelAdmin):
     list_display = (
         'audit',
         'status',

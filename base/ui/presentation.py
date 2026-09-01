@@ -32,9 +32,7 @@ class AuditEntry:
 
 def _normalize_status(value: Any) -> str:
     return ''.join(
-        character
-        for character in normalize('NFKD', str(value or ''))
-        if not combining(character)
+        character for character in normalize('NFKD', str(value or '')) if not combining(character)
     ).lower()
 
 
@@ -46,10 +44,7 @@ def resolve_status(value: Any) -> StatusPresentation:
 
     if 'nao lida' in normalized:
         return StatusPresentation(label, 'warning', 'feather-clock')
-    if any(
-        token in normalized
-        for token in ('nao enviad', 'nao conclu', 'nao liberad')
-    ):
+    if any(token in normalized for token in ('nao enviad', 'nao conclu', 'nao liberad')):
         return StatusPresentation(label, 'danger', 'feather-alert-triangle')
     if any(
         token in normalized
@@ -67,10 +62,7 @@ def resolve_status(value: Any) -> StatusPresentation:
         )
     ):
         return StatusPresentation(label, 'danger', 'feather-alert-triangle')
-    if any(
-        token in normalized
-        for token in ('pend', 'analis', 'em revis', 'proximo prazo')
-    ):
+    if any(token in normalized for token in ('pend', 'analis', 'em revis', 'proximo prazo')):
         return StatusPresentation(label, 'warning', 'feather-clock')
     if any(token in normalized for token in ('submet', 'process', 'execu')):
         return StatusPresentation(label, 'info', 'feather-loader')
@@ -201,9 +193,10 @@ class ProgressMetric:
 
     @property
     def percent(self) -> int:
-        if not self.has_progress:
+        target = self.target
+        if target is None or target <= 0:
             return 0
-        return max(0, min(100, round(float(self.value) / float(self.target) * 100)))
+        return max(0, min(100, round(float(self.value) / float(target) * 100)))
 
     def can_view(self, user: Any) -> bool:
         return not self.required_permission or user.has_perm(self.required_permission)
@@ -268,7 +261,5 @@ class NotificationPreview:
             icon=icon,
             created_at=notification.created_at,
             is_unread=notification.status == 'unread',
-            url=reverse(
-                'app:resource_detail', args=('workflow', 'notifications', notification.pk)
-            ),
+            url=reverse('app:resource_detail', args=('workflow', 'notifications', notification.pk)),
         )

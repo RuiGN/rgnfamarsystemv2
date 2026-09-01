@@ -202,7 +202,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'RGN Farma System API',
-    'DESCRIPTION': 'APIs REST do ERP SaaS farmacêutico RGN Farma System.',
+    'DESCRIPTION': 'APIs REST do ERP single-instance para a indústria de cosméticos.',
     'VERSION': '1.0.0',
     'ENUM_NAME_OVERRIDES': {
         'OperationalRoleEnum': 'base.roles.OperationalRole',
@@ -337,12 +337,6 @@ KNOWLEDGE_REDIS_URL = env('KNOWLEDGE_REDIS_URL', default='redis://localhost:6379
 KNOWLEDGE_REDIS_PREFIX = env('KNOWLEDGE_REDIS_PREFIX', default='rgn:knowledge')
 KNOWLEDGE_REDIS_MAX_CONNECTIONS = env.int('KNOWLEDGE_REDIS_MAX_CONNECTIONS', default=20)
 RAG_CHAT_LOCAL_ONLY = env.bool('RAG_CHAT_LOCAL_ONLY', default=False)
-GEMINI_API_KEY = env('GEMINI_API_KEY', default='')
-GEMINI_MODEL = env('GEMINI_MODEL', default='gemini-1.5-pro')
-OPENCODE_API_KEY = env('OPENCODE_API_KEY', default='')
-OPENCODE_BASE_URL = env('OPENCODE_BASE_URL', default='https://opencode.ai/zen/go')
-OPENCODE_MODEL = env('OPENCODE_MODEL', default='opencode-go/qwen3.7-max')
-OPENCODE_TIMEOUT_SECONDS = env.int('OPENCODE_TIMEOUT_SECONDS', default=120)
 DATA_ENCRYPTION_KEY_ID = env('DATA_ENCRYPTION_KEY_ID', default='primary')
 DATA_ENCRYPTION_KEYS = env('DATA_ENCRYPTION_KEYS', default='')
 DATA_ENCRYPTION_KEY = env('DATA_ENCRYPTION_KEY', default='')

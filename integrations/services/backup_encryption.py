@@ -2,7 +2,7 @@
 
 Reaproveita ``core.crypto.AES256GCMCipher`` (AES-256-GCM com KID) para garantir
 que dumps PostgreSQL e arquivos de media nao trafeguem em claro para o Google
-Drive, atendendo requisitos de confidencialidade do ambiente farmaceutico.
+Drive, atendendo requisitos de confidencialidade do ambiente de cosméticos.
 
 Alem da cifra, gera um sidecar ``.sha256`` para verificacao de integridade
 ALCOA+ apos o download.

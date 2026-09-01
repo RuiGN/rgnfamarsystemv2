@@ -12,7 +12,7 @@ usam o mesmo conjunto global de dados da instância.
 
 ## Regras de implementação
 
-- Preservar as regras de negócio farmacêuticas do módulo.
+- Preservar as regras de negócio da indústria de cosméticos do módulo.
 - Validar relacionamentos pelo contexto funcional do domínio, não por escopo
   SaaS herdado.
 - Manter trilha de auditoria, logs e justificativas quando aplicável.
@@ -73,8 +73,8 @@ cosmético, execute:
 ```
 
 A carga é idempotente e identifica o conjunto gerenciado por códigos estáveis.
-Ela não apaga registros locais, não altera `BackupRun` e não grava em outros
-apps. A carga oficial e a cosmética possuem transações próprias; qualquer erro
+Ela não apaga registros locais nem grava em outros apps. A carga oficial e a
+cosmética possuem transações próprias; qualquer erro
 de obtenção ou validação oficial interrompe a execução antes do catálogo
 cosmético.
 

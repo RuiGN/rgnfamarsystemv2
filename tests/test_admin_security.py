@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 
-from documents.models import DocumentAuditTrail
+from documents.models import ControlledDocument, DocumentAuditTrail
 
 
 class ImmutableAuditAdminTests(TestCase):
@@ -19,6 +19,19 @@ class ImmutableAuditAdminTests(TestCase):
         assert model_admin.has_view_permission(request)
         assert not model_admin.has_add_permission(request)
         assert not model_admin.has_change_permission(request)
+        assert not model_admin.has_delete_permission(request)
+
+    def test_regulated_business_record_cannot_be_deleted_even_by_superuser(self):
+        user = get_user_model().objects.create_superuser(
+            username='Retention Administrator',
+            email='admin-retention@example.com',
+            password='S3curePass!123',
+        )
+        request = RequestFactory().get('/admin/documents/controlleddocument/')
+        request.user = user
+        model_admin = admin.site._registry[ControlledDocument]
+
+        assert model_admin.has_view_permission(request)
         assert not model_admin.has_delete_permission(request)
 
 

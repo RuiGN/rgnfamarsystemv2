@@ -305,7 +305,6 @@ class TestProcurementApi:
             },
         )
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
 
         item_response = client.post(
             '/api/procurement/requisition-items/',

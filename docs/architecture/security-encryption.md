@@ -57,8 +57,8 @@ registro ou tipo de backup) e não depende de escopo SaaS.
 
 Em 18/07/2026, os módulos `ai_agents`, `knowledge`, `files`, `integrations`,
 `auxiliary` e `core.crypto`, junto aos templates operacionais, foram
-inventariados sem encontrar campos, filtros, headers ou contexto funcional de
-tenant. O ciclo local de backup foi restaurado em banco PostgreSQL temporário e
+inventariados sem encontrar campos, filtros, headers ou contexto funcional por
+cliente. O ciclo local de backup foi restaurado em banco PostgreSQL temporário e
 reconstruiu 173 registros de migration antes da remoção do banco de validação.
 
 ```bash

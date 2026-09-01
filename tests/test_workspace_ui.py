@@ -165,9 +165,7 @@ class WorkspaceContentBuilderTests(TestCase):
             )
 
         content = get_workspace('workflow').build_content(self.request_for())
-        metric = next(
-            item for item in content.metrics if item.label == 'Notificações não lidas'
-        )
+        metric = next(item for item in content.metrics if item.label == 'Notificações não lidas')
 
         self.assertEqual(metric.value, 1)
 
@@ -379,8 +377,7 @@ class WorkspaceAccessTests(TestCase):
 
         self.assertContains(
             response,
-            'href="/app/workspaces/operations/" class="nxl-link" '
-            'aria-current="page"',
+            'href="/app/workspaces/operations/" class="nxl-link" aria-current="page"',
             html=False,
         )
 
@@ -617,9 +614,7 @@ class WorkspaceDeadlineBuilderTests(TestCase):
             'app:resource_detail', args=('workflow', 'notifications', notification.pk)
         )
         assert workflow[0].temporal_label == 'Vencido'
-        assert build_workspace_deadlines(self.request_for(), 'workflow', limit=1) == (
-            workflow[0],
-        )
+        assert build_workspace_deadlines(self.request_for(), 'workflow', limit=1) == (workflow[0],)
 
     def test_builder_uses_quality_checklist_due_date_only_with_permission(self):
         grant_view_permission(self.user, BatchRecordChecklistItem)

@@ -31,6 +31,7 @@ def _percent_factor(value):
 
 class CostElement(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'CE'
+
     class Category(models.TextChoices):
         MATERIAL = 'material', 'Material'
         LOSS = 'loss', 'Perda'

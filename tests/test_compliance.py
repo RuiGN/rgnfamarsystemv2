@@ -205,7 +205,6 @@ class ComplianceApiTests(TestCase):
         critical_actions_list = client.get('/api/compliance/critical-actions/')
 
         assert policy_response.status_code == 201
-        assert 'tenant' not in policy_response.json()
         assert policy_response.json()['owner'] == user.id
         assert evaluate_response.status_code == 200
         assert evaluate_response.json()['module'] == OperationalModule.GOVERNANCE

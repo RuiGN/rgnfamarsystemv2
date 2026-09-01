@@ -1378,7 +1378,6 @@ class TestQAApi:
         assert invalid_response.status_code == 400
         assert 'quality_document' in invalid_response.json()
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert approve_response.status_code == 200
         assert approve_response.json()['status'] == QAReview.Status.APPROVED
         assert {item['title'] for item in list_response.json()['results']} == {
@@ -1448,7 +1447,7 @@ class TestQaExtraCoverage(TestCase):
         try:
             review = QAReview()
             review.clean()
-        except (ValidationError, Exception):
+        except ValidationError, Exception:
             pass
 
     def test_qa_serializers_coverage(self):

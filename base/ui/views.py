@@ -249,7 +249,9 @@ def build_advanced_filters(resource, params):
             continue
 
         label = str(model_field.verbose_name).capitalize()
-        choices = tuple((str(value), choice_label) for value, choice_label in model_field.flatchoices)
+        choices = tuple(
+            (str(value), choice_label) for value, choice_label in model_field.flatchoices
+        )
         if choices:
             raw_value = params.get(field_name, '').strip()
             allowed_values = {value for value, _label in choices}
@@ -753,16 +755,14 @@ class DashboardHubView(LoginRequiredMixin, TemplateView):
                 )
                 chart_labels.append('Qualidade')
                 chart_series.append(pending_quality)
-                data['table'].append(
-                    {'item': 'Amostras pendentes', 'value': pending_quality}
-                )
+                data['table'].append({'item': 'Amostras pendentes', 'value': pending_quality})
             if user.has_perm('quality.view_laboratoryinvestigation'):
                 investigations_count = LaboratoryInvestigation.objects.exclude(
-                        status__in=(
-                            LaboratoryInvestigation.Status.CONCLUDED,
-                            LaboratoryInvestigation.Status.CANCELLED,
-                        )
-                    ).count()
+                    status__in=(
+                        LaboratoryInvestigation.Status.CONCLUDED,
+                        LaboratoryInvestigation.Status.CANCELLED,
+                    )
+                ).count()
                 data['kpis'].append(
                     ProgressMetric(
                         'Investigações abertas',
@@ -967,9 +967,7 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         created_from = _parse_filter_value(
             parse_date, self.request.GET.get('created_from', '').strip()
         )
-        created_to = _parse_filter_value(
-            parse_date, self.request.GET.get('created_to', '').strip()
-        )
+        created_to = _parse_filter_value(parse_date, self.request.GET.get('created_to', '').strip())
         if (
             status_filter
             and self._status_choices()
@@ -1072,8 +1070,7 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
             )
             count += int(has_created_range)
         count += sum(
-            definition['active_count']
-            for definition in self._advanced_filter_definitions()
+            definition['active_count'] for definition in self._advanced_filter_definitions()
         )
         return count
 
@@ -1097,12 +1094,10 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
         context['advanced_filters'] = self._advanced_filter_definitions()
         context['active_filter_count'] = self._active_filter_count()
         context['has_active_advanced_filters'] = any(
-            definition['active_count']
-            for definition in context['advanced_filters']
+            definition['active_count'] for definition in context['advanced_filters']
         )
         context['has_submitted_advanced_filters'] = any(
-            definition['has_submitted_value']
-            for definition in context['advanced_filters']
+            definition['has_submitted_value'] for definition in context['advanced_filters']
         )
         context['allowed_query_params'] = self._allowed_query_params()
         context['clear_url'] = reverse(
@@ -1119,9 +1114,7 @@ class ResourceListView(LoginRequiredMixin, ResourceContextMixin, TemplateView):
                 'resource_slug': self.get_resource().slug,
             },
         )
-        export_query_params = tuple(
-            key for key in context['allowed_query_params'] if key != 'page'
-        )
+        export_query_params = tuple(key for key in context['allowed_query_params'] if key != 'page')
         query_string = build_query_string(self.request.GET, export_query_params)
         context['export_url'] = (
             f'{export_base_url}?{query_string}' if query_string else export_base_url
@@ -1225,9 +1218,7 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             raw_detail_status = _object_value(obj, 'status')
             context['detail_status'] = resolve_status(raw_detail_status)
         context['detail_summary'] = build_detail_summary(obj, raw_detail_status)
-        primary_field_names = {
-            field_name.split('__')[0] for field_name in resource.list_display
-        }
+        primary_field_names = {field_name.split('__')[0] for field_name in resource.list_display}
         context['has_detail_sidebar'] = any(
             item.field_name == 'status'
             or (
@@ -1236,21 +1227,14 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
             )
             for item in context['detail_summary']
         )
-        summary_field_names = {
-            item.field_name for item in context['detail_summary']
-        }
+        summary_field_names = {item.field_name for item in context['detail_summary']}
         context['fields'] = [
             (_field_label(resource.model, field), _object_value(obj, field))
             for field in resource.list_display
-            if not (
-                context['has_detail_sidebar']
-                and field.split('__')[0] in summary_field_names
-            )
+            if not (context['has_detail_sidebar'] and field.split('__')[0] in summary_field_names)
         ]
         context['resource_actions'] = available_actions(self.request, resource, obj)
-        context['audit_entries'] = (
-            get_audit_entries(obj) if resource.audit_trail else ()
-        )
+        context['audit_entries'] = get_audit_entries(obj) if resource.audit_trail else ()
         context['can_view_production_maps'] = isinstance(
             obj, ProductionOrder
         ) and self.request.user.has_perms(
@@ -1259,9 +1243,9 @@ class ResourceDetailView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
                 'production.view_production_maps',
             )
         )
-        context['can_print_labels'] = isinstance(
-            obj, StockLot
-        ) and self.request.user.has_perm('inventory.view_stocklot')
+        context['can_print_labels'] = isinstance(obj, StockLot) and self.request.user.has_perm(
+            'inventory.view_stocklot'
+        )
         return context
 
 

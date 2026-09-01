@@ -2503,7 +2503,6 @@ def test_report_execution_engine_schema_and_procurement_choices():
     assert result_file.blank is True
 
 
-
 @pytest.mark.django_db
 def test_system_definition_creation_requires_registered_executor_without_registry_leak(
     isolated_report_registry,

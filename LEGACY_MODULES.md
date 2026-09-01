@@ -1,13 +1,13 @@
 # Módulos Legados
 
-Este documento registra a remoção dos módulos legados do sistema (transição da
-arquitetura multi-tenant para single-instance e do escopo farmacêutico para
-cosmético).
+Este documento registra a remoção dos módulos legados do sistema durante a
+transição para a arquitetura single-instance e para o escopo cosmético.
 
 ## Status: REMOVIDOS
 
-Os módulos `tenants`, `control_plane`, `regulatory`, `pharmacovigilance` e
-`knowledge` foram completamente removidos:
+Os módulos `control_plane`, `regulatory` e `pharmacovigilance` foram
+completamente removidos. O módulo `knowledge` permanece ativo como assistente
+RAG somente leitura do manual do ERP:
 
 - Diretórios apagados.
 - Removidos de `INSTALLED_APPS`, URLs, menus, catálogo de ações UI e seeders.

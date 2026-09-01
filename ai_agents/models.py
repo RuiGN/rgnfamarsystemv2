@@ -17,6 +17,10 @@ def _sequence_code(model, *args):
     return sequence_code(model, field_name, prefix)
 
 
+def default_openai_model_name():
+    return getattr(settings, 'OPENAI_MODEL', '') or 'gpt-5.5-mini'
+
+
 class AIAgentProfile(AutoCodeMixin, SingleInstanceModel):
     CODE_PREFIX = 'AGT'
 
@@ -45,7 +49,6 @@ class AIAgentProfile(AutoCodeMixin, SingleInstanceModel):
 
     class Provider(models.TextChoices):
         OPENAI = 'openai', 'OpenAI'
-        GEMINI = 'gemini', 'Gemini'
         LOCAL = 'local', 'Local determinístico'
 
     code = models.CharField('código', max_length=80, blank=True)
@@ -65,9 +68,7 @@ class AIAgentProfile(AutoCodeMixin, SingleInstanceModel):
     provider = models.CharField(
         'provedor', max_length=32, choices=Provider.choices, default=Provider.OPENAI
     )
-    model_name = models.CharField(
-        'modelo', max_length=120, default=getattr(settings, 'OPENAI_MODEL', 'gpt-5.5-mini')
-    )
+    model_name = models.CharField('modelo', max_length=120, default=default_openai_model_name)
     system_prompt = models.TextField('prompt de sistema')
     allowed_source_modules = models.JSONField('módulos permitidos', default=list)
     configuration = models.JSONField('configuração', default=dict, blank=True)

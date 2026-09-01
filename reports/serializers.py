@@ -187,7 +187,7 @@ class RunReportSerializer(serializers.Serializer):
             )
         try:
             filters = clone_safe_json_object(attrs.get('filters'))
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             raise serializers.ValidationError(
                 {'filters': 'Filtros devem ser um objeto JSON seguro.'}
             ) from None

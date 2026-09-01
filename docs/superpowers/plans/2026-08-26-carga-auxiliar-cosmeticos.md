@@ -12,7 +12,6 @@
 
 - Alterar exclusivamente registros de models do app `auxiliary`.
 - Não apagar, desativar nem renomear registros fora do conjunto gerenciado.
-- Não alterar `BackupRun`.
 - Manter códigos e valores técnicos estáveis e nomes/descrições em pt-BR.
 - Executar `full_clean()` antes de persistir cada registro curado.
 - Não criar migrations.
@@ -97,7 +96,6 @@ from django.core.exceptions import ValidationError
 
 from auxiliary.cosmetics_seed import seed_cosmetics_auxiliary_data
 from auxiliary.models import (
-    BackupRun,
     BusinessArea,
     BusinessProcess,
     CatalogType,
@@ -133,7 +131,6 @@ def managed_counts():
 
 def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
     product_count = Product.objects.count()
-    backup_count = BackupRun.objects.count()
 
     result = seed_cosmetics_auxiliary_data()
 
@@ -141,7 +138,6 @@ def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
     assert production.name == 'Produção'
     assert BusinessProcess.objects.get(code='BPC-COS-FAB').area == production
     assert Department.objects.get(code='DEP-COS-ENV').area == production
-    assert OrganizationalRole.objects.filter(code='ORG-COS-RT').exists()
     assert CommercialTerm.objects.get(code='CTM-COS-PG30').days == 30
     assert ImpactLevel.objects.get(code='IL-COS-RISK-4').name == 'Crítico'
     material_type = CatalogType.objects.get(code='CTG-COS-MATERIAL')
@@ -152,7 +148,6 @@ def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
         code__startswith='BA-COS-'
     ).count()
     assert Product.objects.count() == product_count
-    assert BackupRun.objects.count() == backup_count
 
 
 def test_seed_is_idempotent_and_preserves_unmanaged_records():
@@ -254,7 +249,6 @@ DEPARTMENTS = (
 )
 
 ORGANIZATIONAL_ROLES = (
-    ('ORG-COS-RT', 'Responsável Técnico'),
     ('ORG-COS-GGQ', 'Gerente de Garantia da Qualidade'),
     ('ORG-COS-AGQ', 'Analista de Garantia da Qualidade'),
     ('ORG-COS-GCQ', 'Gerente de Controle da Qualidade'),
@@ -615,7 +609,7 @@ class Command(BaseCommand):
 Criar uma seção `## Carga de referências auxiliares` em
 `docs/architecture/auxiliary.md` com o texto: a carga oficial usa IBGE e ISO
 4217/SIX, os nomes das moedas são localizados por CLDR/Babel, a carga cosmética
-é idempotente e não altera outros apps nem `BackupRun`. Incluir os comandos:
+é idempotente e não altera outros apps. Incluir os comandos:
 
 ```bash
 .venv/bin/python manage.py load_official_reference_data
@@ -652,8 +646,8 @@ Expected: cardinalidades oficiais validadas e resumo cosmético sem falhas.
 
 - [ ] **Step 7: Verificar banco e aplicação**
 
-Consultar contagens de todos os models do app `auxiliary`, confirmar
-`BackupRun=0`, confirmar amostras pt-BR e `curl` HTTP 200 em
+Consultar contagens de todos os models do app `auxiliary`, confirmar amostras
+pt-BR e `curl` HTTP 200 em
 `http://127.0.0.1:8000/`.
 
 - [ ] **Step 8: Commit**

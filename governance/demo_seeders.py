@@ -305,69 +305,69 @@ class DemoSeeder:
         category = self._upsert(
             MasterCategory,
             'masters.categories',
-            {'kind': MasterCategory.Kind.CATEGORY, 'code': 'DEMO-MED'},
-            {'name': 'Medicamentos demo'},
+            {'kind': MasterCategory.Kind.CATEGORY, 'code': 'DEMO-COS'},
+            {'name': 'Cosméticos demo'},
         )
-        therapeutic = self._upsert(
+        product_line = self._upsert(
             MasterCategory,
             'masters.categories',
             {
-                'kind': MasterCategory.Kind.THERAPEUTIC_CLASS,
-                'code': 'DEMO-ANALG',
+                'kind': MasterCategory.Kind.PRODUCT_LINE,
+                'code': 'DEMO-SKIN',
             },
-            {'name': 'Analgesicos'},
+            {'name': 'Cuidados com a pele'},
         )
         form = self._upsert(
             MasterCategory,
             'masters.categories',
             {
-                'kind': MasterCategory.Kind.PHARMACEUTICAL_FORM,
-                'code': 'DEMO-COMP',
+                'kind': MasterCategory.Kind.COSMETIC_FORM,
+                'code': 'DEMO-EMUL',
             },
-            {'name': 'Comprimido'},
+            {'name': 'Emulsão'},
         )
-        route = self._upsert(
+        application_area = self._upsert(
             MasterCategory,
             'masters.categories',
             {
-                'kind': MasterCategory.Kind.ADMINISTRATION_ROUTE,
-                'code': 'DEMO-ORAL',
+                'kind': MasterCategory.Kind.APPLICATION_AREA,
+                'code': 'DEMO-CORPO',
             },
-            {'name': 'Oral'},
+            {'name': 'Corpo'},
         )
         products = {}
         product_specs = [
             (
-                'DEMO-PROD-PAR500',
-                'Paracetamol 500 mg comprimido',
+                'DEMO-PROD-HIDRATANTE',
+                'Loção hidratante corporal',
                 Product.ItemType.FINISHED_PRODUCT,
                 un,
-                '30049099',
+                '33049990',
             ),
             (
-                'DEMO-PROD-DIP500',
-                'Dipirona 500 mg comprimido',
+                'DEMO-PROD-SABONETE',
+                'Sabonete líquido facial',
                 Product.ItemType.FINISHED_PRODUCT,
                 un,
-                '30049099',
+                '34013000',
             ),
             (
-                'DEMO-MAT-API-PAR',
-                'Paracetamol materia-prima',
+                'DEMO-MAT-ATIVO-GLIC',
+                'Glicerina vegetal',
                 Product.ItemType.RAW_MATERIAL,
                 kg,
-                '29242999',
+                '29054500',
             ),
             (
-                'DEMO-MAT-EXC-AMIDO',
-                'Amido farmaceutico',
+                'DEMO-MAT-ESPESSANTE',
+                'Espessante cosmético',
                 Product.ItemType.EXCIPIENT,
                 kg,
-                '11081200',
+                '39123930',
             ),
             (
-                'DEMO-MAT-EMB-BLISTER',
-                'Blister aluminio PVC',
+                'DEMO-MAT-EMB-FRASCO',
+                'Frasco plástico com válvula',
                 Product.ItemType.PACKAGING,
                 un,
                 '39204900',
@@ -390,13 +390,13 @@ class DemoSeeder:
                     'item_type': item_type,
                     'unit': unit,
                     'category': category,
-                    'therapeutic_class': therapeutic
+                    'product_line': product_line
                     if item_type == Product.ItemType.FINISHED_PRODUCT
                     else None,
-                    'pharmaceutical_form': form
+                    'cosmetic_form': form
                     if item_type == Product.ItemType.FINISHED_PRODUCT
                     else None,
-                    'administration_route': route
+                    'application_area': application_area
                     if item_type == Product.ItemType.FINISHED_PRODUCT
                     else None,
                     'status': Product.Status.APPROVED,
@@ -552,9 +552,9 @@ class DemoSeeder:
         )
         from production.models import MaterialConsumption, ProductionOrder
 
-        product = self.refs['products']['DEMO-PROD-PAR500']
-        api = self.refs['products']['DEMO-MAT-API-PAR']
-        excipient = self.refs['products']['DEMO-MAT-EXC-AMIDO']
+        product = self.refs['products']['DEMO-PROD-HIDRATANTE']
+        api = self.refs['products']['DEMO-MAT-ATIVO-GLIC']
+        excipient = self.refs['products']['DEMO-MAT-ESPESSANTE']
         unit = self.refs['units']['un']
         kg = self.refs['units']['kg']
         formula = self._upsert(
@@ -562,7 +562,7 @@ class DemoSeeder:
             'formulations.formulas',
             {'product': product, 'version': 1},
             {
-                'code': 'DEMO-FRM-PAR500',
+                'code': 'DEMO-FRM-HIDRATANTE',
                 'status': MasterFormula.Status.APPROVED,
                 'batch_size': Decimal('10000.0000'),
                 'batch_unit': unit,
@@ -601,7 +601,7 @@ class DemoSeeder:
             {'product': product, 'version': 1},
             {
                 'formula': formula,
-                'code': 'DEMO-ROT-PAR500',
+                'code': 'DEMO-ROT-HIDRATANTE',
                 'status': ManufacturingRoute.Status.APPROVED,
                 'effective_from': self.today,
                 'notes': 'Roteiro demo.',
@@ -623,10 +623,10 @@ class DemoSeeder:
             'formulations.route_steps',
             {'route': route, 'sequence': 20},
             {
-                'operation': 'Compressao',
-                'work_center': 'Compressao',
+                'operation': 'Emulsificação',
+                'work_center': 'Sala de emulsificação',
                 'standard_time_minutes': Decimal('180.00'),
-                'instructions': 'Monitorar peso medio e dureza.',
+                'instructions': 'Monitorar temperatura, homogeneidade e viscosidade.',
             },
         )
         order = self._upsert(
@@ -782,7 +782,7 @@ class DemoSeeder:
             SupplierQuotation,
         )
 
-        api = self.refs['products']['DEMO-MAT-API-PAR']
+        api = self.refs['products']['DEMO-MAT-ATIVO-GLIC']
         supplier = self.refs['partners']['DEMO-FORN-API']
         kg = self.refs['units']['kg']
         requisition = self._upsert(
@@ -937,7 +937,7 @@ class DemoSeeder:
             StockLot,
             'inventory.lots',
             {
-                'product': self.refs['products']['DEMO-PROD-PAR500'],
+                'product': self.refs['products']['DEMO-PROD-HIDRATANTE'],
                 'lot_number': 'DEMO-LOTE-PA-0001',
                 'sublot_number': '',
             },
@@ -965,7 +965,7 @@ class DemoSeeder:
             StockBalance,
             'inventory.balances',
             {
-                'product': self.refs['products']['DEMO-PROD-PAR500'],
+                'product': self.refs['products']['DEMO-PROD-HIDRATANTE'],
                 'lot': lot_pa,
                 'warehouse': self.refs['wh_finished'],
                 'location': self.refs['loc_finished'],
@@ -1037,7 +1037,7 @@ class DemoSeeder:
             TaxSituation,
         )
 
-        product = self.refs['products']['DEMO-PROD-PAR500']
+        product = self.refs['products']['DEMO-PROD-HIDRATANTE']
         customer = self.refs['partners']['DEMO-CLIENTE-01']
         account = self._upsert(
             ChartOfAccount,
@@ -1048,9 +1048,9 @@ class DemoSeeder:
         category = self._upsert(
             FinancialCategory,
             'finance.categories',
-            {'code': 'DEMO-REC-MED'},
+            {'code': 'DEMO-REC-COS'},
             {
-                'name': 'Receita medicamentos demo',
+                'name': 'Receita de cosméticos demo',
                 'category_type': FinancialCategory.CategoryType.RECEIVABLE,
                 'chart_account': account,
             },
@@ -1258,7 +1258,7 @@ class DemoSeeder:
         )
 
         customer = self.refs['partners']['DEMO-CLIENTE-01']
-        product = self.refs['products']['DEMO-PROD-PAR500']
+        product = self.refs['products']['DEMO-PROD-HIDRATANTE']
         group = self._upsert(
             CustomerGroup,
             'crm.customer_groups',
@@ -1344,7 +1344,7 @@ class DemoSeeder:
             QualitySample,
         )
 
-        product = self.refs['products']['DEMO-PROD-PAR500']
+        product = self.refs['products']['DEMO-PROD-HIDRATANTE']
         spec = self._upsert(
             AnalyticalSpecification,
             'quality.specifications',
@@ -1490,7 +1490,7 @@ class DemoSeeder:
                 'origin': QualityEvent.Origin.PRODUCTION,
                 'area': 'Producao',
                 'area_ref': self.refs['production_area'],
-                'product': self.refs['products']['DEMO-PROD-PAR500'],
+                'product': self.refs['products']['DEMO-PROD-HIDRATANTE'],
                 'stock_lot': self.refs['stock_lot_pa'],
                 'controlled_document': document,
                 'severity': QualityEvent.Severity.HIGH,
@@ -1594,7 +1594,7 @@ class DemoSeeder:
     def _seed_recalls(self):
         from recalls.models import RecallCampaign
 
-        product = self.refs['products']['DEMO-PROD-PAR500']
+        product = self.refs['products']['DEMO-PROD-HIDRATANTE']
         recall = self._upsert(
             RecallCampaign,
             'recalls.campaigns',
@@ -1797,7 +1797,6 @@ class DemoSeeder:
         self.refs.update({'training_session': session, 'approval_task': task, 'report': report})
 
     def _seed_ai_agents(self):
-        from ai_agents.models import AIAgentProfile, AIAgentRun, AIInsightSuggestion
         from integrations.models import ApiClientApplication, IntegrationConnector
 
         connector = self._upsert(
@@ -1825,68 +1824,7 @@ class DemoSeeder:
                 'created_by': self.refs['admin_user'],
             },
         )
-        agent = self._upsert(
-            AIAgentProfile,
-            'ai_agents.profiles',
-            {'code': 'DEMO-RAG-QA'},
-            {
-                'name': 'Assistente QA demo',
-                'agent_type': AIAgentProfile.AgentType.DOCUMENT_SEARCH,
-                'source_module': AIAgentProfile.SourceModule.DOCUMENTS,
-                'source_module_ref': self.refs['module_refs'].get('documents'),
-                'provider': AIAgentProfile.Provider.LOCAL,
-                'model_name': 'opencode-go/qwen3.7-max',
-                'system_prompt': 'Responda de forma amigavel, cite fontes quando houver e sinalize limites de validacao regulatoria.',
-                'allowed_source_modules': ['documents', 'quality'],
-                'configuration': {'demo': True},
-                'requires_human_review': True,
-                'is_active': True,
-                'created_by': self.refs['admin_user'],
-            },
-        )
-        run = self._upsert(
-            AIAgentRun,
-            'ai_agents.runs',
-            {
-                'agent': agent,
-                'source_module': AIAgentProfile.SourceModule.DOCUMENTS,
-                'source_model': 'ControlledDocument',
-                'source_record_id': str(self.refs['controlled_document'].id),
-            },
-            {
-                'prompt_text': 'Quais controles ALCOA+ devo observar?',
-                'model_name': 'opencode-go/qwen3.7-max',
-                'input_payload': {'demo': True},
-                'status': AIAgentRun.Status.SUCCEEDED,
-                'output_payload': {
-                    'answer': 'Use registros atribuiveis, legiveis, contemporaneos, originais e acurados.'
-                },
-                'output_text': 'Use registros atribuiveis, legiveis, contemporaneos, originais e acurados.',
-                'requested_by': self.refs['quality_user'],
-                'started_at': self.now,
-                'completed_at': self.now,
-            },
-        )
-        self._upsert(
-            AIInsightSuggestion,
-            'ai_agents.suggestions',
-            {'run': run, 'title': 'Reforcar ALCOA+'},
-            {
-                'suggestion_type': AIInsightSuggestion.SuggestionType.ACTION,
-                'description': 'Adicionar checklist ALCOA+ na revisao de lote demo.',
-                'confidence': Decimal('0.82'),
-                'source_module': AIAgentProfile.SourceModule.DOCUMENTS,
-                'source_model': 'ControlledDocument',
-                'source_record_id': str(self.refs['controlled_document'].id),
-                'status': AIInsightSuggestion.Status.PENDING_REVIEW,
-            },
-        )
-        self.refs.update(
-            {
-                'integration_connector': connector,
-                'ai_agent': agent,
-            }
-        )
+        self.refs['integration_connector'] = connector
 
 
 def seed_full_demo(user=None):

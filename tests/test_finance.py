@@ -305,7 +305,6 @@ class TestFinanceApi:
         list_response = client.get('/api/finance/accounts/')
 
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert create_response.json()['code'] == 'FA-0001'
         assert {item['code'] for item in list_response.json()['results']} == {
             'FA-0001',

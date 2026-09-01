@@ -18,8 +18,7 @@ def test_discovers_each_post_action_once_without_format_suffix_duplicates():
     assert sum(action.detail for action in actions) == 227
     assert sum(not action.detail for action in actions) == 5
     assert all(
-        not (action.model is StockLot and action.action_name == 'print_label')
-        for action in actions
+        not (action.model is StockLot and action.action_name == 'print_label') for action in actions
     )
 
     production = next(

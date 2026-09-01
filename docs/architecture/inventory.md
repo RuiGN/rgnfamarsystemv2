@@ -12,7 +12,7 @@ usam o mesmo conjunto global de dados da instância.
 
 ## Regras de implementação
 
-- Preservar as regras de negócio farmacêuticas do módulo.
+- Preservar as regras de negócio da indústria de cosméticos do módulo.
 - Validar relacionamentos pelo contexto funcional do domínio, não por escopo
   SaaS herdado.
 - Manter trilha de auditoria, logs e justificativas quando aplicável.

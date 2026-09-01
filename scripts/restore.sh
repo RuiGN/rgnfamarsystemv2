@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-STACK_NAME="${STACK_NAME:-rgnfarmasystem}"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-rgnfarmasystem}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/rgnfarmasystem}"
 DB_DEPLOYMENT="${DB_DEPLOYMENT:-container}"
 MEDIA_DEPLOYMENT="${MEDIA_DEPLOYMENT:-container}"
@@ -34,7 +34,7 @@ Opcoes:
   --postgres CAMINHO  Arquivo .sql.gz (ou .enc) gerado por scripts/backup.sh.
   --media CAMINHO     Arquivo .tar.gz (ou .enc) de /app/media gerado por scripts/backup.sh.
   --backup-dir DIR    Diretorio para backup pre-restore. Padrao: BACKUP_DIR.
-  --stack-name NOME   Nome da stack Docker Swarm. Padrao: STACK_NAME.
+  --compose-project NOME  Nome do projeto Docker Compose. Padrão: COMPOSE_PROJECT_NAME.
   --dry-run           Mostra as acoes sem alterar banco ou media.
   --yes               Confirma restore real. Obrigatorio sem --dry-run.
 USAGE
@@ -58,7 +58,7 @@ decrypt_if_needed() {
     return 0
   fi
   local output_path="${source_path%.enc}.dec.gz"
-  (cd "$PROJECT_DIR" && BACKUP_GDRIVE_ENABLED=false "$PYTHON_BIN" manage.py decrypt_backup \
+  (cd "$PROJECT_DIR" && "$PYTHON_BIN" manage.py decrypt_backup \
     --source "$source_path" \
     --destination "$output_path" \
     --kind "$kind" >&2) || fail "Falha ao decifrar ${source_path}"
@@ -92,9 +92,9 @@ while [[ $# -gt 0 ]]; do
       BACKUP_DIR="$2"
       shift 2
       ;;
-    --stack-name)
-      [[ $# -ge 2 ]] || fail "Opcao --stack-name exige nome da stack."
-      STACK_NAME="$2"
+    --compose-project)
+      [[ $# -ge 2 ]] || fail "Opção --compose-project exige o nome do projeto."
+      COMPOSE_PROJECT_NAME="$2"
       shift 2
       ;;
     --dry-run)
@@ -148,15 +148,23 @@ run() {
 }
 
 lookup_container() {
-  local suffix="$1"
+  local service="$1"
+  local container
 
   if [[ "$DRY_RUN" == "true" ]]; then
-    echo "DRY_RUN_${suffix}_CONTAINER"
+    echo "DRY_RUN_${service}_CONTAINER"
     return
   fi
 
   command -v docker >/dev/null 2>&1 || fail "Comando docker nao encontrado."
-  docker ps --filter "name=${STACK_NAME}_${suffix}" --format '{{.ID}}' | head -n 1
+  container="$(docker ps \
+    --filter "label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}" \
+    --filter "label=com.docker.compose.service=${service}" \
+    --format '{{.ID}}' | head -n 1)"
+  if [[ -z "$container" ]]; then
+    container="$(docker ps --filter "name=${COMPOSE_PROJECT_NAME}_${service}" --format '{{.ID}}' | head -n 1)"
+  fi
+  printf '%s' "$container"
 }
 
 restore_external_postgres() {
@@ -216,19 +224,19 @@ if [[ -n "$MEDIA_BACKUP" && "$MEDIA_DEPLOYMENT" == "container" ]]; then
 fi
 
 if [[ -n "$POSTGRES_BACKUP" && "$DB_DEPLOYMENT" == "container" && -z "$DB_CONTAINER" ]]; then
-  fail "Container do PostgreSQL nao encontrado para stack ${STACK_NAME}."
+  fail "Container do PostgreSQL não encontrado no projeto Compose ${COMPOSE_PROJECT_NAME}."
 fi
 
 if [[ -n "$MEDIA_BACKUP" && "$MEDIA_DEPLOYMENT" == "container" && -z "$APP_CONTAINER" ]]; then
-  fail "Container do app nao encontrado para stack ${STACK_NAME}."
+  fail "Container do app não encontrado no projeto Compose ${COMPOSE_PROJECT_NAME}."
 fi
 
 PRE_RESTORE_DIR="${BACKUP_DIR%/}/pre-restore-${TIMESTAMP}"
 
 if [[ "$DRY_RUN" == "true" ]]; then
-  echo "DRY-RUN: STACK_NAME=${STACK_NAME} BACKUP_DIR=${PRE_RESTORE_DIR} ${BACKUP_SCRIPT}"
+  echo "DRY-RUN: COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} BACKUP_DIR=${PRE_RESTORE_DIR} ${BACKUP_SCRIPT}"
 else
-  STACK_NAME="$STACK_NAME" BACKUP_DIR="$PRE_RESTORE_DIR" "$BACKUP_SCRIPT"
+  COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME" BACKUP_DIR="$PRE_RESTORE_DIR" "$BACKUP_SCRIPT"
 fi
 
 if [[ -n "$POSTGRES_BACKUP" ]]; then

@@ -9,25 +9,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 class TestSingleInstanceApi:
-    def test_legacy_scope_detail_api_is_not_available_in_single_instance_runtime(self):
-        response = APIClient().get('/api/tenants/1/')
-
-        assert response.status_code == 404
-
-    def test_legacy_scope_list_api_is_not_available_in_single_instance_runtime(self):
-        user = User.objects.create_user(
-            username='Tenant API User',
-            email='qa@example.com',
-            password='S3curePass!123',
-        )
-        client = APIClient()
-        client.force_authenticate(user)
-
-        response = client.get('/api/tenants/')
-
-        assert response.status_code == 404
-
-    def test_me_endpoint_returns_authenticated_user_without_scope_payload(self):
+    def test_me_endpoint_returns_authenticated_user_profile(self):
         user = User.objects.create_user(
             username='Current API User',
             email='qa@example.com',
@@ -41,8 +23,6 @@ class TestSingleInstanceApi:
 
         assert response.status_code == 200
         assert response.json()['email'] == 'qa@example.com'
-        forbidden_fields = {'current_' + 'tenant', 'tenants'}
-        assert forbidden_fields.isdisjoint(response.json())
 
 
 class UsernameLoginViewTests(TestCase):

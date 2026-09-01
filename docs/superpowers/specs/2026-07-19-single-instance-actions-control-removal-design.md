@@ -2,10 +2,10 @@
 
 ## Contexto
 
-O RGN Farma System já concluiu a remoção funcional de tenant dos models,
-APIs e CRUD operacional. O banco local não possui colunas `tenant_id`, as
-migrations de limpeza estão aplicadas e o runtime não usa `request.tenant`,
-`TenantMembership`, `TenantModuleSetting` ou `X-Tenant-Slug`.
+O RGN Farma System já concluiu a conversão funcional dos models, APIs e CRUD
+operacional para single-instance. O banco local usa schema global, as
+migrations de limpeza estão aplicadas e o runtime depende apenas de usuários,
+grupos e permissões nativas do Django.
 
 Ainda permanecem dois desvios em relação ao produto desejado:
 
@@ -37,7 +37,7 @@ operacional, em português brasileiro com acentuação correta.
 
 ## Fora do escopo
 
-- Reintroduzir tenants, organizações ou domínios por cliente.
+- Reintroduzir segmentação, organizações ou domínios por cliente.
 - Criar um template separado para cada model ou ação.
 - Duplicar regras de negócio da API em views HTML.
 - Alterar regras farmacêuticas já cobertas pelos métodos de domínio.
@@ -60,7 +60,7 @@ O sistema terá apenas estas superfícies:
 O único domínio público será `rgnfarmasystem.rgnsystems.com.br`. O domínio
 `control.rgnfarmasystem.rgnsystems.com.br` e todas as variáveis
 `CONTROL_PLANE_*` serão removidos dos settings, arquivos `.env` de exemplo,
-Docker, Nginx, Traefik, Cloudflare e documentação operacional.
+Docker Compose, Nginx, Cloudflare Tunnel e documentação operacional.
 
 ### Autenticação e autorização
 
@@ -118,7 +118,7 @@ A migration deverá:
 6. excluir os models do Control Plane somente após a cópia íntegra.
 
 O pacote `control_plane` permanecerá apenas como tombstone de migrations,
-equivalente ao app histórico `tenants`. Ele não terá URLs, models funcionais,
+equivalente ao app histórico de escopo por cliente. Ele não terá URLs, models funcionais,
 templates ou imports no runtime. Isso preserva a reconstrução e o rollback do
 grafo histórico sem manter uma superfície administrativa paralela.
 
@@ -292,7 +292,7 @@ regra a identificadores de código, URLs ou chaves JSON.
 Os artefatos de produção serão ajustados para:
 
 - publicar somente `rgnfarmasystem.rgnsystems.com.br`;
-- remover o router Traefik e o host Cloudflare de `control`;
+- remover qualquer rota de borda e host Cloudflare de `control`;
 - remover `CONTROL_PLANE_DOMAIN`, `CONTROL_PLANE_HOSTS` e
   `CONTROL_PLANE_BASE_URL`;
 - configurar `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` somente com o domínio
@@ -384,7 +384,7 @@ Serão atualizados:
 
 Documentos históricos em `docs/superpowers/` poderão conservar referências ao
 estado antigo quando identificados explicitamente como históricos. Runbooks e
-arquitetura vigentes não poderão instruir uso de tenant ou Control Plane.
+arquitetura vigentes não poderão instruir uso de escopo por cliente ou Control Plane.
 
 ## Rollback
 
@@ -408,7 +408,7 @@ arquitetura vigentes não poderão instruir uso de tenant ou Control Plane.
 - Todas as ações podem ser executadas com e sem JavaScript.
 - Regras de domínio, transações e auditoria continuam concentradas na API.
 - Textos do frontend estão em português brasileiro com acentuação correta.
-- Models e schema permanecem sem tenant.
+- Models e schema permanecem globais para a instalação.
 - Migrations executam em banco vazio e atualizado.
 - Testes, documentação, menus, permissões e evidências estão atualizados.
 - Não restam pendências técnicas conhecidas relacionadas a esta mudança.

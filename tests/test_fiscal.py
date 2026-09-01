@@ -444,7 +444,6 @@ class FiscalModelTests(TestCase):
         audit = FiscalAuditTrail.objects.get(
             entity_name='FiscalDocument', object_id=str(document.id), action='reviewed'
         )
-        assert not hasattr(audit, 'tenant')
         assert audit.actor == user
 
     def test_nfe_issue_authorizes_stores_artifacts_and_schedules_email(self):
@@ -620,7 +619,6 @@ class TestFiscalApi:
         list_response = client.get('/api/fiscal/documents/')
 
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert {item['number'] for item in list_response.json()['results']} == {
             'NF-001',
             'NF-999',

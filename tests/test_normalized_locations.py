@@ -692,14 +692,10 @@ def test_registered_location_admins_expose_only_normalized_location_fields():
             assert str(field.verbose_name) == expected_label
 
 
-def test_location_reference_fields_are_preserved_on_city_and_technical_responsible():
-    from governance.models import TechnicalResponsible
-
+def test_location_reference_field_is_preserved_on_city():
     city_fields = {field.name for field in City._meta.fields}
-    responsible_fields = {field.name for field in TechnicalResponsible._meta.fields}
 
     assert 'state' in city_fields
-    assert 'council_state' in responsible_fields
 
 
 def test_models_without_street_do_not_receive_address_number_or_complement_fields():

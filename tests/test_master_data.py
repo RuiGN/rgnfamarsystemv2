@@ -295,9 +295,7 @@ class TestMasterDataApi:
         )
 
         assert response.status_code == 201
-        assert 'tenant' not in response.json()
         assert response.json()['code'] == 'PRD-0001'
-        assert not hasattr(Product.objects.get(code='PRD-0001'), 'tenant')
 
         valid_global_unit_response = client.post(
             '/api/masters/products/',
@@ -325,10 +323,21 @@ class TestMasterDataApi:
                 'description': 'Forma inválida',
                 'item_type': Product.ItemType.EXCIPIENT,
                 'unit': unit.id,
-                'pharmaceutical_form': wrong_kind.id,
+                'cosmetic_form': wrong_kind.id,
                 'status': Product.Status.APPROVED,
             },
         )
 
         assert invalid_kind_response.status_code == 400
-        assert 'pharmaceutical_form' in invalid_kind_response.json()
+        assert 'cosmetic_form' in invalid_kind_response.json()
+
+    def test_product_taxonomy_uses_cosmetics_domain_names(self):
+        from masters.models import MasterCategory, Product
+
+        assert MasterCategory.Kind.PRODUCT_LINE == 'product_line'
+        assert MasterCategory.Kind.COSMETIC_FORM == 'cosmetic_form'
+        assert MasterCategory.Kind.APPLICATION_AREA == 'application_area'
+        assert 'pharmaceutical_form' not in {field.name for field in Product._meta.fields}
+        assert {'product_line', 'cosmetic_form', 'application_area'} <= {
+            field.name for field in Product._meta.fields
+        }

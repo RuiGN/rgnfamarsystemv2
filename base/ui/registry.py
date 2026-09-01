@@ -4,7 +4,6 @@ from typing import Any, Callable
 from django.db.models import Model, QuerySet
 
 from auxiliary.models import (
-    BackupRun,
     BusinessArea,
     BusinessProcess,
     CatalogType,
@@ -99,7 +98,6 @@ from governance.models import (
     GovernanceCatalogItem,
     GovernanceParameter,
     InstitutionSettings,
-    TechnicalResponsible,
 )
 from integrations.models import (
     ApiCallLog,
@@ -251,24 +249,7 @@ from compliance.models import (
     RecordStatusHistory,
     TransversalRequirementPolicy,
 )
-
-
-GXP_RETENTION_APP_LABELS = frozenset(
-    {
-        'audits',
-        'capa',
-        'changes',
-        'deviations',
-        'documents',
-        'files',
-        'production',
-        'qa',
-        'quality',
-        'recalls',
-        'risks',
-        'training',
-    }
-)
+from base.retention import GXP_RETENTION_APP_LABELS
 
 
 @dataclass(frozen=True)
@@ -4255,34 +4236,6 @@ MODULES = (
                 ('module', 'key', 'description'),
             ),
             ResourceConfig(
-                'technical-responsibles',
-                'Responsáveis técnicos',
-                TechnicalResponsible,
-                (
-                    'full_name',
-                    'responsibility_type',
-                    'council',
-                    'council_state',
-                    'council_registration_number',
-                    'institution',
-                    'fiscal_company',
-                    'registration_status',
-                    'regularity_certificate_valid_until',
-                    'is_active',
-                ),
-                (
-                    'full_name',
-                    'cpf',
-                    'email',
-                    'council_registration_number',
-                    'regularity_certificate_number',
-                    'institution__legal_name',
-                    'institution__trade_name',
-                    'fiscal_company__legal_name',
-                    'fiscal_company__document',
-                ),
-            ),
-            ResourceConfig(
                 'catalog-items',
                 'Catálogos de governança',
                 GovernanceCatalogItem,
@@ -4327,31 +4280,6 @@ MODULES = (
                 DemoScenarioLoad,
                 ('scenario', 'status', 'requested_by', 'records_created'),
                 ('scenario', 'requested_by__email', 'error_message'),
-                read_only=True,
-            ),
-            ResourceConfig(
-                'backup-runs',
-                'Execuções de backup',
-                BackupRun,
-                (
-                    'run_number',
-                    'kind',
-                    'status',
-                    'size_bytes',
-                    'drive_file_id',
-                    'started_at',
-                    'finished_at',
-                    'duration_seconds',
-                    'triggered_by',
-                ),
-                (
-                    'run_number',
-                    'source_path',
-                    'sha256',
-                    'drive_file_id',
-                    'drive_file_name',
-                    'error_message',
-                ),
                 read_only=True,
             ),
         ),
@@ -4447,8 +4375,7 @@ def get_visible_modules(user):
     return tuple(
         replace(module, resources=visible_resources)
         for module in MODULES
-        if module.show_in_navigation
-        and (visible_resources := module.visible_resources(user))
+        if module.show_in_navigation and (visible_resources := module.visible_resources(user))
     )
 
 

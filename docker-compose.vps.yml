@@ -1,5 +1,12 @@
 name: rgnfarmasystem
 
+x-app-environment: &app-environment
+  DJANGO_SETTINGS_MODULE: core.settings.production
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  DB_DEPLOYMENT: container
+  DB_HOST: db
+  DB_PORT: 5432
+
 services:
   app:
     build:
@@ -9,9 +16,8 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
-    env_file: .env
-    environment:
-      DJANGO_SETTINGS_MODULE: core.settings.production
+    env_file: ["${VPS_ENV_FILE:-.env}"]
+    environment: *app-environment
     volumes:
       - media:/app/media
       - staticfiles:/app/staticfiles
@@ -39,35 +45,51 @@ services:
     networks: [backend]
     depends_on:
       app: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   celery_worker:
     image: rgnfarmasystem:${IMAGE_TAG:-vps}
     restart: unless-stopped
     entrypoint: ["/app/worker-entrypoint.sh"]
     command: ["celery", "-A", "core", "worker", "-l", "INFO", "--concurrency=${CELERY_CONCURRENCY:-2}"]
-    env_file: .env
-    environment:
-      DJANGO_SETTINGS_MODULE: core.settings.production
+    env_file: ["${VPS_ENV_FILE:-.env}"]
+    environment: *app-environment
     volumes: [media:/app/media]
     networks: [backend]
     depends_on:
       app: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}
       redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A core inspect ping --destination celery@$$(hostname) --timeout=5 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 600s
 
   celery_beat:
     image: rgnfarmasystem:${IMAGE_TAG:-vps}
     restart: unless-stopped
     entrypoint: ["/app/worker-entrypoint.sh"]
     command: ["celery", "-A", "core", "beat", "-l", "INFO", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
-    env_file: .env
-    environment:
-      DJANGO_SETTINGS_MODULE: core.settings.production
+    env_file: ["${VPS_ENV_FILE:-.env}"]
+    environment: *app-environment
     networks: [backend]
     depends_on:
       app: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}
       redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import pathlib,sys; commands=[' '.join(path.read_text(errors='ignore').split('\\0')) for path in pathlib.Path('/proc').glob('[0-9]*/cmdline')]; sys.exit(0 if any('celery' in command and 'beat' in command for command in commands) else 1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 600s
 
   db:
     image: postgres:15-alpine
@@ -110,17 +132,49 @@ services:
       timeout: 5s
       retries: 10
 
+  backup_scheduler:
+    image: rgnfarmasystem:${IMAGE_TAG:-vps}
+    restart: unless-stopped
+    entrypoint: ["/app/scripts/backup_scheduler.sh"]
+    env_file: ["${VPS_ENV_FILE:-.env}"]
+    environment:
+      <<: *app-environment
+      DB_DEPLOYMENT: external
+      MEDIA_DEPLOYMENT: external
+      MEDIA_DIR: /app/media
+      BACKUP_DIR: /var/backups/rgnfarmasystem
+      LOG_DIR: /var/backups/rgnfarmasystem/logs
+    volumes:
+      - media:/app/media:ro
+      - backups:/var/backups/rgnfarmasystem
+    networks: [backend]
+    depends_on:
+      app: {condition: service_healthy}
+      db: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/backup_scheduler_ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   cloudflared:
     image: cloudflare/cloudflared:2025.7.0
     restart: unless-stopped
-    command: ["tunnel", "--no-autoupdate", "run"]
+    command: ["tunnel", "--no-autoupdate", "--metrics", "127.0.0.1:20241", "run"]
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
     network_mode: host
     extra_hosts:
       - "nginx:127.0.0.1"
     depends_on:
-      nginx: {condition: service_started}
+      nginx: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "cloudflared", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 networks:
   backend:
@@ -132,3 +186,4 @@ volumes:
   rabbitmq_data:
   media:
   staticfiles:
+  backups:

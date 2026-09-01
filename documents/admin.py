@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin, ImmutableAuditAdminMixin
 from documents.models import (
     ControlledDocument,
@@ -11,7 +12,7 @@ from documents.models import (
 
 
 @admin.register(ControlledDocument)
-class ControlledDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class ControlledDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'code',
         'version',
@@ -55,7 +56,7 @@ class ControlledDocumentAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdm
 
 
 @admin.register(DocumentAttachment)
-class DocumentAttachmentAdmin(admin.ModelAdmin):
+class DocumentAttachmentAdmin(GxpRetentionModelAdmin):
     list_display = ('document', 'file_name', 'content_hash', 'uploaded_by')
     list_filter = ('uploaded_by',)
     search_fields = (
@@ -70,7 +71,7 @@ class DocumentAttachmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(DocumentRelationship)
-class DocumentRelationshipAdmin(admin.ModelAdmin):
+class DocumentRelationshipAdmin(GxpRetentionModelAdmin):
     list_display = (
         'source_document',
         'relationship_type',
@@ -89,7 +90,7 @@ class DocumentRelationshipAdmin(admin.ModelAdmin):
 
 
 @admin.register(DocumentApproval)
-class DocumentApprovalAdmin(admin.ModelAdmin):
+class DocumentApprovalAdmin(GxpRetentionModelAdmin):
     list_display = ('document', 'role', 'user', 'decision', 'decided_at')
     list_filter = ('role', 'decision', 'decided_at')
     search_fields = ('document__code', 'document__title', 'user__email', 'comments')
@@ -97,7 +98,7 @@ class DocumentApprovalAdmin(admin.ModelAdmin):
 
 
 @admin.register(DocumentDistribution)
-class DocumentDistributionAdmin(admin.ModelAdmin):
+class DocumentDistributionAdmin(GxpRetentionModelAdmin):
     list_display = ('document', 'recipient', 'status', 'due_date', 'confirmed_at')
     list_filter = ('status', 'due_date', 'confirmed_at')
     search_fields = ('document__code', 'document__title', 'recipient__email', 'confirmation_text')
@@ -106,7 +107,7 @@ class DocumentDistributionAdmin(admin.ModelAdmin):
 
 
 @admin.register(DocumentAuditTrail)
-class DocumentAuditTrailAdmin(ImmutableAuditAdminMixin, admin.ModelAdmin):
+class DocumentAuditTrailAdmin(ImmutableAuditAdminMixin, GxpRetentionModelAdmin):
     list_display = ('document', 'action', 'actor', 'created_at')
     list_filter = ('action', 'created_at')
     search_fields = ('document__code', 'document__title', 'actor__email', 'reason', 'snapshot')

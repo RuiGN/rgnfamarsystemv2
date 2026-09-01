@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from deviations.models import (
     DeviationApproval,
@@ -11,7 +12,7 @@ from deviations.models import (
 
 
 @admin.register(QualityEvent)
-class QualityEventAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class QualityEventAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'event_number',
         'event_type',
@@ -44,7 +45,7 @@ class QualityEventAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(DeviationEvidence)
-class DeviationEvidenceAdmin(admin.ModelAdmin):
+class DeviationEvidenceAdmin(GxpRetentionModelAdmin):
     list_display = ('event', 'title', 'content_hash', 'uploaded_by')
     list_filter = ('uploaded_by',)
     search_fields = ('event__event_number', 'title', 'file_reference', 'content_hash', 'notes')
@@ -52,7 +53,7 @@ class DeviationEvidenceAdmin(admin.ModelAdmin):
 
 
 @admin.register(DeviationInvestigation)
-class DeviationInvestigationAdmin(admin.ModelAdmin):
+class DeviationInvestigationAdmin(GxpRetentionModelAdmin):
     list_display = ('event', 'status', 'investigator', 'concluded_by', 'concluded_at')
     list_filter = ('status', 'concluded_at')
     search_fields = (
@@ -68,7 +69,7 @@ class DeviationInvestigationAdmin(admin.ModelAdmin):
 
 
 @admin.register(DeviationImpactAssessment)
-class DeviationImpactAssessmentAdmin(admin.ModelAdmin):
+class DeviationImpactAssessmentAdmin(GxpRetentionModelAdmin):
     list_display = (
         'event',
         'is_completed',
@@ -94,7 +95,7 @@ class DeviationImpactAssessmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(DeviationApproval)
-class DeviationApprovalAdmin(admin.ModelAdmin):
+class DeviationApprovalAdmin(GxpRetentionModelAdmin):
     list_display = ('event', 'role', 'approver', 'required', 'decision', 'decided_at')
     list_filter = ('role', 'required', 'decision', 'decided_at')
     search_fields = ('event__event_number', 'approver__email', 'comments')
@@ -103,7 +104,7 @@ class DeviationApprovalAdmin(admin.ModelAdmin):
 
 
 @admin.register(DeviationLink)
-class DeviationLinkAdmin(admin.ModelAdmin):
+class DeviationLinkAdmin(GxpRetentionModelAdmin):
     list_display = ('event', 'link_type', 'reference_code')
     list_filter = ('link_type',)
     search_fields = ('event__event_number', 'reference_code', 'notes')

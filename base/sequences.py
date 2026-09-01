@@ -31,7 +31,7 @@ def _highest_existing_suffix(model: type[models.Model], field_name: str, startsw
     for value in values.iterator():
         try:
             number = int(value[len(startswith) :])
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             continue
         highest = max(highest, number)
     return highest
@@ -149,6 +149,7 @@ class AutoCodeMixin:
     """
 
     CODE_PREFIX: ClassVar[str | None] = None
+    code: str
 
     def save(self, *args, **kwargs):
         generated = False
@@ -157,4 +158,5 @@ class AutoCodeMixin:
             generated = True
         if generated and kwargs.get('update_fields') is not None:
             kwargs['update_fields'] = set(kwargs['update_fields']) | {'code'}
-        return super().save(*args, **kwargs)
+        parent_save = getattr(super(), 'save')
+        return parent_save(*args, **kwargs)

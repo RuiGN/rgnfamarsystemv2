@@ -28,11 +28,9 @@ class BackupRestoreReadinessTests(SimpleTestCase):
             'restore.pre_restore_backup',
             'restore.postgres_restore',
             'restore.media_restore',
-            'backup.drive_orchestrator',
-            'backup.drive_stack_service',
-            'backup.drive_dependencies',
-            'backup.drive_environment',
-            'backup.audit_trail',
+            'backup.local_scheduler',
+            'backup.local_compose_service',
+            'backup.local_environment',
             'docs.backup_restore_plan',
             'security.no_real_secrets',
         }
@@ -82,13 +80,11 @@ class BackupRestoreReadinessTests(SimpleTestCase):
         assert 'MEDIA_DEPLOYMENT' in source
         assert 'restore_media.py' in source
 
-    def test_drive_checks_cover_orchestrator_and_stack(self):
+    def test_local_scheduler_checks_cover_orchestrator_and_vps_compose(self):
         checks = {check.code: check for check in self._report().checks}
-        assert 'backup.drive_orchestrator' in checks
-        assert 'backup.drive_stack_service' in checks
-        assert 'backup.drive_dependencies' in checks
-        assert 'backup.drive_environment' in checks
-        assert 'backup.audit_trail' in checks
+        assert 'backup.local_scheduler' in checks
+        assert 'backup.local_compose_service' in checks
+        assert 'backup.local_environment' in checks
 
     def _report(self):
         from core.backup_restore_readiness import evaluate_backup_restore_readiness

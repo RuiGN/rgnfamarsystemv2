@@ -296,11 +296,9 @@ class ReportingApiTests(TestCase):
         notifications_list = client.get('/api/reports/notifications/')
 
         assert dashboard_response.status_code == 201
-        assert 'tenant' not in dashboard_response.json()
         assert DashboardWorkspace.objects.get(pk=dashboard_response.json()['id']).owner == user
         assert invalid_definition_response.status_code == 400
         assert definition_response.status_code == 201
-        assert 'tenant' not in definition_response.json()
         assert run_response.status_code == 201
         assert run_response.json()['status'] == ReportExecution.Status.COMPLETED
         assert 'result_reference' not in run_response.json()

@@ -7,9 +7,9 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    # Perfil local padrao: SQLite autocontido (sem Postgres/Redis/RabbitMQ).
-    # Deployments de producao/CI sobrescrevem via env (core.settings.production / .test).
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings.sqlite')
+    # O perfil padrão exige DATABASE_URL PostgreSQL; produção e testes usam
+    # perfis explícitos com o mesmo contrato relacional.
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

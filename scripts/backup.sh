@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-STACK_NAME="${STACK_NAME:-rgnfarmasystem}"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-rgnfarmasystem}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/rgnfarmasystem}"
 RETENTION_DAYS="${RETENTION_DAYS:-14}"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
@@ -14,6 +14,19 @@ POSTGRES_DB="${POSTGRES_DB:-rgnfarmasystem}"
 MEDIA_DIR="${MEDIA_DIR:-/app/media}"
 
 mkdir -p "$BACKUP_DIR"
+
+find_service_container() {
+  local service="$1"
+  local container
+  container="$(docker ps \
+    --filter "label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}" \
+    --filter "label=com.docker.compose.service=${service}" \
+    --format '{{.ID}}' | head -n 1)"
+  if [[ -z "$container" ]]; then
+    container="$(docker ps --filter "name=${COMPOSE_PROJECT_NAME}_${service}" --format '{{.ID}}' | head -n 1)"
+  fi
+  printf '%s' "$container"
+}
 
 POSTGRES_TARGET="${BACKUP_DIR}/postgres-${TIMESTAMP}.sql.gz"
 POSTGRES_TMP="$(mktemp "${BACKUP_DIR}/.postgres-${TIMESTAMP}.XXXXXX.sql.gz")"
@@ -33,7 +46,7 @@ case "$DB_DEPLOYMENT" in
       echo "Docker indisponivel para DB_DEPLOYMENT=container." >&2
       exit 1
     }
-    DB_CONTAINER="$(docker ps --filter "name=${STACK_NAME}_db" --format '{{.ID}}' | head -n 1)"
+    DB_CONTAINER="$(find_service_container db)"
     [[ -n "$DB_CONTAINER" ]] || {
       echo "Container do PostgreSQL nao encontrado." >&2
       exit 1
@@ -53,7 +66,7 @@ mv "$POSTGRES_TMP" "$POSTGRES_TARGET"
 # O backup de mídia independe da topologia do PostgreSQL.
 APP_CONTAINER=""
 if command -v docker >/dev/null 2>&1 && [[ -S /var/run/docker.sock ]]; then
-  APP_CONTAINER="$(docker ps --filter "name=${STACK_NAME}_app" --format '{{.ID}}' | head -n 1)"
+  APP_CONTAINER="$(find_service_container app)"
 fi
 
 if [[ -n "$APP_CONTAINER" ]]; then

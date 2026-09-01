@@ -50,33 +50,27 @@ PostgreSQL, Redis e RabbitMQ permanecem apenas na rede `backend`. O container
 ## Backup, restauração e retenção
 
 O Compose da Contabo faz o backup de release diretamente pelos serviços `db` e
-pela volume de mídia, como descrito no runbook canônico. Para executar os
-scripts portáveis contra um PostgreSQL externo, deixe o Docker interpretar o
-dotenv sem `source` e sem imprimir credenciais:
+pelo volume de mídia, como descrito no runbook canônico:
 
 ```bash
-APP_IMAGE=$(docker compose -f docker-compose.vps.yml images -q app)
-docker run --rm --env-file .env --add-host host.docker.internal:host-gateway \
-  -e DB_DEPLOYMENT=external -e BACKUP_DIR=/backups -e RETENTION_DAYS=14 \
-  -v /var/backups/rgnfarmasystem:/backups \
-  -v "$PWD:/workspace:ro" --entrypoint bash "$APP_IMAGE" \
-  /workspace/scripts/backup.sh
-docker run --rm --env-file .env --add-host host.docker.internal:host-gateway \
-  -e DB_DEPLOYMENT=external -e BACKUP_DIR=/backups \
-  -v /var/backups/rgnfarmasystem:/backups \
-  -v "$PWD:/workspace:ro" --entrypoint bash "$APP_IMAGE" \
-  /workspace/scripts/restore.sh --postgres /backups/postgres-AAAAmmdd-HHMMSS.sql.gz --dry-run
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem \
+  BACKUP_DIR=/var/backups/rgnfarmasystem RETENTION_DAYS=14 \
+  bash scripts/backup.sh
+DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem \
+  BACKUP_DIR=/var/backups/rgnfarmasystem \
+  bash scripts/restore.sh \
+  --postgres /var/backups/rgnfarmasystem/postgres-AAAAmmdd-HHMMSS.sql.gz --dry-run
 ```
 
 O restore real exige o mesmo artefato validado, um backup `pre-restore` e a
-confirmação `--yes`. A política off-site pode usar Google Drive por meio de
-`scripts/backup_to_drive.sh`; cada envio gera trilha `BackupRun` com SHA-256.
+confirmação `--yes`. O serviço `backup_scheduler` mantém a rotina diária local,
+usa `flock`, exige artefatos novos de PostgreSQL e mídia e só então atualiza os
+marcadores de saúde.
 
-Agendamento alternativo no host, sempre com o dotenv de produção e o gateway
-explícito:
+Agendamento alternativo no host, quando o serviço Compose estiver desabilitado:
 
 ```cron
-15 2 * * * /bin/bash -c 'APP_IMAGE=$(docker compose -f /opt/rgnfarmasystem/docker-compose.vps.yml images -q app); docker run --rm --env-file /opt/rgnfarmasystem/.env --add-host host.docker.internal:host-gateway -e DB_DEPLOYMENT=external -e BACKUP_DIR=/backups -e RETENTION_DAYS=14 -v /var/backups/rgnfarmasystem:/backups -v /opt/rgnfarmasystem:/workspace:ro --entrypoint bash "$APP_IMAGE" /workspace/scripts/backup.sh' >> /var/log/rgnfarmasystem/backup.log 2>&1
+15 2 * * * cd /opt/rgnfarmasystem && DB_DEPLOYMENT=container COMPOSE_PROJECT_NAME=rgnfarmasystem BACKUP_DIR=/var/backups/rgnfarmasystem RETENTION_DAYS=14 bash scripts/backup.sh >> /var/log/rgnfarmasystem/backup.log 2>&1
 ```
 
 Valide os contratos antes da promoção:

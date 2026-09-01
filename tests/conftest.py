@@ -12,9 +12,9 @@ PERMISSION_STRICT_TEST_FILES = {
     'test_single_instance_runtime.py',
 }
 
-TEST_ENCRYPTION_KEYS = (
-    'test:' + base64.urlsafe_b64encode(b'rgn-farma-test-key-0123456789abc').decode('ascii')
-)
+TEST_ENCRYPTION_KEYS = 'test:' + base64.urlsafe_b64encode(
+    b'rgn-farma-test-key-0123456789abc'
+).decode('ascii')
 
 
 @pytest.fixture(autouse=True)

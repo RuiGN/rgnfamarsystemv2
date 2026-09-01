@@ -100,4 +100,3 @@ class KnowledgeIndexGenerationAdmin(admin.ModelAdmin):
         'error_message',
     )
     actions = None
-

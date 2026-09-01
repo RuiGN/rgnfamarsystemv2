@@ -9,7 +9,6 @@ from governance.models import (
     GovernanceCatalogItem,
     GovernanceParameter,
     InstitutionSettings,
-    TechnicalResponsible,
 )
 
 
@@ -81,19 +80,6 @@ class InstitutionSettingsSerializer(
             'created_at',
             'updated_at',
         )
-        read_only_fields = ('id', 'created_at', 'updated_at')
-
-    def validate(self, attrs):
-        self._run_model_clean(self._instance_for_clean(attrs))
-        return attrs
-
-
-class TechnicalResponsibleSerializer(
-    SingleInstanceGovernanceSerializerMixin, serializers.ModelSerializer
-):
-    class Meta:
-        model = TechnicalResponsible
-        fields = '__all__'
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def validate(self, attrs):

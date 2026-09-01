@@ -32,6 +32,7 @@ class ReleasedVersionMixin:
 
 class MasterFormula(AutoCodeMixin, ReleasedVersionMixin, SingleInstanceModel):
     CODE_PREFIX = 'MF'
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         IN_REVIEW = 'in_review', 'Em revisão'
@@ -215,6 +216,7 @@ class FormulaComponent(SingleInstanceModel):
 
 class ManufacturingRoute(AutoCodeMixin, ReleasedVersionMixin, SingleInstanceModel):
     CODE_PREFIX = 'RT'
+
     class Status(models.TextChoices):
         DRAFT = 'draft', 'Rascunho'
         IN_REVIEW = 'in_review', 'Em revisão'

@@ -432,8 +432,6 @@ class CrmModelTests(TestCase):
 @pytest.mark.legacy_api_permissions
 class TestCrmApi:
     def test_customer_profile_api_uses_global_scope(self):
-        from crm.models import CustomerProfile
-
         _unit, _product, customer, _lot = create_customer_product_stock()
         _other_unit, _other_product, other_customer, _other_lot = create_customer_product_stock(
             suffix='999'
@@ -462,8 +460,6 @@ class TestCrmApi:
         list_response = client.get('/api/crm/customer-profiles/')
 
         assert response.status_code == 201
-        assert 'tenant' not in response.json()
-        assert not hasattr(CustomerProfile.objects.get(pk=response.json()['id']), 'tenant')
         assert {item['customer'] for item in list_response.json()['results']} == {
             customer.id,
             other_customer.id,

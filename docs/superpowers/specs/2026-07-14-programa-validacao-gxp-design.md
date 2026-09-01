@@ -24,7 +24,7 @@ O escopo inclui:
 
 - contenção e remediação de segredos expostos;
 - segurança, ambientes, CI/CD, deploy, observabilidade e continuidade;
-- isolamento entre tenants, RBAC, MFA e segregação de funções;
+- RBAC, MFA e segregação de funções;
 - assinatura eletrônica, trilha de auditoria e integridade de registros;
 - documentos e evidências de CSV;
 - IQ/OQ/PQ dos módulos no uso pretendido aprovado;
@@ -72,7 +72,7 @@ flowchart LR
 - pipeline obrigatória executa checks, migrations, testes, cobertura, lint, tipos, SAST, dependências e validação OpenAPI;
 - imagens e dependências estão fixadas;
 - deploy, rollback, logs, métricas e alertas estão demonstrados;
-- a decisão Nginx versus Traefik está formalmente aprovada e documentada.
+- Nginx e Cloudflare Tunnel estão formalmente aprovados e documentados.
 
 ### G2 — Pronto para CSV
 
@@ -136,7 +136,7 @@ Nenhum gate aceita vulnerabilidade crítica, teste mandatório reprovado, desvio
 9. backup, restauração, RPO, RTO e disaster recovery demonstrados;
 10. proibição de exclusão física de registros regulados;
 11. recertificação de acessos e monitoramento de eventos críticos;
-12. testes adversariais de isolamento entre tenants.
+12. testes adversariais de autorização e segregação de funções.
 
 ### Onda 3 — Pacote de prontidão CSV
 
@@ -157,7 +157,7 @@ Produzir e aprovar:
 
 Os grupos serão qualificados nesta ordem:
 
-1. plataforma, identidade, tenants e permissões;
+1. plataforma, identidade e permissões;
 2. auditoria, workflow, arquivos e documentos;
 3. cadastros mestres e treinamento;
 4. estoque, lotes e genealogia;
@@ -203,7 +203,7 @@ Cada evidência conterá versão/commit, ambiente, configuração, executor, apr
 
 - testes unitários para validações, cálculos, workflows e invariantes;
 - testes de integração para PostgreSQL, Redis, RabbitMQ, Celery, armazenamento, e-mail e APIs;
-- testes sistemáticos de isolamento entre tenants;
+- testes sistemáticos de autorização e segregação de funções;
 - testes de autenticação, autorização, sessão, CSRF, uploads, criptografia e abuso;
 - testes positivos e negativos de audit trail, assinatura, autoria, timestamp, motivo, retenção e imutabilidade;
 - OQ cobrindo limites, exceções, concorrência, falhas e recuperação;
@@ -214,7 +214,7 @@ Dados de teste serão sintéticos ou anonimizados. O ambiente de validação nã
 
 ## 9. Gestão de desvios e risco residual
 
-- **Crítico:** risco à segurança do paciente, integridade de dados ou isolamento entre tenants; bloqueia o gate.
+- **Crítico:** risco à segurança do paciente, integridade de dados ou autorização; bloqueia o gate.
 - **Maior:** requisito GxP não atendido sem controle compensatório aprovado; bloqueia o módulo.
 - **Menor:** não compromete o uso pretendido; admite aceitação formal com justificativa, responsável e prazo.
 

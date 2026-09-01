@@ -13,22 +13,21 @@ dos models para exibir módulos, recursos e ações.
 O login único usa `username` e senha. O nome é normalizado antes da persistência
 e não pode se repetir por diferença de caixa; o e-mail é apenas contato.
 
-## PostgreSQL local
+## PostgreSQL em Docker
 
-Docker não é requisito para desenvolvimento, testes ou execução imediata. Use
-PostgreSQL local:
+Desenvolvimento, testes e produção usam PostgreSQL containerizado. Para o
+ambiente local, suba o Compose canônico:
 
-```env
-DATABASE_URL=postgres://rgnfarmasystem:rgnfarmasystem@localhost:5432/rgnfarmasystem
-TEST_DATABASE_URL=postgres://rgn_test:<senha-local>@127.0.0.1:5433/rgn_test
+```bash
+cp .env.local.example .env.local
+docker compose --env-file .env.local -f docker-compose.local.yml up -d --build
 ```
 
-O perfil `core.settings.test` usa o banco definido em `TEST_DATABASE_URL`
-diretamente, sem criar um banco `test_*`, para manter a validação no PostgreSQL
-local isolado.
+O perfil `core.settings.test` exige `TEST_DATABASE_URL` PostgreSQL. O script
+`scripts/test.sh` inicia o serviço isolado `postgres_test` em Docker.
 
-Copie `.env.development.example` para `.env` como ponto de partida. O
-`.env.example` é reservado ao contrato de publicação em containers.
+O `.env.example` documenta a VPS; `.env.local.example` documenta o ambiente
+local. Ambos apontam para o serviço privado `db` dentro do Compose.
 
 ## Runtime convertido
 
@@ -43,14 +42,12 @@ Copie `.env.development.example` para `.env` como ponto de partida. O
 - APIs DRF usam `SingleInstanceDjangoModelPermissions`, baseado nas permissões
   Django `view`, `add`, `change` e `delete`.
 
-## Inventário multi-tenant removido
+## Inventário do escopo legado removido
 
-Em 18/07/2026, a busca no código Python e nos templates de runtime, excluindo
-migrations históricas e testes de regressão, encontrou zero arquivos para cada
-contrato legado: `TenantOwnedModel`, `request.tenant`, `IsTenantMember`,
-`TenantMembership`, `TenantModuleSetting`, `active_tenant_id` e
-`X-Tenant-Slug`. Referências preservadas em migrations existem apenas para
-permitir reconstrução e evolução segura do schema histórico.
+Em 18/07/2026, a busca no código Python e nos templates de runtime confirmou
+que não há resolução de cliente, seleção de contexto, associação de acesso ou
+header de segmentação. O sistema usa somente usuários, grupos e permissões
+nativas do Django para autorização.
 
 ## Banco e migrations
 
@@ -88,16 +85,9 @@ também contra alterações concorrentes ocorridas após a renderização da pá
 
 ## Verificação executada
 
-Em PostgreSQL local:
+Em PostgreSQL Docker:
 
 ```bash
-DJANGO_SETTINGS_MODULE=core.settings.test \
-DATABASE_URL="$TEST_DATABASE_URL" \
-TEST_DATABASE_URL="$TEST_DATABASE_URL" \
-.venv/bin/python manage.py check
-
-DJANGO_SETTINGS_MODULE=core.settings.test \
-DATABASE_URL="$TEST_DATABASE_URL" \
-TEST_DATABASE_URL="$TEST_DATABASE_URL" \
-.venv/bin/pytest -q
+bash scripts/test.sh tests/test_foundation.py -q
+bash scripts/test.sh
 ```

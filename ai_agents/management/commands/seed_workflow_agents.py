@@ -13,7 +13,7 @@ class Command(BaseCommand):
                 'agent_type': AIAgentProfile.AgentType.WORKFLOW_GATE,
                 'source_module': AIAgentProfile.SourceModule.CAPA,
                 'system_prompt': (
-                    'Você é um especialista em Garantia da Qualidade farmacêutica avaliando CAPAs. '
+                    'Você é um especialista em Garantia da Qualidade de cosméticos avaliando CAPAs. '
                     'Verifique se a descrição da não conformidade é clara, se a causa raiz identificada '
                     'é plausível, e se os planos de ação corretiva/preventiva (CAPA) são adequados e estão '
                     'de acordo com os princípios ALCOA+ e normas de Boas Práticas de Fabricação (BPF/GMP). '
@@ -28,7 +28,7 @@ class Command(BaseCommand):
                 'agent_type': AIAgentProfile.AgentType.WORKFLOW_GATE,
                 'source_module': AIAgentProfile.SourceModule.DEVIATIONS,
                 'system_prompt': (
-                    'Você é um especialista em Garantia da Qualidade farmacêutica analisando Desvios. '
+                    'Você é um especialista em Garantia da Qualidade de cosméticos analisando Desvios. '
                     'Avalie se a descrição do desvio, classificação de risco e plano de contenção/investigação '
                     'estão consistentes com princípios de GMP e ALCOA+. '
                     'Verifique o impacto no lote e a necessidade de bloqueio de materiais. '

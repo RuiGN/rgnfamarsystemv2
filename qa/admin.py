@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from qa.models import (
     BatchRecordChecklistItem,
@@ -12,7 +13,7 @@ from qa.models import (
 
 
 @admin.register(QAReview)
-class QAReviewAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class QAReviewAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = ('review_number', 'review_type', 'title', 'status', 'approved_by', 'approved_at')
     list_filter = ('review_type', 'status', 'approved_at')
     search_fields = (
@@ -39,7 +40,7 @@ class QAReviewAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(BatchRecordChecklistItem)
-class BatchRecordChecklistItemAdmin(admin.ModelAdmin):
+class BatchRecordChecklistItemAdmin(GxpRetentionModelAdmin):
     list_display = (
         'review',
         'title',
@@ -62,7 +63,7 @@ class BatchRecordChecklistItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(LotRelease)
-class LotReleaseAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class LotReleaseAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'release_number',
         'product',
@@ -117,7 +118,7 @@ class LotReleaseAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(QualityBlock)
-class QualityBlockAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class QualityBlockAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'block_number',
         'target_type',
@@ -150,7 +151,7 @@ class QualityBlockAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(TrainingRequirement)
-class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'code',
         'title',
@@ -174,7 +175,7 @@ class TrainingRequirementAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAd
 
 
 @admin.register(TrainingRecord)
-class TrainingRecordAdmin(admin.ModelAdmin):
+class TrainingRecordAdmin(GxpRetentionModelAdmin):
     list_display = ('requirement', 'user', 'status', 'valid_until', 'trainer', 'completed_at')
     list_filter = ('status', 'valid_until', 'completed_at')
     search_fields = (
@@ -189,7 +190,7 @@ class TrainingRecordAdmin(admin.ModelAdmin):
 
 
 @admin.register(CriticalActivityRule)
-class CriticalActivityRuleAdmin(admin.ModelAdmin):
+class CriticalActivityRuleAdmin(GxpRetentionModelAdmin):
     list_display = (
         'activity_code',
         'name',

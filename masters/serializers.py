@@ -80,9 +80,9 @@ class ProductSerializer(SingleInstanceSerializerMixin, serializers.ModelSerializ
             'item_type',
             'unit',
             'category',
-            'therapeutic_class',
-            'pharmaceutical_form',
-            'administration_route',
+            'product_line',
+            'cosmetic_form',
+            'application_area',
             'status',
             'storage_condition',
             'shelf_life_days',
@@ -105,20 +105,16 @@ class ProductSerializer(SingleInstanceSerializerMixin, serializers.ModelSerializ
         for field_name in (
             'unit',
             'category',
-            'therapeutic_class',
-            'pharmaceutical_form',
-            'administration_route',
+            'product_line',
+            'cosmetic_form',
+            'application_area',
         ):
             pass
         self._validate_category_kind(attrs, 'category', MasterCategory.Kind.CATEGORY)
+        self._validate_category_kind(attrs, 'product_line', MasterCategory.Kind.PRODUCT_LINE)
+        self._validate_category_kind(attrs, 'cosmetic_form', MasterCategory.Kind.COSMETIC_FORM)
         self._validate_category_kind(
-            attrs, 'therapeutic_class', MasterCategory.Kind.THERAPEUTIC_CLASS
-        )
-        self._validate_category_kind(
-            attrs, 'pharmaceutical_form', MasterCategory.Kind.PHARMACEUTICAL_FORM
-        )
-        self._validate_category_kind(
-            attrs, 'administration_route', MasterCategory.Kind.ADMINISTRATION_ROUTE
+            attrs, 'application_area', MasterCategory.Kind.APPLICATION_AREA
         )
         return attrs
 

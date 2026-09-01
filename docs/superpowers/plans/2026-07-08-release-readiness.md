@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Do not execute deploy real em VPS.
-- Do not create or require Docker Swarm real during tests.
+- Do not create or require the production orchestrator during tests.
 - Do not access Cloudflare, GHCR, public domain, real certificates, production secrets, tokens, or credentials.
 - Do not create a new Django app.
 - Do not create or alter persistent models.
@@ -296,7 +296,7 @@ def _demo_data_check(readme, governance_docs, release_docs):
     docs_source = '\n'.join([readme, governance_docs, release_docs])
     requirements = {
         'command:load_demo_scenario': 'load_demo_scenario' in commands,
-        'docs:tenant_slug': '--tenant-slug' in docs_source,
+        'docs:scenario': '--scenario' in docs_source,
         'docs:scenario': '--scenario' in docs_source,
         'docs:base_master_data': 'base_master_data' in docs_source,
         'docs:quality_deviation': 'quality_deviation' in docs_source,
@@ -306,7 +306,7 @@ def _demo_data_check(readme, governance_docs, release_docs):
         'release.demo_data',
         'Carga demo para staging local',
         not missing,
-        'Comando load_demo_scenario esta registrado e documentado com tenant, scenario e exemplos de dados demo.',
+        'Comando load_demo_scenario esta registrado e documentado com scenario e exemplos de dados demo.',
         'Carga demo de staging incompleta: ' + ', '.join(missing),
     )
 
@@ -552,10 +552,10 @@ Falha em qualquer comando deve bloquear o release interno até investigação.
 
 ## Dados Demo Para Staging
 
-Para preparar um tenant de demonstração local:
+Para preparar uma demonstração local:
 
 ```bash
-TEST_DATABASE_URL=postgresql://rgn_test:rgn_test@127.0.0.1:5433/rgn_test DJANGO_SETTINGS_MODULE=core.settings.test .venv/bin/python manage.py load_demo_scenario --tenant-slug planta-recife --create-tenant-name "Planta Recife" --scenario base_master_data quality_deviation
+TEST_DATABASE_URL=postgresql://rgn_test:rgn_test@127.0.0.1:5433/rgn_test DJANGO_SETTINGS_MODULE=core.settings.test .venv/bin/python manage.py load_demo_scenario --scenario base_master_data quality_deviation
 ```
 
 O comando `load_demo_scenario` registra a execução e cria dados de governança
@@ -667,7 +667,7 @@ curl -fsS http://127.0.0.1:8000/api/v1/
 Para preparar dados demo de staging local:
 
 ```bash
-TEST_DATABASE_URL=postgresql://rgn_test:rgn_test@127.0.0.1:5433/rgn_test DJANGO_SETTINGS_MODULE=core.settings.test .venv/bin/python manage.py load_demo_scenario --tenant-slug planta-recife --create-tenant-name "Planta Recife" --scenario base_master_data quality_deviation
+TEST_DATABASE_URL=postgresql://rgn_test:rgn_test@127.0.0.1:5433/rgn_test DJANGO_SETTINGS_MODULE=core.settings.test .venv/bin/python manage.py load_demo_scenario --scenario base_master_data quality_deviation
 ```
 
 Evidencia de release deve incluir commit, resultado dos gates

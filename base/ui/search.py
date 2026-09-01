@@ -55,9 +55,11 @@ def search_visible_resources(
             if remaining <= 0:
                 return tuple(results)
             try:
-                objects = resource.get_queryset(request).filter(criteria).distinct()[
-                    : min(per_resource_limit, remaining)
-                ]
+                objects = (
+                    resource.get_queryset(request)
+                    .filter(criteria)
+                    .distinct()[: min(per_resource_limit, remaining)]
+                )
                 results.extend(
                     GlobalSearchResult(
                         title=str(obj),

@@ -348,7 +348,6 @@ class ProtectedFileApiTests(TestCase):
 
         assert invalid_response.status_code == 201
         assert create_response.status_code == 201
-        assert 'tenant' not in create_response.json()
         assert create_response.json()['uploaded_by'] == user.id
         assert access_response.status_code == 201
         assert link_response.status_code == 201

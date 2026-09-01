@@ -40,7 +40,7 @@ checks documentados, geração de OpenAPI e evidência consolidada de release.
 ## Fora De Escopo
 
 - Executar deploy real em VPS.
-- Criar ou exigir Docker Swarm real durante os testes.
+- Criar ou exigir a topologia real de produção durante os testes.
 - Acessar Cloudflare, GHCR, domínio público ou certificados reais.
 - Exigir segredos, tokens ou credenciais de produção.
 - Criar nova app Django.
@@ -129,7 +129,7 @@ Confirma que o projeto possui `drf-spectacular`, rota `/api/schema/`, rota
 ### Dados Demo Para Staging
 
 Confirma que `load_demo_scenario` está registrado como comando Django e que
-README/documentação descrevem uso com `--tenant-slug` e `--scenario`.
+README/documentação descrevem uso com `--scenario`.
 
 ### Evidência De Release
 

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from base.admin_mixins import GxpRetentionModelAdmin
 from base.admin_mixins import AutomaticGeneratedFieldsAdminMixin
 from recalls.models import (
     MarketComplaint,
@@ -11,7 +12,7 @@ from recalls.models import (
 
 
 @admin.register(MarketComplaint)
-class MarketComplaintAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class MarketComplaintAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'complaint_number',
         'complaint_type',
@@ -72,7 +73,7 @@ class MarketComplaintAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin)
 
 
 @admin.register(ProductReturn)
-class ProductReturnAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class ProductReturnAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'return_number',
         'return_type',
@@ -118,7 +119,7 @@ class ProductReturnAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(RecallCampaign)
-class RecallCampaignAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
+class RecallCampaignAdmin(AutomaticGeneratedFieldsAdminMixin, GxpRetentionModelAdmin):
     list_display = (
         'campaign_number',
         'campaign_type',
@@ -159,7 +160,7 @@ class RecallCampaignAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(RecallImpactedCustomer)
-class RecallImpactedCustomerAdmin(admin.ModelAdmin):
+class RecallImpactedCustomerAdmin(GxpRetentionModelAdmin):
     list_display = (
         'campaign',
         'customer',
@@ -181,7 +182,7 @@ class RecallImpactedCustomerAdmin(admin.ModelAdmin):
 
 
 @admin.register(RecallCommunication)
-class RecallCommunicationAdmin(admin.ModelAdmin):
+class RecallCommunicationAdmin(GxpRetentionModelAdmin):
     list_display = ('campaign', 'channel', 'subject', 'status', 'response_due_date', 'sent_at')
     list_filter = ('channel', 'status', 'response_due_date', 'sent_at')
     search_fields = ('campaign__campaign_number', 'subject', 'message', 'content_hash')
@@ -190,7 +191,7 @@ class RecallCommunicationAdmin(admin.ModelAdmin):
 
 
 @admin.register(RecallEffectivenessReport)
-class RecallEffectivenessReportAdmin(admin.ModelAdmin):
+class RecallEffectivenessReportAdmin(GxpRetentionModelAdmin):
     list_display = (
         'campaign',
         'report_type',
