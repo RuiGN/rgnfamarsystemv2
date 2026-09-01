@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, replace
 from typing import Any, Callable
 
+from django import forms
 from django.db.models import Model, QuerySet
 
 from auxiliary.models import (
@@ -328,6 +329,8 @@ class ResourceConfig:
     has_gantt_view: bool = False
     has_chat_view: bool = False
     update_form_fields: tuple[str, ...] | None = None
+    form_base: type[forms.ModelForm] | None = None
+    actor_field: str = ''
     reuse_route_name: str = ''
     reuse_permissions: tuple[str, ...] = field(default_factory=tuple)
     view_permission_action: str = 'view'

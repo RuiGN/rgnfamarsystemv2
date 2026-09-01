@@ -1,4 +1,5 @@
 import base64
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -20,14 +21,15 @@ from django.utils.html import escape
 
 from audits.models import AuditProgram
 from auxiliary.models import City, StateProvince
-from base.ui.forms import _apply_widget_metadata
+from base.ui.forms import _apply_widget_metadata, build_resource_form
 from base.ui.registry import get_modules, get_resource
+from base.ui.views import ResourceCreateView
 from capa.models import CapaRecord
 from compliance.models import RecordStatusHistory
 from documents.models import DocumentAuditTrail
 from documents.models import ControlledDocument
 from files.models import ProtectedFile
-from governance.models import InstitutionSettings
+from governance.models import GovernanceParameter, InstitutionSettings
 from masters.models import Product, UnitOfMeasure
 from production.models import ProductionOrder
 from risks.models import RiskRecord
@@ -132,6 +134,44 @@ class AppUiFoundationTests(TestCase):
 
         assert response.status_code == 302
         assert response['Location'].startswith('/accounts/login/')
+
+    def test_governance_parameter_form_base_hook_composes_domain_form(self):
+        resource = get_resource('governance', 'parameters')
+
+        assert 'form_base' in resource.__dataclass_fields__
+
+        class ProbeGovernanceParameterForm(forms.ModelForm):
+            domain_form_marker = True
+
+            class Meta:
+                model = GovernanceParameter
+                fields = ()
+
+        configured_resource = replace(resource, form_base=ProbeGovernanceParameterForm)
+        form_class = build_resource_form(configured_resource)
+
+        assert issubclass(form_class, ProbeGovernanceParameterForm)
+        assert form_class.domain_form_marker is True
+
+    def test_governance_parameter_updated_by_actor_hook_assigns_request_user(self):
+        resource = get_resource('governance', 'parameters')
+
+        assert 'actor_field' in resource.__dataclass_fields__
+
+        view = ResourceCreateView()
+        view.request = type('Request', (), {'user': self.user})()
+        view.get_resource = lambda: replace(resource, actor_field='updated_by')
+        parameter = GovernanceParameter(
+            scope=GovernanceParameter.Scope.GLOBAL,
+            module='governance',
+            key='ui_actor_probe',
+            value_type=GovernanceParameter.ValueType.STRING,
+            value='ativo',
+        )
+
+        prepared = view.prepare_object_for_save(parameter, action='create')
+
+        assert prepared.updated_by == self.user
 
     def test_login_template_uses_design_system_auth_shell(self):
         response = self.client.get(reverse('accounts:login'))

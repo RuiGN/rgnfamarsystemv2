@@ -473,8 +473,9 @@ def build_resource_form(resource, *, update=False):
             if field.editable and not field.auto_created and field.name not in SYSTEM_FIELD_NAMES
         )
     User = get_user_model()
+    form_base = resource.form_base or forms.ModelForm
 
-    class ResourceForm(forms.ModelForm):
+    class ResourceForm(form_base):
         def __init__(self, *args, request=None, **kwargs):
             super().__init__(*args, **kwargs)
 

@@ -1515,6 +1515,9 @@ class ResourceCreateView(LoginRequiredMixin, ResourceContextMixin, TemplateView)
 
     def prepare_object_for_save(self, obj, *, action):
         del action
+        actor_field = self.get_resource().actor_field
+        if actor_field:
+            setattr(obj, actor_field, self.request.user)
         return obj
 
     def handle_integrity_error(self, form, error):
