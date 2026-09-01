@@ -872,6 +872,16 @@ class PurchaseReceipt(SingleInstanceModel):
     )
     status = models.CharField('status', max_length=24, choices=Status.choices, default=Status.DRAFT)
     fiscal_document_number = models.CharField('documento fiscal', max_length=80, blank=True)
+    nfe_access_key = models.CharField('chave de acesso NF-e', max_length=44, blank=True)
+    nfe_xml_sha256 = models.CharField('hash do XML NF-e', max_length=64, blank=True)
+    nfe_xml_file = models.OneToOneField(
+        'files.ProtectedFile',
+        on_delete=models.PROTECT,
+        related_name='purchase_receipt_nfe',
+        null=True,
+        blank=True,
+        verbose_name='XML NF-e protegido',
+    )
     fiscal_received_at = models.DateTimeField('recebimento fiscal em', null=True, blank=True)
     physical_received_at = models.DateTimeField('recebimento físico em', null=True, blank=True)
     quality_status = models.CharField(
@@ -901,6 +911,11 @@ class PurchaseReceipt(SingleInstanceModel):
         constraints = [
             models.UniqueConstraint(
                 fields=['receipt_number'], name='unique_purchase_receipt_number'
+            ),
+            models.UniqueConstraint(
+                fields=['nfe_access_key'],
+                condition=~Q(nfe_access_key=''),
+                name='unique_purchase_receipt_nfe_access_key',
             ),
         ]
         indexes = [
@@ -981,6 +996,7 @@ class PurchaseReceiptItem(SingleInstanceModel):
         verbose_name='unidade',
     )
     lot_number = models.CharField('lote', max_length=80, blank=True)
+    manufacturing_date = models.DateField('fabricação', null=True, blank=True)
     expiry_date = models.DateField('validade', null=True, blank=True)
     notes = models.TextField('observações', blank=True)
 
@@ -990,6 +1006,7 @@ class PurchaseReceiptItem(SingleInstanceModel):
             models.Index(fields=['receipt']),
             models.Index(fields=['product']),
             models.Index(fields=['lot_number']),
+            models.Index(fields=['manufacturing_date']),
             models.Index(fields=['expiry_date']),
         ]
         verbose_name = 'item do recebimento'
@@ -1012,6 +1029,14 @@ class PurchaseReceiptItem(SingleInstanceModel):
         if self.order_item and self.received_quantity > self.order_item.quantity:
             errors['received_quantity'] = (
                 'A quantidade recebida não pode superar a quantidade do pedido.'
+            )
+        if (
+            self.manufacturing_date
+            and self.expiry_date
+            and self.manufacturing_date > self.expiry_date
+        ):
+            errors['manufacturing_date'] = (
+                'A fabricação não pode ser posterior à data de validade.'
             )
         if errors:
             raise ValidationError(errors)
