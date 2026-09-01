@@ -269,7 +269,156 @@
         });
     }
 
+    function initGovernanceParameterForm() {
+        var typeControl = document.querySelector('[data-governance-value-type="true"]');
+        var rulesControl = document.querySelector('[data-governance-rules="true"]');
+        var valueCache = new Map();
+
+        if (!typeControl || !rulesControl) {
+            return;
+        }
+
+        function controlValue(control) {
+            if (control.type === 'checkbox') {
+                return control.checked ? 'true' : 'false';
+            }
+            return control.value;
+        }
+
+        function parsedRules() {
+            try {
+                var rules = JSON.parse(rulesControl.value || '{}');
+                return rules && typeof rules === 'object' ? rules : {};
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function copyControlAttributes(control, replacement) {
+            var typeSpecificAttributes = [
+                'type',
+                'value',
+                'checked',
+                'selected',
+                'required',
+                'role',
+                'step',
+                'rows',
+                'cols',
+                'data-governance-rendered-type'
+            ];
+            Array.prototype.forEach.call(control.attributes, function (attribute) {
+                if (typeSpecificAttributes.indexOf(attribute.name) === -1) {
+                    replacement.setAttribute(attribute.name, attribute.value);
+                }
+            });
+            replacement.name = control.name;
+            replacement.id = control.id;
+            replacement.className = control.className
+                .split(/\s+/)
+                .filter(function (className) {
+                    return ['form-control', 'form-select', 'form-check-input'].indexOf(className) === -1;
+                })
+                .join(' ');
+            if (replacement.type === 'checkbox') {
+                replacement.classList.add('form-check-input');
+            } else if (replacement.tagName === 'SELECT') {
+                replacement.classList.add('form-select');
+            } else {
+                replacement.classList.add('form-control');
+            }
+        }
+
+        function addOption(select, value, label) {
+            var option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            select.appendChild(option);
+        }
+
+        function createReplacement(control, role, valueType, rules, cachedValue) {
+            var replacement;
+            var choices;
+
+            if (valueType === 'boolean' && role === 'current') {
+                replacement = document.createElement('input');
+                replacement.type = 'checkbox';
+                replacement.setAttribute('role', 'switch');
+                replacement.checked = cachedValue === 'true' || cachedValue === 'on';
+            } else if (valueType === 'boolean') {
+                replacement = document.createElement('select');
+                addOption(replacement, '', 'Não definido');
+                addOption(replacement, 'true', 'Ativado');
+                addOption(replacement, 'false', 'Desativado');
+            } else if (valueType === 'integer' || valueType === 'days') {
+                replacement = document.createElement('input');
+                replacement.type = 'number';
+                replacement.step = '1';
+            } else if (valueType === 'decimal') {
+                replacement = document.createElement('input');
+                replacement.type = 'number';
+                replacement.step = 'any';
+            } else if (valueType === 'choice') {
+                replacement = document.createElement('select');
+                if (role === 'default') {
+                    addOption(replacement, '', 'Não definido');
+                }
+                choices = Array.isArray(rules.choices) ? rules.choices : [];
+                choices.forEach(function (choice) {
+                    addOption(replacement, String(choice), String(choice));
+                });
+            } else if (valueType === 'json') {
+                replacement = document.createElement('textarea');
+            } else {
+                replacement = document.createElement('input');
+                replacement.type = 'text';
+            }
+
+            copyControlAttributes(control, replacement);
+            replacement.dataset.governanceRenderedType = valueType;
+            replacement.required = role === 'current' && valueType !== 'boolean';
+            if (replacement.type !== 'checkbox') {
+                replacement.value = cachedValue;
+            }
+            return replacement;
+        }
+
+        function replaceControl(role, valueType, rules) {
+            var selector = '[data-governance-value="' + role + '"]';
+            var control = document.querySelector(selector);
+            var previousType;
+            var previousValue;
+            var cacheKey;
+            var cachedValue;
+            var replacement;
+
+            if (!control) {
+                return;
+            }
+
+            previousType = control.dataset.governanceRenderedType || valueType;
+            previousValue = controlValue(control);
+            valueCache.set(role + ':' + previousType, previousValue);
+            cacheKey = role + ':' + valueType;
+            cachedValue = valueCache.has(cacheKey) ? valueCache.get(cacheKey) : '';
+            replacement = createReplacement(control, role, valueType, rules, cachedValue);
+            control.replaceWith(replacement);
+        }
+
+        function renderGovernanceControls() {
+            var valueType = typeControl.value;
+            var rules = parsedRules();
+            replaceControl('current', valueType, rules);
+            replaceControl('default', valueType, rules);
+        }
+
+        typeControl.addEventListener('change', renderGovernanceControls);
+        rulesControl.addEventListener('input', renderGovernanceControls);
+        renderGovernanceControls();
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        initGovernanceParameterForm();
         document.querySelectorAll('[data-mask]').forEach(bindInput);
         document.querySelectorAll('form').forEach(function (form) {
             form.addEventListener('submit', function (event) {

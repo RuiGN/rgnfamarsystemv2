@@ -2255,6 +2255,18 @@ class AppUiFormEnhancementTests(TestCase):
         assert parameter.default_value == {}
         assert parameter.updated_by == self.admin
 
+    def test_governance_parameter_javascript_switches_controls_safely(self):
+        script = Path('static/js/app-form-enhancements.js').read_text()
+
+        assert 'function initGovernanceParameterForm' in script
+        assert "addEventListener('change'" in script
+        assert "addEventListener('input'" in script
+        assert 'rules.choices' in script
+        assert 'replacement.name = control.name' in script
+        assert "replaceControl('current'" in script
+        assert "replaceControl('default'" in script
+        assert 'innerHTML' not in script
+
     def test_generic_forms_use_semantic_input_types_and_masks(self):
         response = self.client.get('/app/masters/partners/new/')
 
