@@ -8,6 +8,7 @@ ACTION_KEYS = (
     ('orders', 'approve'),
     ('orders', 'cancel'),
     ('orders', 'send'),
+    ('receipts', 'import_xml'),
     ('receipts', 'mark_received'),
     ('receipts', 'post_stock'),
     ('receipts', 'release_quality'),

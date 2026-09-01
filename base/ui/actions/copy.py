@@ -47,6 +47,7 @@ ACTION_LABELS = {
     'generate_notifications': 'Gerar notificações',
     'generate_order': 'Gerar ordem',
     'inspect': 'Inspecionar',
+    'import_xml': 'Importar XML da NF-e',
     'issue': 'Emitir',
     'issue_materials': 'Baixar matérias-primas',
     'mark_lost': 'Marcar como perdida',

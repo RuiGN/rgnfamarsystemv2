@@ -4,7 +4,7 @@ from base.ui.actions.copy import ACTION_LABELS
 from base.ui.actions.discovery import discover_post_actions
 from base.ui.actions.inventory import fields_for
 from base.ui.actions.states import state_rule_for
-from base.ui.actions.types import ActionConfig, ActionConfirmation
+from base.ui.actions.types import ActionConfig, ActionConfirmation, FieldKind, SubmissionFormat
 from base.ui.registry import get_resource
 
 
@@ -162,6 +162,8 @@ def action_config(
         icon = 'feather-file-plus'
     elif action_name in ('download', 'export'):
         icon = 'feather-download'
+    elif action_name == 'import_xml':
+        icon = 'feather-upload'
     elif 'calculate' in action_name or action_name in (
         'reconcile',
         'reverse',
@@ -193,6 +195,11 @@ def action_config(
         'fields': tuple(fields),
         'allowed_states': tuple(allowed_states),
         'confirmation': confirmation,
+        'submission_format': (
+            SubmissionFormat.MULTIPART
+            if any(field.kind == FieldKind.FILE for field in fields)
+            else SubmissionFormat.JSON
+        ),
     }
     defaults.update(overrides)
     return ActionConfig(**defaults)

@@ -22,9 +22,9 @@ def test_html_catalog_exactly_matches_post_actions():
 def test_catalog_has_approved_cardinality():
     configs = action_registry.all()
 
-    assert len(configs) == 232
+    assert len(configs) == 233
     assert sum(config.detail for config in configs) == 227
-    assert sum(not config.detail for config in configs) == 5
+    assert sum(not config.detail for config in configs) == 6
 
 
 def test_standard_cost_obsolete_action_has_complete_html_contract():

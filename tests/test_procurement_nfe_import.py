@@ -13,9 +13,12 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
 
+from base.ui.actions.registry import action_registry
+from base.ui.actions.types import FieldKind, SubmissionFormat
 from files.models import ProtectedFile, ProtectedFileAuditTrail
 from governance.models import InstitutionSettings
 from inventory.models import StockBalance, StockLot, StockMovement
@@ -474,12 +477,81 @@ class NfeImportEndpointTests(TestCase):
         self.user = User.objects.get(pk=self.user.pk)
         self.client.force_authenticate(self.user)
 
+    def _grant_html_views(self):
+        permissions = Permission.objects.filter(
+            content_type__app_label='procurement',
+            codename__in=('view_purchaseorder', 'view_purchasereceipt'),
+        )
+        self.user.user_permissions.add(*permissions)
+        self.user = User.objects.get(pk=self.user.pk)
+        self.client.force_authenticate(self.user)
+
     def _upload(self, xml=None):
         return SimpleUploadedFile(
             'nota-12345.xml',
             xml or authorized_nfe_xml(),
             content_type='application/xml',
         )
+
+    def _html_endpoint(self):
+        return reverse(
+            'app:collection_action',
+            args=('procurement', 'receipts', 'import_xml'),
+        )
+
+    def test_html_catalog_exposes_secure_multipart_import_contract(self):
+        config = action_registry.get('procurement', 'receipts', 'import_xml')
+
+        assert config.route_name == 'v1_procurement:receipt-import-xml'
+        assert config.permissions == ('procurement.add_purchasereceipt',)
+        assert config.detail is False
+        assert config.submission_format == SubmissionFormat.MULTIPART
+        assert config.icon == 'feather-upload'
+        assert tuple((field.name, field.kind) for field in config.fields) == (
+            ('order_id', FieldKind.RELATION),
+            ('xml', FieldKind.FILE),
+        )
+
+    def test_html_form_lists_only_approved_purchase_orders(self):
+        self._grant('add')
+        self._grant_html_views()
+        draft_order = PurchaseOrder.objects.create(
+            order_number='PC-NFE-DRAFT',
+            supplier=self.order.supplier,
+            status=PurchaseOrder.Status.DRAFT,
+            issue_date=timezone.localdate(),
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(self._html_endpoint())
+
+        assert response.status_code == 200
+        queryset = response.context['form'].fields['order_id'].queryset
+        assert self.order in queryset
+        assert draft_order not in queryset
+        assert response.context['form'].is_multipart()
+
+    def test_html_form_imports_xml_and_redirects_to_receipt_list(self):
+        self._grant('add')
+        self._grant_html_views()
+        self.client.force_login(self.user)
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                response = self.client.post(
+                    self._html_endpoint(),
+                    {'order_id': self.order.pk, 'xml': self._upload()},
+                )
+
+        assert response.status_code == 302
+        assert response.url == reverse(
+            'app:resource_list',
+            args=('procurement', 'receipts'),
+        )
+        assert PurchaseReceipt.objects.filter(
+            order=self.order,
+            nfe_access_key=NFE_KEY,
+        ).exists()
 
     def test_endpoint_imports_multipart_xml_and_returns_nested_items(self):
         self._grant('add')

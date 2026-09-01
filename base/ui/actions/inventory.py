@@ -81,6 +81,7 @@ FIELD_SPECS = {
     ('integrations', 'connectors', 'test_success'): 'details:j',
     ('integrations', 'api-clients', 'rotate_secret'): 'secret:t',
     ('procurement', 'requisitions', 'reject'): 'rejection_reason:T',
+    ('procurement', 'receipts', 'import_xml'): 'order_id:r,xml:f',
     ('procurement', 'receipts', 'release_quality'): 'quality_status:c',
     ('qa', 'reviews', 'reject'): 'reason:T',
     ('qa', 'checklist-items', 'complete'): 'evidence_reference:t,comments:T',
@@ -178,6 +179,7 @@ FIELD_LABELS = {
     'new_file_reference': 'Referência do novo arquivo',
     'next_review_date': 'Data da próxima revisão',
     'notes': 'Observações',
+    'order_id': 'Pedido de compra aprovado',
     'progress_percent': 'Progresso percentual',
     'protocol_number': 'Número do protocolo',
     'purpose': 'Finalidade',
@@ -209,6 +211,7 @@ FIELD_LABELS = {
     'title': 'Título financeiro',
     'user': 'Usuário',
     'validation_notes': 'Notas da validação',
+    'xml': 'Arquivo XML da NF-e',
 }
 
 
@@ -222,6 +225,7 @@ KIND_MAP = {
     'DT': FieldKind.DATETIME,
     'c': FieldKind.CHOICE,
     'r': FieldKind.RELATION,
+    'f': FieldKind.FILE,
     'j': FieldKind.JSON,
 }
 
@@ -268,7 +272,11 @@ def _relation_factory(name):
         model = _relation_models()[name]
         permission = f'{model._meta.app_label}.view_{model._meta.model_name}'
         manager = model._default_manager
-        return manager.all() if request.user.has_perm(permission) else manager.none()
+        if not request.user.has_perm(permission):
+            return manager.none()
+        if name == 'order_id':
+            return manager.filter(status=model.Status.APPROVED)
+        return manager.all()
 
     return factory
 
@@ -277,10 +285,12 @@ def _relation_models():
     from finance.models import FinancialCategory, FinancialSettlement, FinancialTitle
     from fiscal.models import FiscalDocument
     from inventory.models import StockLot
+    from procurement.models import PurchaseOrder
 
     return {
         'category': FinancialCategory,
         'document': FiscalDocument,
+        'order_id': PurchaseOrder,
         'settlement': FinancialSettlement,
         'source_lot': StockLot,
         'title': FinancialTitle,
