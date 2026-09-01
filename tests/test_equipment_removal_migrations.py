@@ -98,6 +98,15 @@ class EquipmentReferenceCleanupMigrationTests(TransactionTestCase):
         executor.migrate(self.migrate_to)
         self.apps = executor.loader.project_state(self.migrate_to).apps
 
+        # O recuo com fake=True preserva fisicamente migrações posteriores.
+        # Reconcilie o histórico da NF-e antes de o tearDown restaurar todas
+        # as folhas, evitando tentar criar novamente colunas já existentes.
+        executor = MigrationExecutor(connection)
+        executor.migrate(
+            [('procurement', '0003_purchase_receipt_nfe_import')],
+            fake=True,
+        )
+
     def tearDown(self):
         executor = MigrationExecutor(connection)
         executor.migrate(executor.loader.graph.leaf_nodes())
