@@ -100,6 +100,7 @@ from governance.models import (
     GovernanceParameter,
     InstitutionSettings,
 )
+from governance.forms import GovernanceParameterForm
 from integrations.models import (
     ApiCallLog,
     ApiClientApplication,
@@ -4235,8 +4236,21 @@ MODULES = (
                 'parameters',
                 'Parâmetros de governança',
                 GovernanceParameter,
-                ('scope', 'module', 'key', 'value_type', 'is_active'),
+                ('scope', 'module', 'key', 'value', 'value_type', 'is_active'),
                 ('module', 'key', 'description'),
+                form_fields=(
+                    'scope',
+                    'module',
+                    'key',
+                    'value_type',
+                    'value',
+                    'default_value',
+                    'rules',
+                    'description',
+                    'is_active',
+                ),
+                form_base=GovernanceParameterForm,
+                actor_field='updated_by',
             ),
             ResourceConfig(
                 'catalog-items',

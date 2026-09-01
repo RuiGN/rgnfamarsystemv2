@@ -2,6 +2,7 @@ import base64
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+import json
 from pathlib import Path
 import re
 import tempfile
@@ -2080,6 +2081,179 @@ class AppUiFormEnhancementTests(TestCase):
         self.client.force_login(self.admin)
         session = self.client.session
         session.save()
+
+    def _governance_parameter_form(self, *, value_type, value, default_value, rules=None):
+        resource = get_resource('governance', 'parameters')
+        form_class = build_resource_form(resource)
+        instance = GovernanceParameter(
+            scope=GovernanceParameter.Scope.GLOBAL,
+            module='governance',
+            key=f'typed_{value_type}',
+            value_type=value_type,
+            value=value,
+            default_value=default_value,
+            rules=rules or {},
+        )
+        return form_class(instance=instance)
+
+    def test_governance_parameter_typed_controls_follow_value_type(self):
+        resource = get_resource('governance', 'parameters')
+
+        assert resource.form_base.__name__ == 'GovernanceParameterForm'
+        assert resource.actor_field == 'updated_by'
+        assert resource.list_display == (
+            'scope',
+            'module',
+            'key',
+            'value',
+            'value_type',
+            'is_active',
+        )
+
+        cases = (
+            (GovernanceParameter.ValueType.BOOLEAN, True, False, {}, forms.BooleanField),
+            (GovernanceParameter.ValueType.INTEGER, 5, 2, {}, forms.IntegerField),
+            (GovernanceParameter.ValueType.DAYS, 30, 7, {}, forms.IntegerField),
+            (GovernanceParameter.ValueType.DECIMAL, '12.50', '5.00', {}, forms.DecimalField),
+            (
+                GovernanceParameter.ValueType.CHOICE,
+                'manual',
+                'automatic',
+                {'choices': ['manual', 'automatic']},
+                forms.ChoiceField,
+            ),
+            (GovernanceParameter.ValueType.STRING, 'ativo', 'inativo', {}, forms.CharField),
+            (GovernanceParameter.ValueType.JSON, {'enabled': True}, {}, {}, forms.JSONField),
+        )
+
+        for value_type, value, default_value, rules, field_class in cases:
+            form = self._governance_parameter_form(
+                value_type=value_type,
+                value=value,
+                default_value=default_value,
+                rules=rules,
+            )
+            assert isinstance(form.fields['value'], field_class)
+            assert form.fields['value'].widget.attrs['data-governance-value'] == 'current'
+            assert form.fields['default_value'].widget.attrs['data-governance-value'] == 'default'
+            assert form.fields['value_type'].widget.attrs['data-governance-value-type'] == 'true'
+            assert form.fields['rules'].widget.attrs['data-governance-rules'] == 'true'
+
+        boolean_form = self._governance_parameter_form(
+            value_type=GovernanceParameter.ValueType.BOOLEAN,
+            value=True,
+            default_value=True,
+        )
+        assert isinstance(boolean_form.fields['default_value'], forms.TypedChoiceField)
+        assert boolean_form['default_value'].value() == 'true'
+
+    def test_governance_parameter_typed_form_coerces_submitted_values(self):
+        resource = get_resource('governance', 'parameters')
+        form_class = build_resource_form(resource)
+        cases = (
+            (GovernanceParameter.ValueType.BOOLEAN, None, '', {}, False, {}),
+            (GovernanceParameter.ValueType.INTEGER, '7', '3', {}, 7, 3),
+            (GovernanceParameter.ValueType.DAYS, '30', '7', {}, 30, 7),
+            (GovernanceParameter.ValueType.DECIMAL, '12.50', '5.00', {}, '12.50', '5.00'),
+            (
+                GovernanceParameter.ValueType.CHOICE,
+                'manual',
+                'automatic',
+                {'choices': ['manual', 'automatic']},
+                'manual',
+                'automatic',
+            ),
+            (GovernanceParameter.ValueType.STRING, 'ativo', '', {}, 'ativo', {}),
+            (
+                GovernanceParameter.ValueType.JSON,
+                '{"enabled": true}',
+                '["fallback"]',
+                {},
+                {'enabled': True},
+                ['fallback'],
+            ),
+        )
+
+        for value_type, value, default_value, rules, expected_value, expected_default in cases:
+            data = {
+                'scope': GovernanceParameter.Scope.GLOBAL,
+                'module': 'governance',
+                'key': f'coerce_{value_type}',
+                'value_type': value_type,
+                'default_value': default_value,
+                'rules': json.dumps(rules),
+                'description': '',
+                'is_active': 'on',
+            }
+            if value is not None:
+                data['value'] = value
+
+            form = form_class(data=data)
+
+            assert form.is_valid(), form.errors.as_json()
+            assert form.cleaned_data['value'] == expected_value
+            assert form.cleaned_data['default_value'] == expected_default
+
+    def test_governance_parameter_typed_choice_rejects_missing_or_unknown_rules(self):
+        form_class = build_resource_form(get_resource('governance', 'parameters'))
+
+        for key, rules in (
+            ('missing_choices', {}),
+            ('unknown_choice', {'choices': ['manual']}),
+        ):
+            form = form_class(
+                data={
+                    'scope': GovernanceParameter.Scope.GLOBAL,
+                    'module': 'governance',
+                    'key': key,
+                    'value_type': GovernanceParameter.ValueType.CHOICE,
+                    'value': 'automatic',
+                    'default_value': '',
+                    'rules': json.dumps(rules),
+                    'description': '',
+                    'is_active': 'on',
+                }
+            )
+
+            assert not form.is_valid()
+            assert 'value' in form.errors
+
+    def test_governance_parameter_typed_html_update_sets_authenticated_actor(self):
+        parameter = GovernanceParameter.objects.create(
+            scope=GovernanceParameter.Scope.QUALITY,
+            module='qa',
+            key='typed_html_actor',
+            value_type=GovernanceParameter.ValueType.BOOLEAN,
+            value=True,
+            default_value=True,
+        )
+
+        response = self.client.post(
+            reverse(
+                'app:resource_edit',
+                kwargs={
+                    'module_slug': 'governance',
+                    'resource_slug': 'parameters',
+                    'pk': parameter.pk,
+                },
+            ),
+            {
+                'scope': GovernanceParameter.Scope.QUALITY,
+                'module': 'qa',
+                'key': 'typed_html_actor',
+                'value_type': GovernanceParameter.ValueType.BOOLEAN,
+                'default_value': '',
+                'rules': '{}',
+                'description': '',
+                'is_active': 'on',
+            },
+        )
+
+        assert response.status_code == 302
+        parameter.refresh_from_db()
+        assert parameter.value is False
+        assert parameter.default_value == {}
+        assert parameter.updated_by == self.admin
 
     def test_generic_forms_use_semantic_input_types_and_masks(self):
         response = self.client.get('/app/masters/partners/new/')
