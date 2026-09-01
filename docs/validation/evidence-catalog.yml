@@ -59,9 +59,9 @@ evidence:
     title: Validação de agentes de IA em escopo global
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-08-31T00:00:00Z'
+    captured_at: '2026-09-01T00:00:00Z'
     status: approved
-    sha256: '6be55cd7af3e7a247ec151994cd031609b2009f8b0bce9e7454acc201faee537'
+    sha256: '43851cb9c3c36f0d9dc08621377dec364e2b1720423f4599d57321ec29d10e3e'
     artifact: tests/test_ai_agents.py
   - id: EV-SI-008
     requirement: SI-008
@@ -86,9 +86,9 @@ evidence:
     title: Validação do PostgreSQL containerizado e da compatibilidade de continuidade
     owner: engineering
     reviewed_by: automated-quality-gate
-    captured_at: '2026-08-31T00:00:00Z'
+    captured_at: '2026-09-01T00:00:00Z'
     status: approved
-    sha256: 'f104c0562decb5e04c4a6af70ddcb290a5ae9623c741fa7385d4008d287fb065'
+    sha256: '78cf7058af897080d13950c9b58dfe00e12dbc310817db58c1f76f474d2f1368'
     artifact: tests/test_native_postgres_deployment.py
   - id: EV-SIA-ADMIN
     requirement: SIA-ADMIN
