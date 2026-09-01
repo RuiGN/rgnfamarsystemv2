@@ -18,8 +18,10 @@
 
 .auth-page-shell .auth-layout {
     display: grid;
+    width: 100%;
     min-height: calc(100vh - 66px);
     min-height: calc(100dvh - 66px);
+    padding: 0;
     grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
 }
 

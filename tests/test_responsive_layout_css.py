@@ -353,6 +353,13 @@ def test_cosmetics_login_styles_are_scoped_responsive_and_motion_safe():
     assert '#f4f7fb' in css.casefold()
     assert '#283c50' in css.casefold()
     assert '#ffffff' in css.casefold()
+    layout = re.search(
+        r'(?m)^\.auth-page-shell \.auth-layout\s*\{(?P<body>[^}]*)\}',
+        css,
+    )
+    assert layout is not None
+    assert re.search(r'width:\s*100%', layout.group('body'))
+    assert re.search(r'padding:\s*0', layout.group('body'))
     assert '@media (max-width: 991.98px)' in css
     assert re.search(
         r'@media \(max-width: 991\.98px\).*?\.auth-page-shell \.auth-story\s*\{'
