@@ -14,58 +14,73 @@
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 </head>
 <body class="auth-page-shell">
-    <main class="auth-main v1 d-flex align-items-center justify-content-center" data-ui="auth-login">
-        <div class="auth-wrapper w-100">
-            <div class="auth-form mx-auto" style="max-width: 450px;">
-                <div class="card shadow-sm my-5 mx-3" aria-label="Acesso ao sistema">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="auth-brand mb-4 text-center">
-                            {% static 'vendor/duralux/images/logo_farm_system.png' as default_brand_logo %}
-                            <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="login-brand-logo">
-                        </div>
-                        <div class="text-center mb-4">
-                            <span class="badge bg-soft-primary text-primary mb-3">ERP para cosméticos</span>
-                            <h1 class="h3 mb-2 f-w-500">Acesso ao sistema</h1>
-                            <p class="text-muted mb-0">Entre para acessar seus módulos e operações.</p>
-                        </div>
-
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert" aria-live="polite">
-                            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
-                        </div>
-                        {% endif %}
-
-                        <form method="post" novalidate>
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ next }}">
-
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="id_username">Nome do usuário</label>
-                                <input id="id_username" type="text" name="username" class="form-control{% if form.username.errors %} is-invalid{% endif %}" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário" required autofocus autocomplete="username"{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_errors"{% endif %}>
-                                {% if form.username.errors %}
-                                    <div id="id_username_errors" class="invalid-feedback d-block" role="alert">
-                                        {% for error in form.username.errors %}{{ error }}{% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group mb-3">
-                                <label class="form-label" for="id_password">Senha</label>
-                                <input id="id_password" type="password" name="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" placeholder="Digite sua senha" required autocomplete="current-password"{% if form.password.errors %} aria-invalid="true" aria-describedby="id_password_errors"{% endif %}>
-                                {% if form.password.errors %}
-                                    <div id="id_password_errors" class="invalid-feedback d-block" role="alert">
-                                        {% for error in form.password.errors %}{{ error }}{% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="d-grid mt-4">
-                                <button type="submit" class="btn btn-primary w-100"><i class="feather-log-in me-2" aria-hidden="true"></i>Entrar</button>
-                            </div>
-                        </form>
+    <main class="auth-main" data-ui="auth-login">
+        {% static 'vendor/duralux/images/logo_farm_system.png' as default_brand_logo %}
+        <div class="auth-layout">
+            <section class="auth-story" data-auth-story aria-labelledby="auth-story-title">
+                <div class="auth-story__content">
+                    <div class="auth-story__brand">
+                        <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="auth-story__logo">
                     </div>
+                    <p class="auth-story__eyebrow">Indústria cosmética conectada</p>
+                    <h1 id="auth-story-title">Gestão industrial com rastreabilidade de ponta a ponta</h1>
+                    <p class="auth-story__copy">Da formulação ao recebimento fiscal, cada etapa permanece conectada.</p>
+                    <ol class="auth-trace" data-auth-trace aria-label="Fluxo de rastreabilidade">
+                        <li class="auth-trace__step">Formulação</li>
+                        <li class="auth-trace__step">Produção</li>
+                        <li class="auth-trace__step">Qualidade</li>
+                        <li class="auth-trace__step">NF-e</li>
+                    </ol>
                 </div>
-            </div>
+            </section>
+
+            <section class="auth-card-column" aria-labelledby="auth-card-title">
+                <div class="auth-card">
+                    <div class="auth-card__brand">
+                        <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="login-brand-logo">
+                    </div>
+                    <header class="auth-card__header">
+                        <span class="auth-card__kicker">Ambiente seguro</span>
+                        <h2 id="auth-card-title">Acesso ao sistema</h2>
+                        <p class="auth-card__support">Entre para acessar seus módulos e operações.</p>
+                    </header>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert" aria-live="polite">
+                        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}">
+
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="id_username">Nome do usuário</label>
+                            <input id="id_username" type="text" name="username" class="form-control{% if form.username.errors %} is-invalid{% endif %}" value="{{ form.username.value|default_if_none:'' }}" placeholder="Digite seu usuário" required autofocus autocomplete="username"{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_errors"{% endif %}>
+                            {% if form.username.errors %}
+                                <div id="id_username_errors" class="invalid-feedback d-block" role="alert">
+                                    {% for error in form.username.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="id_password">Senha</label>
+                            <input id="id_password" type="password" name="password" class="form-control{% if form.password.errors %} is-invalid{% endif %}" placeholder="Digite sua senha" required autocomplete="current-password"{% if form.password.errors %} aria-invalid="true" aria-describedby="id_password_errors"{% endif %}>
+                            {% if form.password.errors %}
+                                <div id="id_password_errors" class="invalid-feedback d-block" role="alert">
+                                    {% for error in form.password.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary w-100"><i class="feather-log-in me-2" aria-hidden="true"></i>Entrar</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
         </div>
     </main>
     {% include 'includes/footer.html' %}
