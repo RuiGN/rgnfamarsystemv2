@@ -7,11 +7,14 @@ from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase, override_settings
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from files.models import ProtectedFile, ProtectedFileAuditTrail
 from governance.models import InstitutionSettings
@@ -415,6 +418,135 @@ class NfeImportServiceTests(TestCase):
                 assert list(Path(media_root).rglob('*.enc')) == []
                 assert not PurchaseReceipt.objects.exists()
                 assert not ProtectedFile.objects.exists()
+
+
+class NfeImportEndpointTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='nfe.endpoint@example.com',
+            email='nfe.endpoint@example.com',
+            password='S3curePass!123',
+        )
+        InstitutionSettings.objects.create(
+            legal_name='Indústria Cosmética Endpoint Ltda',
+            document='99.888.777/0001-66',
+            is_active=True,
+        )
+        self.unit = UnitOfMeasure.objects.create(code='KG', name='Quilograma', symbol='kg')
+        self.product = Product.objects.create(
+            code='PROD-NFE-001',
+            description='Glicerina vegetal',
+            item_type=Product.ItemType.RAW_MATERIAL,
+            unit=self.unit,
+            status=Product.Status.APPROVED,
+            requires_approved_supplier=False,
+        )
+        supplier = BusinessPartner.objects.create(
+            code='FOR-NFE-ENDPOINT',
+            legal_name='Fornecedor Cosmético Endpoint Ltda',
+            document='11.222.333/0001-81',
+            partner_type=BusinessPartner.PartnerType.SUPPLIER,
+        )
+        self.order = PurchaseOrder.objects.create(
+            order_number='PC-NFE-ENDPOINT',
+            supplier=supplier,
+            status=PurchaseOrder.Status.APPROVED,
+            issue_date=timezone.localdate(),
+        )
+        self.order_item = PurchaseOrderItem.objects.create(
+            order=self.order,
+            product=self.product,
+            quantity=Decimal('10.0000'),
+            unit=self.unit,
+            unit_price=Decimal('10.0000'),
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(self.user)
+        self.endpoint = '/api/v1/procurement/receipts/import_xml/'
+
+    def _grant(self, action):
+        permission = Permission.objects.get(
+            content_type__app_label='procurement',
+            content_type__model='purchasereceipt',
+            codename=f'{action}_purchasereceipt',
+        )
+        self.user.user_permissions.add(permission)
+        self.user = User.objects.get(pk=self.user.pk)
+        self.client.force_authenticate(self.user)
+
+    def _upload(self, xml=None):
+        return SimpleUploadedFile(
+            'nota-12345.xml',
+            xml or authorized_nfe_xml(),
+            content_type='application/xml',
+        )
+
+    def test_endpoint_imports_multipart_xml_and_returns_nested_items(self):
+        self._grant('add')
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root):
+                response = self.client.post(
+                    self.endpoint,
+                    {'order_id': self.order.pk, 'xml': self._upload()},
+                    format='multipart',
+                )
+
+        assert response.status_code == 201
+        payload = response.json()
+        assert payload['nfe_access_key'] == NFE_KEY
+        assert len(payload['nfe_xml_sha256']) == 64
+        assert payload['nfe_xml_file'] is not None
+        assert len(payload['items']) == 1
+        assert payload['items'][0]['product'] == self.product.pk
+        assert payload['items'][0]['manufacturing_date'] == '2026-08-01'
+
+    def test_endpoint_rejects_missing_fields_and_domain_errors(self):
+        self._grant('add')
+
+        missing = self.client.post(self.endpoint, {'order_id': self.order.pk}, format='multipart')
+        self.order.status = PurchaseOrder.Status.DRAFT
+        self.order.save(update_fields=['status', 'updated_at'])
+        invalid = self.client.post(
+            self.endpoint,
+            {'order_id': self.order.pk, 'xml': self._upload()},
+            format='multipart',
+        )
+
+        assert missing.status_code == 400
+        assert 'arquivo XML' in missing.json()['detail']
+        assert invalid.status_code == 400
+        assert 'aprovado' in invalid.json()['detail'].casefold()
+
+    def test_endpoint_requires_add_purchase_receipt_permission(self):
+        response = self.client.post(
+            self.endpoint,
+            {'order_id': self.order.pk, 'xml': self._upload()},
+            format='multipart',
+        )
+
+        assert response.status_code == 403
+        assert not PurchaseReceipt.objects.exists()
+
+    def test_endpoint_ordinary_crud_ignores_read_only_nfe_metadata(self):
+        self._grant('add')
+
+        response = self.client.post(
+            '/api/v1/procurement/receipts/',
+            {
+                'order': self.order.pk,
+                'fiscal_document_number': 'MANUAL-001',
+                'nfe_access_key': '9' * 44,
+                'nfe_xml_sha256': 'f' * 64,
+                'nfe_xml_file': 999999,
+            },
+            format='json',
+        )
+
+        assert response.status_code == 201
+        receipt = PurchaseReceipt.objects.get(pk=response.json()['id'])
+        assert receipt.nfe_access_key == ''
+        assert receipt.nfe_xml_sha256 == ''
+        assert receipt.nfe_xml_file is None
 
 
 class NfeImportSchemaTests(TestCase):

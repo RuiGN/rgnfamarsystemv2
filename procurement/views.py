@@ -1,9 +1,12 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
+from procurement.nfe_xml_import import NfeImportError, import_nfe_into_purchase_order
 from procurement.models import (
     PurchaseOrder,
     PurchaseOrderItem,
@@ -32,7 +35,9 @@ from base.permissions import SingleInstanceDjangoModelPermissions
 def _validation_response_payload(error):
     if hasattr(error, 'message_dict'):
         return error.message_dict
-    return {'detail': error.messages}
+    if hasattr(error, 'messages'):
+        return {'detail': error.messages}
+    return {'detail': str(error)}
 
 
 class SingleInstanceProcurementViewSet(viewsets.ModelViewSet):
@@ -213,7 +218,9 @@ class PurchaseOrderItemViewSet(SingleInstanceProcurementViewSet):
 
 
 class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
-    queryset = PurchaseReceipt.objects.select_related('order').prefetch_related('items')
+    queryset = PurchaseReceipt.objects.select_related('order', 'nfe_xml_file').prefetch_related(
+        'items__product', 'items__unit'
+    )
     serializer_class = PurchaseReceiptSerializer
     filterset_fields = ('order', 'status', 'quality_status', 'stock_entry_status')
     search_fields = ('receipt_number', 'order__order_number', 'fiscal_document_number')
@@ -240,6 +247,34 @@ class PurchaseReceiptViewSet(SingleInstanceProcurementViewSet):
     @action(detail=True, methods=['post'])
     def post_stock(self, request, pk=None):
         return self._transition_response(lambda receipt: receipt.post_stock())
+
+    @action(
+        detail=False,
+        methods=['post'],
+        parser_classes=(MultiPartParser, FormParser),
+    )
+    def import_xml(self, request):
+        upload = request.FILES.get('xml')
+        order_id = request.data.get('order_id')
+        if upload is None or not order_id:
+            return Response(
+                {'detail': 'Informe o pedido e o arquivo XML NF-e.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        order = get_object_or_404(PurchaseOrder, pk=order_id)
+        try:
+            receipt = import_nfe_into_purchase_order(
+                upload.read(),
+                purchase_order=order,
+                user=request.user,
+                file_name=upload.name,
+            )
+        except NfeImportError as error:
+            return Response(
+                _validation_response_payload(error),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(self.get_serializer(receipt).data, status=status.HTTP_201_CREATED)
 
 
 class PurchaseReceiptItemViewSet(SingleInstanceProcurementViewSet):

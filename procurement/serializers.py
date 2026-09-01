@@ -322,47 +322,6 @@ class PurchaseOrderItemSerializer(
         return attrs
 
 
-class PurchaseReceiptSerializer(
-    SingleInstanceProcurementSerializerMixin, serializers.ModelSerializer
-):
-    items_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PurchaseReceipt
-        fields = (
-            'id',
-            'receipt_number',
-            'order',
-            'status',
-            'fiscal_document_number',
-            'fiscal_received_at',
-            'physical_received_at',
-            'quality_status',
-            'stock_entry_status',
-            'received_by',
-            'notes',
-            'items_count',
-            'created_at',
-            'updated_at',
-        )
-        read_only_fields = (
-            'id',
-            'status',
-            'stock_entry_status',
-            'received_by',
-            'items_count',
-            'created_at',
-            'updated_at',
-        )
-
-    def get_items_count(self, obj) -> int:
-        return obj.items.count()
-
-    def validate(self, attrs):
-        self._run_model_clean(self._instance_for_clean(attrs))
-        return attrs
-
-
 class PurchaseReceiptItemSerializer(
     SingleInstanceProcurementSerializerMixin, serializers.ModelSerializer
 ):
@@ -378,6 +337,7 @@ class PurchaseReceiptItemSerializer(
             'rejected_quantity',
             'unit',
             'lot_number',
+            'manufacturing_date',
             'expiry_date',
             'notes',
             'created_at',
@@ -388,5 +348,55 @@ class PurchaseReceiptItemSerializer(
     def validate(self, attrs):
         for field_name in ('receipt', 'order_item', 'product', 'unit'):
             pass
+        self._run_model_clean(self._instance_for_clean(attrs))
+        return attrs
+
+
+class PurchaseReceiptSerializer(
+    SingleInstanceProcurementSerializerMixin, serializers.ModelSerializer
+):
+    items_count = serializers.SerializerMethodField()
+    items = PurchaseReceiptItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PurchaseReceipt
+        fields = (
+            'id',
+            'receipt_number',
+            'order',
+            'status',
+            'fiscal_document_number',
+            'nfe_access_key',
+            'nfe_xml_sha256',
+            'nfe_xml_file',
+            'fiscal_received_at',
+            'physical_received_at',
+            'quality_status',
+            'stock_entry_status',
+            'received_by',
+            'notes',
+            'items_count',
+            'items',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = (
+            'id',
+            'status',
+            'nfe_access_key',
+            'nfe_xml_sha256',
+            'nfe_xml_file',
+            'stock_entry_status',
+            'received_by',
+            'items_count',
+            'items',
+            'created_at',
+            'updated_at',
+        )
+
+    def get_items_count(self, obj) -> int:
+        return obj.items.count()
+
+    def validate(self, attrs):
         self._run_model_clean(self._instance_for_clean(attrs))
         return attrs
