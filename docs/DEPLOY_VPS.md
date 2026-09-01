@@ -10,6 +10,8 @@
 
 O `.env` remoto é preservado, fica `0600` e nunca deve ser impresso ou carregado
 com `source`. PostgreSQL, Redis e RabbitMQ não publicam portas externas.
+Defina `TUNNEL_METRICS_PORT=20242` para reservar uma porta de prontidão
+exclusiva deste conector no loopback da VPS.
 O Compose fixa `DJANGO_SETTINGS_MODULE=core.settings.production` no app e nos
 processos Celery. O dotenv de produção deve manter HSTS por um ano, incluindo
 subdomínios e a diretiva de preload, conforme `.env.example`.
@@ -110,10 +112,12 @@ curl -fsS -o /dev/null -w '%{http_code}\n' \
   -H 'Host: rgnfarmasystem.rgnsystems.com.br' http://127.0.0.1:8081/admin/
 curl -sS -o /dev/null -w '%{http_code}\n' \
   -H 'Host: rgnfarmasystem.rgnsystems.com.br' http://127.0.0.1:8081/platform/
+curl -fsS -o /dev/null -w '%{http_code}\n' \
+  http://127.0.0.1:20242/ready
 ```
 
 Esperado: `200`, `200`, redirecionamento/`200` no Admin e `404` em
-`/platform/`.
+`/platform/`; o conector também deve responder `200` em `/ready`.
 
 ## 7. Validação pública
 

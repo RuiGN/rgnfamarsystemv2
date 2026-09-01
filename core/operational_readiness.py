@@ -202,10 +202,12 @@ def _network_isolation_check(compose):
 def _tunnel_readiness_check(compose, deploy_script):
     tunnel = compose.get('services', {}).get('cloudflared', {})
     command = tunnel.get('command') or []
+    metrics_address = '127.0.0.1:${TUNNEL_METRICS_PORT:-20242}'
     passed = (
         tunnel.get('network_mode') == 'host'
-        and '127.0.0.1:20241' in command
-        and 'http://127.0.0.1:20241/ready' in deploy_script
+        and metrics_address in command
+        and 'configure_tunnel_readiness' in deploy_script
+        and 'http://127.0.0.1:${TUNNEL_METRICS_PORT}/ready' in deploy_script
         and 'https://${PUBLIC_HOST}/health/' in deploy_script
     )
     return _check(

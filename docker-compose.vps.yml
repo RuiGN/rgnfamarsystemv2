@@ -161,7 +161,8 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:2025.7.0
     restart: unless-stopped
-    command: ["tunnel", "--no-autoupdate", "--metrics", "127.0.0.1:20241", "run"]
+    command:
+      ["tunnel", "--no-autoupdate", "--metrics", "127.0.0.1:${TUNNEL_METRICS_PORT:-20242}", "run"]
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
     network_mode: host

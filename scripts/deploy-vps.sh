@@ -9,7 +9,7 @@ COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-rgnfarmasystem}"
 TARGET_REF="${TARGET_REF:-origin/main}"
 PUBLIC_HOST="${PUBLIC_HOST:-rgnfarmasystem.rgnsystems.com.br}"
 ORIGIN_URL="${ORIGIN_URL:-http://127.0.0.1:8081/health/}"
-TUNNEL_READY_URL="${TUNNEL_READY_URL:-http://127.0.0.1:20241/ready}"
+TUNNEL_READY_URL="${TUNNEL_READY_URL:-}"
 BACKUP_ROOT="${BACKUP_ROOT:-/var/backups/rgnfarmasystem/releases}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-900}"
 
@@ -79,6 +79,20 @@ check_env_file() {
       fail "Variavel obrigatoria ausente ou insegura: $key."
   done
 
+}
+
+configure_tunnel_readiness() {
+  local configured_port
+  configured_port="${TUNNEL_METRICS_PORT:-$(read_env_value TUNNEL_METRICS_PORT)}"
+  configured_port="${configured_port:-20242}"
+  if [[ ! "$configured_port" =~ ^[0-9]+$ ]] ||
+    (( configured_port < 1 || configured_port > 65535 )); then
+    fail "TUNNEL_METRICS_PORT invalida."
+  fi
+
+  TUNNEL_METRICS_PORT="$configured_port"
+  TUNNEL_READY_URL="${TUNNEL_READY_URL:-http://127.0.0.1:${TUNNEL_METRICS_PORT}/ready}"
+  export TUNNEL_METRICS_PORT
 }
 
 check_project_state() {
@@ -168,6 +182,7 @@ main() {
   cd "$PROJECT_DIR"
   check_vps_ip
   check_env_file
+  configure_tunnel_readiness
   check_project_state
   validate_compose
   create_release_backup

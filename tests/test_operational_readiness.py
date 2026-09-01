@@ -62,7 +62,7 @@ class OperationalReadinessTests(SimpleTestCase):
 
         assert services['nginx']['ports'] == ['127.0.0.1:8081:80']
         assert services['cloudflared']['network_mode'] == 'host'
-        assert '127.0.0.1:20241' in services['cloudflared']['command']
+        assert '127.0.0.1:${TUNNEL_METRICS_PORT:-20242}' in services['cloudflared']['command']
 
     def test_worker_entrypoint_waits_for_migrations_without_running_them(self):
         source = (Path(settings.BASE_DIR) / 'worker-entrypoint.sh').read_text(encoding='utf-8')

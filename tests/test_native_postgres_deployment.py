@@ -36,6 +36,7 @@ def test_example_env_declares_container_database_without_real_secret():
     assert 'DB_PORT=5432' in source
     assert '@db:5432/rgnfarmasystem' in source
     assert 'POSTGRES_PASSWORD=change-me' in source
+    assert 'TUNNEL_METRICS_PORT=20242' in source
 
 
 def test_backup_supports_explicit_external_database():
@@ -323,6 +324,28 @@ def test_deploy_rejects_duplicate_env_keys_without_leaking_values(tmp_path):
     assert 'chave duplicada: POSTGRES_PASSWORD' in result.stderr
     assert 'first-secret' not in result.stdout + result.stderr
     assert 'second-secret' not in result.stdout + result.stderr
+
+
+def test_deploy_rejects_invalid_tunnel_metrics_port(tmp_path):
+    env_file = tmp_path / '.env'
+    env_file.write_text('TUNNEL_METRICS_PORT=70000\n', encoding='utf-8')
+
+    result = subprocess.run(
+        [
+            'bash',
+            '-c',
+            'source <(sed \'$d\' "$1"); ENV_FILE="$2"; configure_tunnel_readiness',
+            'bash',
+            ROOT / 'scripts' / 'deploy-vps.sh',
+            env_file,
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert 'TUNNEL_METRICS_PORT invalida' in result.stderr
 
 
 def test_deploy_validates_backup_before_promoting_revision():

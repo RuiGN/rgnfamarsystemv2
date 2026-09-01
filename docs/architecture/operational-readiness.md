@@ -24,7 +24,8 @@ O relatório cobre:
 - Healthcheck e `restart: unless-stopped` em todos os serviços da VPS.
 - Banco, cache e filas sem portas publicadas no host.
 - Nginx publicado exclusivamente em `127.0.0.1:8081`.
-- Conector com endpoint `/ready` em `127.0.0.1:20241` e validação pública.
+- Conector com endpoint `/ready` em
+  `127.0.0.1:${TUNNEL_METRICS_PORT:-20242}` e validação pública.
 - `backup_scheduler` com banco privado, mídia somente leitura, lock e marcadores
   locais de saúde.
 - Backup anterior à promoção e rollback automático apenas do código; dados só
@@ -52,5 +53,6 @@ banco ou mídia automaticamente.
 - `docker compose --env-file .env -f docker-compose.vps.yml config --quiet`
   passa com credenciais externas válidas.
 - O smoke interno responde em `http://127.0.0.1:8081/health/`.
-- O conector responde `200` em `http://127.0.0.1:20241/ready`.
+- O conector responde `200` em `http://127.0.0.1:20242/ready`, considerando o
+  valor padrão de `TUNNEL_METRICS_PORT`.
 - O domínio público responde `200` em `/health/`.
