@@ -373,7 +373,7 @@ def test_cosmetics_login_styles_are_scoped_responsive_and_motion_safe():
         if line.strip().endswith('{') and not line.strip().startswith('@')
     )
     assert all(
-        selector.startswith('.auth-page-shell')
+        selector.strip().startswith('.auth-page-shell')
         for selector_group in selectors
         for selector in selector_group.split(',')
     )
