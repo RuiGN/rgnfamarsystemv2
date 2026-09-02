@@ -11,7 +11,7 @@
     "IBGE-LOCALIDADES",
     "ISO-4217"
   ],
-  "sha256": "258489f190cc2b2004eda508720ed6e31e5248e4f775bd46a7009a8574d45732",
+  "sha256": "300d66e03d2f10bad8856c40e6dab14852ec53e7a8b80ccd3af02e4b2b41c54d",
   "source_date": "2026-08-31",
   "source_urls": [
     "https://servicodados.ibge.gov.br/api/v1/localidades/paises?orderBy=nome",

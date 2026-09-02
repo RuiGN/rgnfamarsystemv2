@@ -3,12 +3,14 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
+import re
 
 from babel.numbers import get_currency_name
 from defusedxml import ElementTree
 from django.core.management.base import BaseCommand, CommandError
 import requests
 
+from reference_data.currency_names_pt_br import CURRENCY_NAMES_PT_BR
 from reference_data.manifest import build_manifest, write_snapshot
 
 
@@ -92,6 +94,8 @@ class Command(BaseCommand):
         source_date = str(options['source_date']).strip()
         if not version:
             raise CommandError('--version não pode ser vazio.')
+        if re.fullmatch(r'\d{4}-\d{2}-\d{2}', source_date) is None:
+            raise CommandError('--source-date deve usar o formato AAAA-MM-DD.')
         try:
             date.fromisoformat(source_date)
         except ValueError as error:
@@ -275,9 +279,18 @@ class Command(BaseCommand):
                 raise CommandError(f'Moeda com identificação inválida na fonte ISO 4217: {code}.')
             if len(numeric_code) != 3 or not numeric_code.isdigit():
                 raise CommandError(f'Código numérico inválido para a moeda {code}.')
-            decimal_places = int(minor_units) if minor_units.isdigit() else 0
+            if minor_units == 'N.A.':
+                decimal_places = 0
+                minor_unit_applicable = False
+            elif minor_units.isdigit():
+                decimal_places = int(minor_units)
+                minor_unit_applicable = True
+            else:
+                raise CommandError(
+                    f'Valor de unidade menor inválido para a moeda {code}: {minor_units!r}.'
+                )
             current = currencies.get(code)
-            values = (name, numeric_code, decimal_places)
+            values = (name, numeric_code, decimal_places, minor_unit_applicable)
             if current and current != values:
                 raise CommandError(f'Dados divergentes para a moeda {code} na fonte ISO 4217.')
             currencies[code] = values
@@ -287,17 +300,21 @@ class Command(BaseCommand):
         records = []
         for code, values in currencies.items():
             localized_name = str(get_currency_name(code, locale='pt_BR') or '').strip()
-            display_name = (
-                values[0] if not localized_name or localized_name == code else localized_name
-            )
+            display_name = CURRENCY_NAMES_PT_BR.get(code, localized_name)
+            if not display_name or display_name == code:
+                raise CommandError(
+                    f'Moeda {code} sem nome pt-BR no CLDR ou na tabela explícita revisada.'
+                )
             records.append(
                 {
                     'code': code,
                     'name': display_name,
                     'numeric_code': values[1],
                     'decimal_places': values[2],
+                    'minor_unit_applicable': values[3],
                     'symbol': CURRENCY_SYMBOLS.get(code, ''),
                     'description': (
+                        f'Nome oficial SIX: {values[0]}. '
                         f'Entidades usuárias: {"; ".join(sorted(entities[code]))}. '
                         f'Fonte: ISO 4217/SIX (lista vigente em {published_at}).'
                     ),

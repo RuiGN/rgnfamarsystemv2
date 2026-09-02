@@ -245,6 +245,7 @@ def _apply_currencies(records: list[dict[str, Any]]) -> None:
             'numeric_code': _text(record, 'numeric_code', f'Moeda {code}'),
             'symbol': record.get('symbol', ''),
             'decimal_places': record.get('decimal_places'),
+            'minor_unit_applicable': record.get('minor_unit_applicable'),
             'description': record.get('description', ''),
         }
         if not isinstance(fields['symbol'], str) or not isinstance(fields['description'], str):
@@ -253,13 +254,18 @@ def _apply_currencies(records: list[dict[str, Any]]) -> None:
             fields['decimal_places'], bool
         ):
             raise CommandError(f'Moeda {code} possui casas decimais inválidas.')
+        if not isinstance(fields['minor_unit_applicable'], bool):
+            raise CommandError(f'Moeda {code} possui aplicabilidade de unidade menor inválida.')
         obj = _single_or_none(Currency.objects.filter(code=code), f'moeda {code}')
+        numeric_collision = Currency.objects.filter(numeric_code=fields['numeric_code'])
+        if obj is not None:
+            numeric_collision = numeric_collision.exclude(pk=obj.pk)
+        if numeric_collision.exists():
+            raise CommandError(
+                'Código numérico oficial já pertence a outra moeda: '
+                f'numeric_code={fields["numeric_code"]!r}.'
+            )
         if obj is None:
-            if Currency.objects.filter(numeric_code=fields['numeric_code']).exists():
-                raise CommandError(
-                    'Código numérico oficial já pertence a outra moeda: '
-                    f'numeric_code={fields["numeric_code"]!r}.'
-                )
             obj = Currency(code=code)
         for field, value in fields.items():
             if field != 'code' or not obj.pk:

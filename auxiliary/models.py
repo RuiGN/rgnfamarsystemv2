@@ -201,6 +201,7 @@ class Currency(AuxiliaryCatalog):
     numeric_code = models.CharField('código numérico', max_length=3, blank=True)
     symbol = models.CharField('símbolo', max_length=8, blank=True)
     decimal_places = models.PositiveSmallIntegerField('casas decimais', default=2)
+    minor_unit_applicable = models.BooleanField('unidade monetária menor aplicável', default=True)
 
     class Meta(AuxiliaryCatalog.Meta):
         verbose_name = 'moeda'
@@ -208,6 +209,13 @@ class Currency(AuxiliaryCatalog):
         indexes = AuxiliaryCatalog.Meta.indexes + [
             models.Index(fields=['numeric_code']),
         ]
+
+    def clean(self):
+        super().clean()
+        if not self.minor_unit_applicable and self.decimal_places != 0:
+            raise ValidationError(
+                {'decimal_places': 'As casas decimais devem ser zero quando não se aplica.'}
+            )
 
 
 class CommercialTerm(AuxiliaryCatalog):

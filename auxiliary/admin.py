@@ -68,7 +68,15 @@ class CityAdmin(admin.ModelAdmin):
 
 @admin.register(Currency)
 class CurrencyAdmin(AuxiliaryCatalogAdmin):
-    list_display = ('code', 'name', 'numeric_code', 'symbol', 'decimal_places', 'is_active')
+    list_display = (
+        'code',
+        'name',
+        'numeric_code',
+        'symbol',
+        'decimal_places',
+        'minor_unit_applicable',
+        'is_active',
+    )
 
 
 @admin.register(CommercialTerm)

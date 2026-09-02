@@ -7,6 +7,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+from babel.numbers import get_currency_name
+from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
@@ -44,6 +47,7 @@ MINIMAL_PAYLOAD = {
             'code': 'BRL',
             'decimal_places': 2,
             'description': 'Moeda oficial do Brasil.',
+            'minor_unit_applicable': True,
             'name': 'Real brasileiro',
             'numeric_code': '986',
             'symbol': 'R$',
@@ -52,6 +56,7 @@ MINIMAL_PAYLOAD = {
             'code': 'USD',
             'decimal_places': 2,
             'description': 'Dólar dos Estados Unidos.',
+            'minor_unit_applicable': True,
             'name': 'Dólar americano',
             'numeric_code': '840',
             'symbol': 'US$',
@@ -338,16 +343,18 @@ def test_refresh_fetch_and_parse_normalizes_the_four_official_sources():
                 'name': 'Real brasileiro',
                 'numeric_code': '986',
                 'decimal_places': 2,
+                'minor_unit_applicable': True,
                 'symbol': 'R$',
                 'description': (
-                    'Entidades usuárias: BRAZIL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
+                    'Nome oficial SIX: Brazilian Real. Entidades usuárias: BRAZIL. '
+                    'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
                 ),
             }
         ],
     }
 
 
-def test_currency_parser_uses_official_name_when_cldr_has_no_translation():
+def test_currency_parser_uses_explicit_pt_br_name_when_cldr_has_no_translation():
     xml = b"""<?xml version="1.0" encoding="UTF-8"?>
     <ISO_4217 Pblshd="2026-01-01"><CcyTbl><CcyNtry>
       <CtryNm>URUGUAY</CtryNm><CcyNm>Unidad Previsional</CcyNm>
@@ -360,7 +367,178 @@ def test_currency_parser_uses_official_name_when_cldr_has_no_translation():
     ):
         currencies = RefreshCommand._parse_currencies(xml)
 
-    assert currencies[0]['name'] == 'Unidad Previsional'
+    assert currencies[0]['name'] == 'Unidade previdenciária'
+    assert 'Nome oficial SIX: Unidad Previsional.' in currencies[0]['description']
+
+
+PT_BR_CURRENCY_NAMES = {
+    'UYW': 'Unidade previdenciária',
+    'VED': 'Bolívar soberano',
+    'XAD': 'Dinar contábil árabe',
+    'XCG': 'Guilda caribenha',
+    'XSU': 'Sucre',
+    'XUA': 'Unidade de conta do Banco Asiático de Desenvolvimento',
+    'ZWG': 'Ouro do Zimbábue',
+}
+SIX_CURRENCY_NAMES = {
+    'UYW': 'Unidad Previsional',
+    'VED': 'Bolívar Soberano',
+    'XAD': 'Arab Accounting Dinar',
+    'XCG': 'Caribbean Guilder',
+    'XSU': 'Sucre',
+    'XUA': 'ADB Unit of Account',
+    'ZWG': 'Zimbabwe Gold',
+}
+
+
+def test_currency_parser_uses_versioned_pt_br_names_and_preserves_six_provenance():
+    rows = ''.join(
+        '<CcyNtry>'
+        f'<CtryNm>ENTIDADE {code}</CtryNm><CcyNm>{six_name}</CcyNm>'
+        f'<Ccy>{code}</Ccy><CcyNbr>{900 + index}</CcyNbr><CcyMnrUnts>2</CcyMnrUnts>'
+        '</CcyNtry>'
+        for index, (code, six_name) in enumerate(SIX_CURRENCY_NAMES.items())
+    )
+    xml = f'<ISO_4217 Pblshd="2026-01-01"><CcyTbl>{rows}</CcyTbl></ISO_4217>'.encode()
+
+    with patch(
+        'auxiliary.management.commands.refresh_official_reference_snapshots.get_currency_name',
+        side_effect=lambda code, locale: code,
+    ):
+        currencies = RefreshCommand._parse_currencies(xml)
+
+    assert {row['code']: row['name'] for row in currencies} == PT_BR_CURRENCY_NAMES
+    for row in currencies:
+        assert f'Nome oficial SIX: {SIX_CURRENCY_NAMES[row["code"]]}.' in row['description']
+
+
+def test_every_committed_currency_name_is_pt_br_and_has_stable_explicit_overrides():
+    snapshot = load_official_snapshot()
+    currencies = {row['code']: row for row in snapshot.payload['currencies']}
+
+    assert {code: currencies[code]['name'] for code in PT_BR_CURRENCY_NAMES} == (
+        PT_BR_CURRENCY_NAMES
+    )
+    for code, row in currencies.items():
+        expected_name = (
+            PT_BR_CURRENCY_NAMES.get(code)
+            or str(get_currency_name(code, locale='pt_BR') or '').strip()
+        )
+        assert expected_name and expected_name != code
+        assert row['name'] == expected_name
+    for code, official_name in SIX_CURRENCY_NAMES.items():
+        assert f'Nome oficial SIX: {official_name}.' in currencies[code]['description']
+
+
+def test_currency_parser_represents_non_applicable_minor_units_explicitly():
+    xml = b"""<ISO_4217 Pblshd="2026-01-01"><CcyTbl>
+    <CcyNtry><CtryNm>GOLD</CtryNm><CcyNm>Gold</CcyNm>
+      <Ccy>XAU</Ccy><CcyNbr>959</CcyNbr><CcyMnrUnts>N.A.</CcyMnrUnts>
+    </CcyNtry>
+    <CcyNtry><CtryNm>BRAZIL</CtryNm><CcyNm>Brazilian Real</CcyNm>
+      <Ccy>BRL</Ccy><CcyNbr>986</CcyNbr><CcyMnrUnts>2</CcyMnrUnts>
+    </CcyNtry></CcyTbl></ISO_4217>"""
+
+    currencies = {row['code']: row for row in RefreshCommand._parse_currencies(xml)}
+
+    assert currencies['XAU']['minor_unit_applicable'] is False
+    assert currencies['XAU']['decimal_places'] == 0
+    assert currencies['BRL']['minor_unit_applicable'] is True
+    assert currencies['BRL']['decimal_places'] == 2
+
+
+@pytest.mark.parametrize('minor_units', ['', 'desconhecido'])
+def test_currency_parser_rejects_unknown_minor_unit_value(minor_units):
+    xml = f"""<ISO_4217 Pblshd="2026-01-01"><CcyTbl><CcyNtry>
+      <CtryNm>TEST</CtryNm><CcyNm>Test Currency</CcyNm>
+      <Ccy>TST</Ccy><CcyNbr>999</CcyNbr><CcyMnrUnts>{minor_units}</CcyMnrUnts>
+    </CcyNtry></CcyTbl></ISO_4217>""".encode()
+
+    with pytest.raises(CommandError, match='Valor de unidade menor inválido'):
+        RefreshCommand._parse_currencies(xml)
+
+
+def test_currency_model_and_admin_expose_minor_unit_applicability():
+    field = Currency._meta.get_field('minor_unit_applicable')
+
+    assert field.default is True
+    assert field.verbose_name == 'unidade monetária menor aplicável'
+    assert 'minor_unit_applicable' in admin.site._registry[Currency].list_display
+
+
+@pytest.mark.django_db
+def test_currency_full_clean_rejects_decimal_places_for_non_applicable_minor_unit():
+    currency = Currency(
+        code='XAU',
+        name='Ouro',
+        numeric_code='959',
+        decimal_places=2,
+        minor_unit_applicable=False,
+    )
+
+    with pytest.raises(ValidationError, match='devem ser zero'):
+        currency.full_clean()
+
+
+@pytest.mark.django_db
+def test_currency_numeric_code_collision_on_create_rolls_back_snapshot(tmp_path):
+    local = Currency.objects.create(code='LOCAL', name='Moeda local', numeric_code='986')
+    snapshot_path, manifest_path = write_minimal_snapshot(tmp_path)
+
+    with pytest.raises(CommandError, match='Código numérico oficial já pertence a outra moeda'):
+        apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
+
+    local.refresh_from_db()
+    assert local.name == 'Moeda local'
+    assert Currency.objects.count() == 1
+    assert Country.objects.count() == 0
+    assert StateProvince.objects.count() == 0
+    assert City.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_currency_numeric_code_collision_on_update_rolls_back_before_mutation(tmp_path):
+    brl = Currency.objects.create(
+        code='BRL',
+        name='Real local preservado',
+        description='Descrição local preservada',
+        numeric_code='999',
+        symbol='RL',
+        decimal_places=0,
+        minor_unit_applicable=False,
+    )
+    Currency.objects.create(code='LOCAL', name='Moeda local', numeric_code='986')
+    snapshot_path, manifest_path = write_minimal_snapshot(tmp_path)
+
+    with pytest.raises(CommandError, match='Código numérico oficial já pertence a outra moeda'):
+        apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
+
+    brl.refresh_from_db()
+    assert brl.name == 'Real local preservado'
+    assert brl.description == 'Descrição local preservada'
+    assert brl.numeric_code == '999'
+    assert brl.symbol == 'RL'
+    assert brl.decimal_places == 0
+    assert brl.minor_unit_applicable is False
+    assert Currency.objects.count() == 2
+    assert Country.objects.count() == 0
+
+
+@pytest.mark.parametrize('source_date', ['20260831', '2026-W35-1'])
+def test_refresh_command_rejects_non_calendar_source_date_before_network(tmp_path, source_date):
+    with (
+        patch(
+            'auxiliary.management.commands.refresh_official_reference_snapshots.Command.fetch_and_parse'
+        ) as fetch,
+        pytest.raises(CommandError, match='formato AAAA-MM-DD'),
+    ):
+        call_command(
+            'refresh_official_reference_snapshots',
+            version='2026.08.31-test',
+            source_date=source_date,
+            output_dir=tmp_path,
+        )
+    fetch.assert_not_called()
 
 
 @pytest.mark.parametrize('timeout', [0, 301])
@@ -392,6 +570,19 @@ def test_committed_official_snapshot_has_required_cardinalities_and_valid_hash(m
     assert len(snapshot.payload['currencies']) >= 150
     assert snapshot.manifest.validate_payload(snapshot.payload) is None
     assert set(snapshot.payload) == {'countries', 'states', 'cities', 'currencies'}
+    assert {frozenset(row) for row in snapshot.payload['currencies']} == {
+        frozenset(
+            {
+                'code',
+                'name',
+                'numeric_code',
+                'decimal_places',
+                'minor_unit_applicable',
+                'symbol',
+                'description',
+            }
+        )
+    }
     assert apply_official_snapshot(snapshot) == {
         'countries': 193,
         'states': 27,
@@ -403,3 +594,5 @@ def test_committed_official_snapshot_has_required_cardinalities_and_valid_hash(m
     assert StateProvince.objects.count() == 27
     assert City.objects.count() == 5571
     assert Currency.objects.count() == 178
+    assert Currency.objects.get(code='BRL').minor_unit_applicable is True
+    assert Currency.objects.get(code='XAU').minor_unit_applicable is False

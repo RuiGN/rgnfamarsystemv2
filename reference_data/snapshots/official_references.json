@@ -29020,7 +29020,8 @@
     {
       "code": "AED",
       "decimal_places": 2,
-      "description": "Entidades usuárias: UNITED ARAB EMIRATES (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: UAE Dirham. Entidades usuárias: UNITED ARAB EMIRATES (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dirham dos Emirados Árabes Unidos",
       "numeric_code": "784",
       "symbol": ""
@@ -29028,7 +29029,8 @@
     {
       "code": "AFN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: AFGHANISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Afghani. Entidades usuárias: AFGHANISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Afegane afegão",
       "numeric_code": "971",
       "symbol": ""
@@ -29036,7 +29038,8 @@
     {
       "code": "ALL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ALBANIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Lek. Entidades usuárias: ALBANIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Lek albanês",
       "numeric_code": "008",
       "symbol": ""
@@ -29044,7 +29047,8 @@
     {
       "code": "AMD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ARMENIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Armenian Dram. Entidades usuárias: ARMENIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dram armênio",
       "numeric_code": "051",
       "symbol": ""
@@ -29052,7 +29056,8 @@
     {
       "code": "AOA",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ANGOLA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Kwanza. Entidades usuárias: ANGOLA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Kwanza angolano",
       "numeric_code": "973",
       "symbol": ""
@@ -29060,7 +29065,8 @@
     {
       "code": "ARS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ARGENTINA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Argentine Peso. Entidades usuárias: ARGENTINA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso argentino",
       "numeric_code": "032",
       "symbol": "AR$"
@@ -29068,7 +29074,8 @@
     {
       "code": "AUD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: AUSTRALIA; CHRISTMAS ISLAND; COCOS (KEELING) ISLANDS (THE); HEARD ISLAND AND McDONALD ISLANDS; KIRIBATI; NAURU; NORFOLK ISLAND; TUVALU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Australian Dollar. Entidades usuárias: AUSTRALIA; CHRISTMAS ISLAND; COCOS (KEELING) ISLANDS (THE); HEARD ISLAND AND McDONALD ISLANDS; KIRIBATI; NAURU; NORFOLK ISLAND; TUVALU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar australiano",
       "numeric_code": "036",
       "symbol": "A$"
@@ -29076,7 +29083,8 @@
     {
       "code": "AWG",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ARUBA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Aruban Florin. Entidades usuárias: ARUBA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Florim arubano",
       "numeric_code": "533",
       "symbol": ""
@@ -29084,7 +29092,8 @@
     {
       "code": "AZN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: AZERBAIJAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Azerbaijan Manat. Entidades usuárias: AZERBAIJAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Manat azeri",
       "numeric_code": "944",
       "symbol": ""
@@ -29092,7 +29101,8 @@
     {
       "code": "BAM",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BOSNIA AND HERZEGOVINA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Convertible Mark. Entidades usuárias: BOSNIA AND HERZEGOVINA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Marco conversível da Bósnia e Herzegovina",
       "numeric_code": "977",
       "symbol": ""
@@ -29100,7 +29110,8 @@
     {
       "code": "BBD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BARBADOS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Barbados Dollar. Entidades usuárias: BARBADOS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar barbadense",
       "numeric_code": "052",
       "symbol": ""
@@ -29108,7 +29119,8 @@
     {
       "code": "BDT",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BANGLADESH. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Taka. Entidades usuárias: BANGLADESH. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Taka bengali",
       "numeric_code": "050",
       "symbol": ""
@@ -29116,7 +29128,8 @@
     {
       "code": "BHD",
       "decimal_places": 3,
-      "description": "Entidades usuárias: BAHRAIN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bahraini Dinar. Entidades usuárias: BAHRAIN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar bareinita",
       "numeric_code": "048",
       "symbol": ""
@@ -29124,7 +29137,8 @@
     {
       "code": "BIF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: BURUNDI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Burundi Franc. Entidades usuárias: BURUNDI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco burundiano",
       "numeric_code": "108",
       "symbol": ""
@@ -29132,7 +29146,8 @@
     {
       "code": "BMD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BERMUDA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bermudian Dollar. Entidades usuárias: BERMUDA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar bermudense",
       "numeric_code": "060",
       "symbol": ""
@@ -29140,7 +29155,8 @@
     {
       "code": "BND",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BRUNEI DARUSSALAM. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Brunei Dollar. Entidades usuárias: BRUNEI DARUSSALAM. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar bruneano",
       "numeric_code": "096",
       "symbol": ""
@@ -29148,7 +29164,8 @@
     {
       "code": "BOB",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BOLIVIA (PLURINATIONAL STATE OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Boliviano. Entidades usuárias: BOLIVIA (PLURINATIONAL STATE OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Boliviano da Bolívia",
       "numeric_code": "068",
       "symbol": ""
@@ -29156,7 +29173,8 @@
     {
       "code": "BOV",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BOLIVIA (PLURINATIONAL STATE OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Mvdol. Entidades usuárias: BOLIVIA (PLURINATIONAL STATE OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Mvdol boliviano",
       "numeric_code": "984",
       "symbol": ""
@@ -29164,7 +29182,8 @@
     {
       "code": "BRL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BRAZIL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Brazilian Real. Entidades usuárias: BRAZIL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Real brasileiro",
       "numeric_code": "986",
       "symbol": "R$"
@@ -29172,7 +29191,8 @@
     {
       "code": "BSD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BAHAMAS (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bahamian Dollar. Entidades usuárias: BAHAMAS (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar bahamense",
       "numeric_code": "044",
       "symbol": ""
@@ -29180,7 +29200,8 @@
     {
       "code": "BTN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BHUTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Ngultrum. Entidades usuárias: BHUTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Ngultrum butanês",
       "numeric_code": "064",
       "symbol": ""
@@ -29188,7 +29209,8 @@
     {
       "code": "BWP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BOTSWANA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Pula. Entidades usuárias: BOTSWANA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Pula botsuanesa",
       "numeric_code": "072",
       "symbol": ""
@@ -29196,7 +29218,8 @@
     {
       "code": "BYN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BELARUS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Belarusian Ruble. Entidades usuárias: BELARUS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rublo bielorrusso",
       "numeric_code": "933",
       "symbol": ""
@@ -29204,7 +29227,8 @@
     {
       "code": "BZD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BELIZE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Belize Dollar. Entidades usuárias: BELIZE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar belizenho",
       "numeric_code": "084",
       "symbol": ""
@@ -29212,7 +29236,8 @@
     {
       "code": "CAD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CANADA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Canadian Dollar. Entidades usuárias: CANADA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar canadense",
       "numeric_code": "124",
       "symbol": "C$"
@@ -29220,7 +29245,8 @@
     {
       "code": "CDF",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CONGO (THE DEMOCRATIC REPUBLIC OF THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Congolese Franc. Entidades usuárias: CONGO (THE DEMOCRATIC REPUBLIC OF THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco congolês",
       "numeric_code": "976",
       "symbol": ""
@@ -29228,7 +29254,8 @@
     {
       "code": "CHE",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SWITZERLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: WIR Euro. Entidades usuárias: SWITZERLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Euro WIR",
       "numeric_code": "947",
       "symbol": ""
@@ -29236,7 +29263,8 @@
     {
       "code": "CHF",
       "decimal_places": 2,
-      "description": "Entidades usuárias: LIECHTENSTEIN; SWITZERLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Swiss Franc. Entidades usuárias: LIECHTENSTEIN; SWITZERLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco suíço",
       "numeric_code": "756",
       "symbol": "CHF"
@@ -29244,7 +29272,8 @@
     {
       "code": "CHW",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SWITZERLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: WIR Franc. Entidades usuárias: SWITZERLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco WIR",
       "numeric_code": "948",
       "symbol": ""
@@ -29252,7 +29281,8 @@
     {
       "code": "CLF",
       "decimal_places": 4,
-      "description": "Entidades usuárias: CHILE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Unidad de Fomento. Entidades usuárias: CHILE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Unidades de Fomento chilenas",
       "numeric_code": "990",
       "symbol": ""
@@ -29260,7 +29290,8 @@
     {
       "code": "CLP",
       "decimal_places": 0,
-      "description": "Entidades usuárias: CHILE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Chilean Peso. Entidades usuárias: CHILE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso chileno",
       "numeric_code": "152",
       "symbol": "CL$"
@@ -29268,7 +29299,8 @@
     {
       "code": "CNY",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CHINA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Yuan Renminbi. Entidades usuárias: CHINA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Yuan chinês",
       "numeric_code": "156",
       "symbol": "¥"
@@ -29276,7 +29308,8 @@
     {
       "code": "COP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: COLOMBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Colombian Peso. Entidades usuárias: COLOMBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso colombiano",
       "numeric_code": "170",
       "symbol": "CO$"
@@ -29284,7 +29317,8 @@
     {
       "code": "COU",
       "decimal_places": 2,
-      "description": "Entidades usuárias: COLOMBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Unidad de Valor Real. Entidades usuárias: COLOMBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Unidade de Valor Real",
       "numeric_code": "970",
       "symbol": ""
@@ -29292,7 +29326,8 @@
     {
       "code": "CRC",
       "decimal_places": 2,
-      "description": "Entidades usuárias: COSTA RICA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Costa Rican Colon. Entidades usuárias: COSTA RICA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Colón costarriquenho",
       "numeric_code": "188",
       "symbol": ""
@@ -29300,7 +29335,8 @@
     {
       "code": "CUP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CUBA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Cuban Peso. Entidades usuárias: CUBA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso cubano",
       "numeric_code": "192",
       "symbol": ""
@@ -29308,7 +29344,8 @@
     {
       "code": "CVE",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CABO VERDE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Cabo Verde Escudo. Entidades usuárias: CABO VERDE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Escudo cabo-verdiano",
       "numeric_code": "132",
       "symbol": ""
@@ -29316,7 +29353,8 @@
     {
       "code": "CZK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CZECHIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Czech Koruna. Entidades usuárias: CZECHIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Coroa tcheca",
       "numeric_code": "203",
       "symbol": ""
@@ -29324,7 +29362,8 @@
     {
       "code": "DJF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: DJIBOUTI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Djibouti Franc. Entidades usuárias: DJIBOUTI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco djiboutiano",
       "numeric_code": "262",
       "symbol": ""
@@ -29332,7 +29371,8 @@
     {
       "code": "DKK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: DENMARK; FAROE ISLANDS (THE); GREENLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Danish Krone. Entidades usuárias: DENMARK; FAROE ISLANDS (THE); GREENLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Coroa dinamarquesa",
       "numeric_code": "208",
       "symbol": ""
@@ -29340,7 +29380,8 @@
     {
       "code": "DOP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: DOMINICAN REPUBLIC (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Dominican Peso. Entidades usuárias: DOMINICAN REPUBLIC (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso dominicano",
       "numeric_code": "214",
       "symbol": ""
@@ -29348,7 +29389,8 @@
     {
       "code": "DZD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ALGERIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Algerian Dinar. Entidades usuárias: ALGERIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar argelino",
       "numeric_code": "012",
       "symbol": ""
@@ -29356,7 +29398,8 @@
     {
       "code": "EGP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: EGYPT. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Egyptian Pound. Entidades usuárias: EGYPT. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra egípcia",
       "numeric_code": "818",
       "symbol": ""
@@ -29364,7 +29407,8 @@
     {
       "code": "ERN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ERITREA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Nakfa. Entidades usuárias: ERITREA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Nakfa da Eritreia",
       "numeric_code": "232",
       "symbol": ""
@@ -29372,7 +29416,8 @@
     {
       "code": "ETB",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ETHIOPIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Ethiopian Birr. Entidades usuárias: ETHIOPIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Birr etíope",
       "numeric_code": "230",
       "symbol": ""
@@ -29380,7 +29425,8 @@
     {
       "code": "EUR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ANDORRA; AUSTRIA; BELGIUM; BULGARIA; CROATIA; CYPRUS; ESTONIA; EUROPEAN UNION; FINLAND; FRANCE; FRENCH GUIANA; FRENCH SOUTHERN TERRITORIES (THE); GERMANY; GREECE; GUADELOUPE; HOLY SEE (THE); IRELAND; ITALY; LATVIA; LITHUANIA; LUXEMBOURG; MALTA; MARTINIQUE; MAYOTTE; MONACO; MONTENEGRO; NETHERLANDS (THE); PORTUGAL; RÉUNION; SAINT BARTHÉLEMY; SAINT MARTIN (FRENCH PART); SAINT PIERRE AND MIQUELON; SAN MARINO; SLOVAKIA; SLOVENIA; SPAIN; ÅLAND ISLANDS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Euro. Entidades usuárias: ANDORRA; AUSTRIA; BELGIUM; BULGARIA; CROATIA; CYPRUS; ESTONIA; EUROPEAN UNION; FINLAND; FRANCE; FRENCH GUIANA; FRENCH SOUTHERN TERRITORIES (THE); GERMANY; GREECE; GUADELOUPE; HOLY SEE (THE); IRELAND; ITALY; LATVIA; LITHUANIA; LUXEMBOURG; MALTA; MARTINIQUE; MAYOTTE; MONACO; MONTENEGRO; NETHERLANDS (THE); PORTUGAL; RÉUNION; SAINT BARTHÉLEMY; SAINT MARTIN (FRENCH PART); SAINT PIERRE AND MIQUELON; SAN MARINO; SLOVAKIA; SLOVENIA; SPAIN; ÅLAND ISLANDS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Euro",
       "numeric_code": "978",
       "symbol": "€"
@@ -29388,7 +29434,8 @@
     {
       "code": "FJD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: FIJI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Fiji Dollar. Entidades usuárias: FIJI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar fijiano",
       "numeric_code": "242",
       "symbol": ""
@@ -29396,7 +29443,8 @@
     {
       "code": "FKP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: FALKLAND ISLANDS (THE) [MALVINAS]. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Falkland Islands Pound. Entidades usuárias: FALKLAND ISLANDS (THE) [MALVINAS]. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra malvinense",
       "numeric_code": "238",
       "symbol": ""
@@ -29404,7 +29452,8 @@
     {
       "code": "GBP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GUERNSEY; ISLE OF MAN; JERSEY; UNITED KINGDOM OF GREAT BRITAIN AND NORTHERN IRELAND (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Pound Sterling. Entidades usuárias: GUERNSEY; ISLE OF MAN; JERSEY; UNITED KINGDOM OF GREAT BRITAIN AND NORTHERN IRELAND (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra esterlina",
       "numeric_code": "826",
       "symbol": "£"
@@ -29412,7 +29461,8 @@
     {
       "code": "GEL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GEORGIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Lari. Entidades usuárias: GEORGIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Lari georgiano",
       "numeric_code": "981",
       "symbol": ""
@@ -29420,7 +29470,8 @@
     {
       "code": "GHS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GHANA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Ghana Cedi. Entidades usuárias: GHANA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Cedi ganês",
       "numeric_code": "936",
       "symbol": ""
@@ -29428,7 +29479,8 @@
     {
       "code": "GIP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GIBRALTAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Gibraltar Pound. Entidades usuárias: GIBRALTAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra de Gibraltar",
       "numeric_code": "292",
       "symbol": ""
@@ -29436,7 +29488,8 @@
     {
       "code": "GMD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GAMBIA (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Dalasi. Entidades usuárias: GAMBIA (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dalasi gambiano",
       "numeric_code": "270",
       "symbol": ""
@@ -29444,7 +29497,8 @@
     {
       "code": "GNF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: GUINEA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Guinean Franc. Entidades usuárias: GUINEA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco guineano",
       "numeric_code": "324",
       "symbol": ""
@@ -29452,7 +29506,8 @@
     {
       "code": "GTQ",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GUATEMALA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Quetzal. Entidades usuárias: GUATEMALA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Quetzal guatemalteco",
       "numeric_code": "320",
       "symbol": ""
@@ -29460,7 +29515,8 @@
     {
       "code": "GYD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: GUYANA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Guyana Dollar. Entidades usuárias: GUYANA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar guianense",
       "numeric_code": "328",
       "symbol": ""
@@ -29468,7 +29524,8 @@
     {
       "code": "HKD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: HONG KONG. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Hong Kong Dollar. Entidades usuárias: HONG KONG. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar de Hong Kong",
       "numeric_code": "344",
       "symbol": ""
@@ -29476,7 +29533,8 @@
     {
       "code": "HNL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: HONDURAS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Lempira. Entidades usuárias: HONDURAS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Lempira hondurenha",
       "numeric_code": "340",
       "symbol": ""
@@ -29484,7 +29542,8 @@
     {
       "code": "HTG",
       "decimal_places": 2,
-      "description": "Entidades usuárias: HAITI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Gourde. Entidades usuárias: HAITI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Gourde haitiano",
       "numeric_code": "332",
       "symbol": ""
@@ -29492,7 +29551,8 @@
     {
       "code": "HUF",
       "decimal_places": 2,
-      "description": "Entidades usuárias: HUNGARY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Forint. Entidades usuárias: HUNGARY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Florim húngaro",
       "numeric_code": "348",
       "symbol": ""
@@ -29500,7 +29560,8 @@
     {
       "code": "IDR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: INDONESIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Rupiah. Entidades usuárias: INDONESIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia indonésia",
       "numeric_code": "360",
       "symbol": ""
@@ -29508,7 +29569,8 @@
     {
       "code": "ILS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ISRAEL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: New Israeli Sheqel. Entidades usuárias: ISRAEL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Novo shekel israelense",
       "numeric_code": "376",
       "symbol": ""
@@ -29516,7 +29578,8 @@
     {
       "code": "INR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BHUTAN; INDIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Indian Rupee. Entidades usuárias: BHUTAN; INDIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia indiana",
       "numeric_code": "356",
       "symbol": "₹"
@@ -29524,7 +29587,8 @@
     {
       "code": "IQD",
       "decimal_places": 3,
-      "description": "Entidades usuárias: IRAQ. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Iraqi Dinar. Entidades usuárias: IRAQ. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar iraquiano",
       "numeric_code": "368",
       "symbol": ""
@@ -29532,7 +29596,8 @@
     {
       "code": "IRR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: IRAN (ISLAMIC REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Iranian Rial. Entidades usuárias: IRAN (ISLAMIC REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rial iraniano",
       "numeric_code": "364",
       "symbol": ""
@@ -29540,7 +29605,8 @@
     {
       "code": "ISK",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ICELAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Iceland Krona. Entidades usuárias: ICELAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Coroa islandesa",
       "numeric_code": "352",
       "symbol": ""
@@ -29548,7 +29614,8 @@
     {
       "code": "JMD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: JAMAICA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Jamaican Dollar. Entidades usuárias: JAMAICA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar jamaicano",
       "numeric_code": "388",
       "symbol": ""
@@ -29556,7 +29623,8 @@
     {
       "code": "JOD",
       "decimal_places": 3,
-      "description": "Entidades usuárias: JORDAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Jordanian Dinar. Entidades usuárias: JORDAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar jordaniano",
       "numeric_code": "400",
       "symbol": ""
@@ -29564,7 +29632,8 @@
     {
       "code": "JPY",
       "decimal_places": 0,
-      "description": "Entidades usuárias: JAPAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Yen. Entidades usuárias: JAPAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Iene japonês",
       "numeric_code": "392",
       "symbol": "¥"
@@ -29572,7 +29641,8 @@
     {
       "code": "KES",
       "decimal_places": 2,
-      "description": "Entidades usuárias: KENYA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Kenyan Shilling. Entidades usuárias: KENYA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Xelim queniano",
       "numeric_code": "404",
       "symbol": ""
@@ -29580,7 +29650,8 @@
     {
       "code": "KGS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: KYRGYZSTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Som. Entidades usuárias: KYRGYZSTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Som quirguiz",
       "numeric_code": "417",
       "symbol": ""
@@ -29588,7 +29659,8 @@
     {
       "code": "KHR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CAMBODIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Riel. Entidades usuárias: CAMBODIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Riel cambojano",
       "numeric_code": "116",
       "symbol": ""
@@ -29596,7 +29668,8 @@
     {
       "code": "KMF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: COMOROS (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Comorian Franc. Entidades usuárias: COMOROS (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco comoriano",
       "numeric_code": "174",
       "symbol": ""
@@ -29604,7 +29677,8 @@
     {
       "code": "KPW",
       "decimal_places": 2,
-      "description": "Entidades usuárias: KOREA (THE DEMOCRATIC PEOPLE’S REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: North Korean Won. Entidades usuárias: KOREA (THE DEMOCRATIC PEOPLE’S REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Won norte-coreano",
       "numeric_code": "408",
       "symbol": ""
@@ -29612,7 +29686,8 @@
     {
       "code": "KRW",
       "decimal_places": 0,
-      "description": "Entidades usuárias: KOREA (THE REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Won. Entidades usuárias: KOREA (THE REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Won sul-coreano",
       "numeric_code": "410",
       "symbol": "₩"
@@ -29620,7 +29695,8 @@
     {
       "code": "KWD",
       "decimal_places": 3,
-      "description": "Entidades usuárias: KUWAIT. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Kuwaiti Dinar. Entidades usuárias: KUWAIT. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar kuwaitiano",
       "numeric_code": "414",
       "symbol": ""
@@ -29628,7 +29704,8 @@
     {
       "code": "KYD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CAYMAN ISLANDS (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Cayman Islands Dollar. Entidades usuárias: CAYMAN ISLANDS (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar das Ilhas Cayman",
       "numeric_code": "136",
       "symbol": ""
@@ -29636,7 +29713,8 @@
     {
       "code": "KZT",
       "decimal_places": 2,
-      "description": "Entidades usuárias: KAZAKHSTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Tenge. Entidades usuárias: KAZAKHSTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Tenge cazaque",
       "numeric_code": "398",
       "symbol": ""
@@ -29644,7 +29722,8 @@
     {
       "code": "LAK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: LAO PEOPLE’S DEMOCRATIC REPUBLIC (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Lao Kip. Entidades usuárias: LAO PEOPLE’S DEMOCRATIC REPUBLIC (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Kip laosiano",
       "numeric_code": "418",
       "symbol": ""
@@ -29652,7 +29731,8 @@
     {
       "code": "LBP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: LEBANON. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Lebanese Pound. Entidades usuárias: LEBANON. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra libanesa",
       "numeric_code": "422",
       "symbol": ""
@@ -29660,7 +29740,8 @@
     {
       "code": "LKR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SRI LANKA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Sri Lanka Rupee. Entidades usuárias: SRI LANKA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia cingalesa",
       "numeric_code": "144",
       "symbol": ""
@@ -29668,7 +29749,8 @@
     {
       "code": "LRD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: LIBERIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Liberian Dollar. Entidades usuárias: LIBERIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar liberiano",
       "numeric_code": "430",
       "symbol": ""
@@ -29676,7 +29758,8 @@
     {
       "code": "LSL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: LESOTHO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Loti. Entidades usuárias: LESOTHO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Loti lesotiano",
       "numeric_code": "426",
       "symbol": ""
@@ -29684,7 +29767,8 @@
     {
       "code": "LYD",
       "decimal_places": 3,
-      "description": "Entidades usuárias: LIBYA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Libyan Dinar. Entidades usuárias: LIBYA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar líbio",
       "numeric_code": "434",
       "symbol": ""
@@ -29692,7 +29776,8 @@
     {
       "code": "MAD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MOROCCO; WESTERN SAHARA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Moroccan Dirham. Entidades usuárias: MOROCCO; WESTERN SAHARA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dirham marroquino",
       "numeric_code": "504",
       "symbol": ""
@@ -29700,7 +29785,8 @@
     {
       "code": "MDL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MOLDOVA (THE REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Moldovan Leu. Entidades usuárias: MOLDOVA (THE REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Leu moldávio",
       "numeric_code": "498",
       "symbol": ""
@@ -29708,7 +29794,8 @@
     {
       "code": "MGA",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MADAGASCAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Malagasy Ariary. Entidades usuárias: MADAGASCAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Ariary malgaxe",
       "numeric_code": "969",
       "symbol": ""
@@ -29716,7 +29803,8 @@
     {
       "code": "MKD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: NORTH MACEDONIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Denar. Entidades usuárias: NORTH MACEDONIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar macedônio",
       "numeric_code": "807",
       "symbol": ""
@@ -29724,7 +29812,8 @@
     {
       "code": "MMK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MYANMAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Kyat. Entidades usuárias: MYANMAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Quiate mianmarense",
       "numeric_code": "104",
       "symbol": ""
@@ -29732,7 +29821,8 @@
     {
       "code": "MNT",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MONGOLIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Tugrik. Entidades usuárias: MONGOLIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Tugrik mongol",
       "numeric_code": "496",
       "symbol": ""
@@ -29740,7 +29830,8 @@
     {
       "code": "MOP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MACAO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Pataca. Entidades usuárias: MACAO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Pataca macaense",
       "numeric_code": "446",
       "symbol": ""
@@ -29748,7 +29839,8 @@
     {
       "code": "MRU",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MAURITANIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Ouguiya. Entidades usuárias: MAURITANIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Ouguiya mauritana",
       "numeric_code": "929",
       "symbol": ""
@@ -29756,7 +29848,8 @@
     {
       "code": "MUR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MAURITIUS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Mauritius Rupee. Entidades usuárias: MAURITIUS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia mauriciana",
       "numeric_code": "480",
       "symbol": ""
@@ -29764,7 +29857,8 @@
     {
       "code": "MVR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MALDIVES. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Rufiyaa. Entidades usuárias: MALDIVES. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia maldivana",
       "numeric_code": "462",
       "symbol": ""
@@ -29772,7 +29866,8 @@
     {
       "code": "MWK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MALAWI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Malawi Kwacha. Entidades usuárias: MALAWI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Kwacha malauiana",
       "numeric_code": "454",
       "symbol": ""
@@ -29780,7 +29875,8 @@
     {
       "code": "MXN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MEXICO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Mexican Peso. Entidades usuárias: MEXICO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso mexicano",
       "numeric_code": "484",
       "symbol": "MX$"
@@ -29788,7 +29884,8 @@
     {
       "code": "MXV",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MEXICO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Mexican Unidad de Inversion (UDI). Entidades usuárias: MEXICO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Unidade Mexicana de Investimento (UDI)",
       "numeric_code": "979",
       "symbol": ""
@@ -29796,7 +29893,8 @@
     {
       "code": "MYR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MALAYSIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Malaysian Ringgit. Entidades usuárias: MALAYSIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Ringgit malaio",
       "numeric_code": "458",
       "symbol": ""
@@ -29804,7 +29902,8 @@
     {
       "code": "MZN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: MOZAMBIQUE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Mozambique Metical. Entidades usuárias: MOZAMBIQUE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Metical moçambicano",
       "numeric_code": "943",
       "symbol": ""
@@ -29812,7 +29911,8 @@
     {
       "code": "NAD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: NAMIBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Namibia Dollar. Entidades usuárias: NAMIBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar namibiano",
       "numeric_code": "516",
       "symbol": ""
@@ -29820,7 +29920,8 @@
     {
       "code": "NGN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: NIGERIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Naira. Entidades usuárias: NIGERIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Naira nigeriana",
       "numeric_code": "566",
       "symbol": ""
@@ -29828,7 +29929,8 @@
     {
       "code": "NIO",
       "decimal_places": 2,
-      "description": "Entidades usuárias: NICARAGUA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Cordoba Oro. Entidades usuárias: NICARAGUA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Córdoba nicaraguense",
       "numeric_code": "558",
       "symbol": ""
@@ -29836,7 +29938,8 @@
     {
       "code": "NOK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: BOUVET ISLAND; NORWAY; SVALBARD AND JAN MAYEN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Norwegian Krone. Entidades usuárias: BOUVET ISLAND; NORWAY; SVALBARD AND JAN MAYEN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Coroa norueguesa",
       "numeric_code": "578",
       "symbol": ""
@@ -29844,7 +29947,8 @@
     {
       "code": "NPR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: NEPAL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Nepalese Rupee. Entidades usuárias: NEPAL. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia nepalesa",
       "numeric_code": "524",
       "symbol": ""
@@ -29852,7 +29956,8 @@
     {
       "code": "NZD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: COOK ISLANDS (THE); NEW ZEALAND; NIUE; PITCAIRN; TOKELAU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: New Zealand Dollar. Entidades usuárias: COOK ISLANDS (THE); NEW ZEALAND; NIUE; PITCAIRN; TOKELAU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar neozelandês",
       "numeric_code": "554",
       "symbol": ""
@@ -29860,7 +29965,8 @@
     {
       "code": "OMR",
       "decimal_places": 3,
-      "description": "Entidades usuárias: OMAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Rial Omani. Entidades usuárias: OMAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rial omanense",
       "numeric_code": "512",
       "symbol": ""
@@ -29868,7 +29974,8 @@
     {
       "code": "PAB",
       "decimal_places": 2,
-      "description": "Entidades usuárias: PANAMA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Balboa. Entidades usuárias: PANAMA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Balboa panamenho",
       "numeric_code": "590",
       "symbol": ""
@@ -29876,7 +29983,8 @@
     {
       "code": "PEN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: PERU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Sol. Entidades usuárias: PERU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Novo sol peruano",
       "numeric_code": "604",
       "symbol": "S/"
@@ -29884,7 +29992,8 @@
     {
       "code": "PGK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: PAPUA NEW GUINEA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Kina. Entidades usuárias: PAPUA NEW GUINEA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Kina papuásia",
       "numeric_code": "598",
       "symbol": ""
@@ -29892,7 +30001,8 @@
     {
       "code": "PHP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: PHILIPPINES (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Philippine Peso. Entidades usuárias: PHILIPPINES (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso filipino",
       "numeric_code": "608",
       "symbol": ""
@@ -29900,7 +30010,8 @@
     {
       "code": "PKR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: PAKISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Pakistan Rupee. Entidades usuárias: PAKISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia paquistanesa",
       "numeric_code": "586",
       "symbol": ""
@@ -29908,7 +30019,8 @@
     {
       "code": "PLN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: POLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Zloty. Entidades usuárias: POLAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Zloty polonês",
       "numeric_code": "985",
       "symbol": ""
@@ -29916,7 +30028,8 @@
     {
       "code": "PYG",
       "decimal_places": 0,
-      "description": "Entidades usuárias: PARAGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Guarani. Entidades usuárias: PARAGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Guarani paraguaio",
       "numeric_code": "600",
       "symbol": ""
@@ -29924,7 +30037,8 @@
     {
       "code": "QAR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: QATAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Qatari Rial. Entidades usuárias: QATAR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rial catariano",
       "numeric_code": "634",
       "symbol": ""
@@ -29932,7 +30046,8 @@
     {
       "code": "RON",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ROMANIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Romanian Leu. Entidades usuárias: ROMANIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Leu romeno",
       "numeric_code": "946",
       "symbol": ""
@@ -29940,7 +30055,8 @@
     {
       "code": "RSD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SERBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Serbian Dinar. Entidades usuárias: SERBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar sérvio",
       "numeric_code": "941",
       "symbol": ""
@@ -29948,7 +30064,8 @@
     {
       "code": "RUB",
       "decimal_places": 2,
-      "description": "Entidades usuárias: RUSSIAN FEDERATION (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Russian Ruble. Entidades usuárias: RUSSIAN FEDERATION (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rublo russo",
       "numeric_code": "643",
       "symbol": "₽"
@@ -29956,7 +30073,8 @@
     {
       "code": "RWF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: RWANDA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Rwanda Franc. Entidades usuárias: RWANDA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco ruandês",
       "numeric_code": "646",
       "symbol": ""
@@ -29964,7 +30082,8 @@
     {
       "code": "SAR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SAUDI ARABIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Saudi Riyal. Entidades usuárias: SAUDI ARABIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Riyal saudita",
       "numeric_code": "682",
       "symbol": ""
@@ -29972,7 +30091,8 @@
     {
       "code": "SBD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SOLOMON ISLANDS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Solomon Islands Dollar. Entidades usuárias: SOLOMON ISLANDS. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar das Ilhas Salomão",
       "numeric_code": "090",
       "symbol": ""
@@ -29980,7 +30100,8 @@
     {
       "code": "SCR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SEYCHELLES. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Seychelles Rupee. Entidades usuárias: SEYCHELLES. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rupia seichelense",
       "numeric_code": "690",
       "symbol": ""
@@ -29988,7 +30109,8 @@
     {
       "code": "SDG",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SUDAN (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Sudanese Pound. Entidades usuárias: SUDAN (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra sudanesa",
       "numeric_code": "938",
       "symbol": ""
@@ -29996,7 +30118,8 @@
     {
       "code": "SEK",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SWEDEN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Swedish Krona. Entidades usuárias: SWEDEN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Coroa sueca",
       "numeric_code": "752",
       "symbol": ""
@@ -30004,7 +30127,8 @@
     {
       "code": "SGD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SINGAPORE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Singapore Dollar. Entidades usuárias: SINGAPORE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar singapuriano",
       "numeric_code": "702",
       "symbol": ""
@@ -30012,7 +30136,8 @@
     {
       "code": "SHP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SAINT HELENA, ASCENSION AND TRISTAN DA CUNHA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Saint Helena Pound. Entidades usuárias: SAINT HELENA, ASCENSION AND TRISTAN DA CUNHA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra de Santa Helena",
       "numeric_code": "654",
       "symbol": ""
@@ -30020,7 +30145,8 @@
     {
       "code": "SLE",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SIERRA LEONE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Leone. Entidades usuárias: SIERRA LEONE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Leone de Serra Leoa",
       "numeric_code": "925",
       "symbol": ""
@@ -30028,7 +30154,8 @@
     {
       "code": "SOS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SOMALIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Somali Shilling. Entidades usuárias: SOMALIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Xelim somali",
       "numeric_code": "706",
       "symbol": ""
@@ -30036,7 +30163,8 @@
     {
       "code": "SRD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SURINAME. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Surinam Dollar. Entidades usuárias: SURINAME. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar surinamês",
       "numeric_code": "968",
       "symbol": ""
@@ -30044,7 +30172,8 @@
     {
       "code": "SSP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SOUTH SUDAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: South Sudanese Pound. Entidades usuárias: SOUTH SUDAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra sul-sudanesa",
       "numeric_code": "728",
       "symbol": ""
@@ -30052,7 +30181,8 @@
     {
       "code": "STN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SAO TOME AND PRINCIPE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Dobra. Entidades usuárias: SAO TOME AND PRINCIPE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dobra de São Tomé e Príncipe",
       "numeric_code": "930",
       "symbol": ""
@@ -30060,7 +30190,8 @@
     {
       "code": "SVC",
       "decimal_places": 2,
-      "description": "Entidades usuárias: EL SALVADOR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: El Salvador Colon. Entidades usuárias: EL SALVADOR. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Colom salvadorenho",
       "numeric_code": "222",
       "symbol": ""
@@ -30068,7 +30199,8 @@
     {
       "code": "SYP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SYRIAN ARAB REPUBLIC. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Syrian Pound. Entidades usuárias: SYRIAN ARAB REPUBLIC. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Libra síria",
       "numeric_code": "760",
       "symbol": ""
@@ -30076,7 +30208,8 @@
     {
       "code": "SZL",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ESWATINI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Lilangeni. Entidades usuárias: ESWATINI. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Lilangeni suazi",
       "numeric_code": "748",
       "symbol": ""
@@ -30084,7 +30217,8 @@
     {
       "code": "THB",
       "decimal_places": 2,
-      "description": "Entidades usuárias: THAILAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Baht. Entidades usuárias: THAILAND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Baht tailandês",
       "numeric_code": "764",
       "symbol": ""
@@ -30092,7 +30226,8 @@
     {
       "code": "TJS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TAJIKISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Somoni. Entidades usuárias: TAJIKISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Somoni tadjique",
       "numeric_code": "972",
       "symbol": ""
@@ -30100,7 +30235,8 @@
     {
       "code": "TMT",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TURKMENISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Turkmenistan New Manat. Entidades usuárias: TURKMENISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Manat turcomeno",
       "numeric_code": "934",
       "symbol": ""
@@ -30108,7 +30244,8 @@
     {
       "code": "TND",
       "decimal_places": 3,
-      "description": "Entidades usuárias: TUNISIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Tunisian Dinar. Entidades usuárias: TUNISIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dinar tunisiano",
       "numeric_code": "788",
       "symbol": ""
@@ -30116,7 +30253,8 @@
     {
       "code": "TOP",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TONGA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Pa’anga. Entidades usuárias: TONGA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Paʻanga tonganesa",
       "numeric_code": "776",
       "symbol": ""
@@ -30124,7 +30262,8 @@
     {
       "code": "TRY",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TÜRKİYE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Turkish Lira. Entidades usuárias: TÜRKİYE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Lira turca",
       "numeric_code": "949",
       "symbol": ""
@@ -30132,7 +30271,8 @@
     {
       "code": "TTD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TRINIDAD AND TOBAGO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Trinidad and Tobago Dollar. Entidades usuárias: TRINIDAD AND TOBAGO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar de Trinidad e Tobago",
       "numeric_code": "780",
       "symbol": ""
@@ -30140,7 +30280,8 @@
     {
       "code": "TWD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TAIWAN (PROVINCE OF CHINA). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: New Taiwan Dollar. Entidades usuárias: TAIWAN (PROVINCE OF CHINA). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Novo dólar taiwanês",
       "numeric_code": "901",
       "symbol": ""
@@ -30148,7 +30289,8 @@
     {
       "code": "TZS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: TANZANIA, UNITED REPUBLIC OF. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Tanzanian Shilling. Entidades usuárias: TANZANIA, UNITED REPUBLIC OF. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Xelim tanzaniano",
       "numeric_code": "834",
       "symbol": ""
@@ -30156,7 +30298,8 @@
     {
       "code": "UAH",
       "decimal_places": 2,
-      "description": "Entidades usuárias: UKRAINE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Hryvnia. Entidades usuárias: UKRAINE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Hryvnia ucraniano",
       "numeric_code": "980",
       "symbol": ""
@@ -30164,7 +30307,8 @@
     {
       "code": "UGX",
       "decimal_places": 0,
-      "description": "Entidades usuárias: UGANDA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Uganda Shilling. Entidades usuárias: UGANDA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Xelim ugandense",
       "numeric_code": "800",
       "symbol": ""
@@ -30172,7 +30316,8 @@
     {
       "code": "USD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: AMERICAN SAMOA; BONAIRE, SINT EUSTATIUS AND SABA; BRITISH INDIAN OCEAN TERRITORY (THE); ECUADOR; EL SALVADOR; GUAM; HAITI; MARSHALL ISLANDS (THE); MICRONESIA (FEDERATED STATES OF); NORTHERN MARIANA ISLANDS (THE); PALAU; PANAMA; PUERTO RICO; TIMOR-LESTE; TURKS AND CAICOS ISLANDS (THE); UNITED STATES MINOR OUTLYING ISLANDS (THE); UNITED STATES OF AMERICA (THE); VIRGIN ISLANDS (BRITISH); VIRGIN ISLANDS (U.S.). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: US Dollar. Entidades usuárias: AMERICAN SAMOA; BONAIRE, SINT EUSTATIUS AND SABA; BRITISH INDIAN OCEAN TERRITORY (THE); ECUADOR; EL SALVADOR; GUAM; HAITI; MARSHALL ISLANDS (THE); MICRONESIA (FEDERATED STATES OF); NORTHERN MARIANA ISLANDS (THE); PALAU; PANAMA; PUERTO RICO; TIMOR-LESTE; TURKS AND CAICOS ISLANDS (THE); UNITED STATES MINOR OUTLYING ISLANDS (THE); UNITED STATES OF AMERICA (THE); VIRGIN ISLANDS (BRITISH); VIRGIN ISLANDS (U.S.). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar americano",
       "numeric_code": "840",
       "symbol": "US$"
@@ -30180,7 +30325,8 @@
     {
       "code": "USN",
       "decimal_places": 2,
-      "description": "Entidades usuárias: UNITED STATES OF AMERICA (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: US Dollar (Next day). Entidades usuárias: UNITED STATES OF AMERICA (THE). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar norte-americano (Dia seguinte)",
       "numeric_code": "997",
       "symbol": ""
@@ -30188,7 +30334,8 @@
     {
       "code": "UYI",
       "decimal_places": 0,
-      "description": "Entidades usuárias: URUGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Uruguay Peso en Unidades Indexadas (UI). Entidades usuárias: URUGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso uruguaio en unidades indexadas",
       "numeric_code": "940",
       "symbol": ""
@@ -30196,7 +30343,8 @@
     {
       "code": "UYU",
       "decimal_places": 2,
-      "description": "Entidades usuárias: URUGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Peso Uruguayo. Entidades usuárias: URUGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Peso uruguaio",
       "numeric_code": "858",
       "symbol": ""
@@ -30204,15 +30352,17 @@
     {
       "code": "UYW",
       "decimal_places": 4,
-      "description": "Entidades usuárias: URUGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
-      "name": "Unidad Previsional",
+      "description": "Nome oficial SIX: Unidad Previsional. Entidades usuárias: URUGUAY. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
+      "name": "Unidade previdenciária",
       "numeric_code": "927",
       "symbol": ""
     },
     {
       "code": "UZS",
       "decimal_places": 2,
-      "description": "Entidades usuárias: UZBEKISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Uzbekistan Sum. Entidades usuárias: UZBEKISTAN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Som uzbeque",
       "numeric_code": "860",
       "symbol": ""
@@ -30220,15 +30370,17 @@
     {
       "code": "VED",
       "decimal_places": 2,
-      "description": "Entidades usuárias: VENEZUELA (BOLIVARIAN REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
-      "name": "Bolívar Soberano",
+      "description": "Nome oficial SIX: Bolívar Soberano. Entidades usuárias: VENEZUELA (BOLIVARIAN REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
+      "name": "Bolívar soberano",
       "numeric_code": "926",
       "symbol": ""
     },
     {
       "code": "VES",
       "decimal_places": 2,
-      "description": "Entidades usuárias: VENEZUELA (BOLIVARIAN REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bolívar Soberano. Entidades usuárias: VENEZUELA (BOLIVARIAN REPUBLIC OF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Bolívar venezuelano",
       "numeric_code": "928",
       "symbol": ""
@@ -30236,7 +30388,8 @@
     {
       "code": "VND",
       "decimal_places": 0,
-      "description": "Entidades usuárias: VIET NAM. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Dong. Entidades usuárias: VIET NAM. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dong vietnamita",
       "numeric_code": "704",
       "symbol": ""
@@ -30244,7 +30397,8 @@
     {
       "code": "VUV",
       "decimal_places": 0,
-      "description": "Entidades usuárias: VANUATU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Vatu. Entidades usuárias: VANUATU. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Vatu de Vanuatu",
       "numeric_code": "548",
       "symbol": ""
@@ -30252,7 +30406,8 @@
     {
       "code": "WST",
       "decimal_places": 2,
-      "description": "Entidades usuárias: SAMOA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Tala. Entidades usuárias: SAMOA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Tala samoano",
       "numeric_code": "882",
       "symbol": ""
@@ -30260,15 +30415,17 @@
     {
       "code": "XAD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ARAB MONETARY FUND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
-      "name": "Arab Accounting Dinar",
+      "description": "Nome oficial SIX: Arab Accounting Dinar. Entidades usuárias: ARAB MONETARY FUND. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
+      "name": "Dinar contábil árabe",
       "numeric_code": "396",
       "symbol": ""
     },
     {
       "code": "XAF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: CAMEROON; CENTRAL AFRICAN REPUBLIC (THE); CHAD; CONGO (THE); EQUATORIAL GUINEA; GABON. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: CFA Franc BEAC. Entidades usuárias: CAMEROON; CENTRAL AFRICAN REPUBLIC (THE); CHAD; CONGO (THE); EQUATORIAL GUINEA; GABON. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco CFA de BEAC",
       "numeric_code": "950",
       "symbol": ""
@@ -30276,7 +30433,8 @@
     {
       "code": "XAG",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ11_Silver. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Silver. Entidades usuárias: ZZ11_Silver. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Prata",
       "numeric_code": "961",
       "symbol": ""
@@ -30284,7 +30442,8 @@
     {
       "code": "XAU",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ08_Gold. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Gold. Entidades usuárias: ZZ08_Gold. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Ouro",
       "numeric_code": "959",
       "symbol": ""
@@ -30292,7 +30451,8 @@
     {
       "code": "XBA",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ01_Bond Markets Unit European_EURCO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bond Markets Unit European Composite Unit (EURCO). Entidades usuárias: ZZ01_Bond Markets Unit European_EURCO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Unidade Composta Europeia",
       "numeric_code": "955",
       "symbol": ""
@@ -30300,7 +30460,8 @@
     {
       "code": "XBB",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ02_Bond Markets Unit European_EMU-6. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bond Markets Unit European Monetary Unit (E.M.U.-6). Entidades usuárias: ZZ02_Bond Markets Unit European_EMU-6. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Unidade Monetária Europeia",
       "numeric_code": "956",
       "symbol": ""
@@ -30308,7 +30469,8 @@
     {
       "code": "XBC",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ03_Bond Markets Unit European_EUA-9. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bond Markets Unit European Unit of Account 9 (E.U.A.-9). Entidades usuárias: ZZ03_Bond Markets Unit European_EUA-9. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Unidade de Conta Europeia (XBC)",
       "numeric_code": "957",
       "symbol": ""
@@ -30316,7 +30478,8 @@
     {
       "code": "XBD",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ04_Bond Markets Unit European_EUA-17. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Bond Markets Unit European Unit of Account 17 (E.U.A.-17). Entidades usuárias: ZZ04_Bond Markets Unit European_EUA-17. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Unidade de Conta Europeia (XBD)",
       "numeric_code": "958",
       "symbol": ""
@@ -30324,7 +30487,8 @@
     {
       "code": "XCD",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ANGUILLA; ANTIGUA AND BARBUDA; DOMINICA; GRENADA; MONTSERRAT; SAINT KITTS AND NEVIS; SAINT LUCIA; SAINT VINCENT AND THE GRENADINES. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: East Caribbean Dollar. Entidades usuárias: ANGUILLA; ANTIGUA AND BARBUDA; DOMINICA; GRENADA; MONTSERRAT; SAINT KITTS AND NEVIS; SAINT LUCIA; SAINT VINCENT AND THE GRENADINES. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Dólar do Caribe Oriental",
       "numeric_code": "951",
       "symbol": ""
@@ -30332,15 +30496,17 @@
     {
       "code": "XCG",
       "decimal_places": 2,
-      "description": "Entidades usuárias: CURAÇAO; SINT MAARTEN (DUTCH PART). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
-      "name": "Caribbean Guilder",
+      "description": "Nome oficial SIX: Caribbean Guilder. Entidades usuárias: CURAÇAO; SINT MAARTEN (DUTCH PART). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
+      "name": "Guilda caribenha",
       "numeric_code": "532",
       "symbol": ""
     },
     {
       "code": "XDR",
       "decimal_places": 0,
-      "description": "Entidades usuárias: INTERNATIONAL MONETARY FUND (IMF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: SDR (Special Drawing Right). Entidades usuárias: INTERNATIONAL MONETARY FUND (IMF). Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Direitos Especiais de Giro",
       "numeric_code": "960",
       "symbol": ""
@@ -30348,7 +30514,8 @@
     {
       "code": "XOF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: BENIN; BURKINA FASO; CÔTE D'IVOIRE; GUINEA-BISSAU; MALI; NIGER (THE); SENEGAL; TOGO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: CFA Franc BCEAO. Entidades usuárias: BENIN; BURKINA FASO; CÔTE D'IVOIRE; GUINEA-BISSAU; MALI; NIGER (THE); SENEGAL; TOGO. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco CFA de BCEAO",
       "numeric_code": "952",
       "symbol": ""
@@ -30356,7 +30523,8 @@
     {
       "code": "XPD",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ09_Palladium. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Palladium. Entidades usuárias: ZZ09_Palladium. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Paládio",
       "numeric_code": "964",
       "symbol": ""
@@ -30364,7 +30532,8 @@
     {
       "code": "XPF",
       "decimal_places": 0,
-      "description": "Entidades usuárias: FRENCH POLYNESIA; NEW CALEDONIA; WALLIS AND FUTUNA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: CFP Franc. Entidades usuárias: FRENCH POLYNESIA; NEW CALEDONIA; WALLIS AND FUTUNA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Franco CFP",
       "numeric_code": "953",
       "symbol": ""
@@ -30372,7 +30541,8 @@
     {
       "code": "XPT",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ10_Platinum. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Platinum. Entidades usuárias: ZZ10_Platinum. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Platina",
       "numeric_code": "962",
       "symbol": ""
@@ -30380,7 +30550,8 @@
     {
       "code": "XSU",
       "decimal_places": 0,
-      "description": "Entidades usuárias: SISTEMA UNITARIO DE COMPENSACION REGIONAL DE PAGOS \"SUCRE\". Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Sucre. Entidades usuárias: SISTEMA UNITARIO DE COMPENSACION REGIONAL DE PAGOS \"SUCRE\". Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Sucre",
       "numeric_code": "994",
       "symbol": ""
@@ -30388,7 +30559,8 @@
     {
       "code": "XTS",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ06_Testing_Code. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Codes specifically reserved for testing purposes. Entidades usuárias: ZZ06_Testing_Code. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Código de Moeda de Teste",
       "numeric_code": "963",
       "symbol": ""
@@ -30396,15 +30568,17 @@
     {
       "code": "XUA",
       "decimal_places": 0,
-      "description": "Entidades usuárias: MEMBER COUNTRIES OF THE AFRICAN DEVELOPMENT BANK GROUP. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
-      "name": "ADB Unit of Account",
+      "description": "Nome oficial SIX: ADB Unit of Account. Entidades usuárias: MEMBER COUNTRIES OF THE AFRICAN DEVELOPMENT BANK GROUP. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
+      "name": "Unidade de conta do Banco Asiático de Desenvolvimento",
       "numeric_code": "965",
       "symbol": ""
     },
     {
       "code": "XXX",
       "decimal_places": 0,
-      "description": "Entidades usuárias: ZZ07_No_Currency. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: The codes assigned for transactions where no currency is involved. Entidades usuárias: ZZ07_No_Currency. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": false,
       "name": "Moeda desconhecida",
       "numeric_code": "999",
       "symbol": ""
@@ -30412,7 +30586,8 @@
     {
       "code": "YER",
       "decimal_places": 2,
-      "description": "Entidades usuárias: YEMEN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Yemeni Rial. Entidades usuárias: YEMEN. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rial iemenita",
       "numeric_code": "886",
       "symbol": ""
@@ -30420,7 +30595,8 @@
     {
       "code": "ZAR",
       "decimal_places": 2,
-      "description": "Entidades usuárias: LESOTHO; NAMIBIA; SOUTH AFRICA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Rand. Entidades usuárias: LESOTHO; NAMIBIA; SOUTH AFRICA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Rand sul-africano",
       "numeric_code": "710",
       "symbol": ""
@@ -30428,7 +30604,8 @@
     {
       "code": "ZMW",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ZAMBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "description": "Nome oficial SIX: Zambian Kwacha. Entidades usuárias: ZAMBIA. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
       "name": "Kwacha zambiano",
       "numeric_code": "967",
       "symbol": ""
@@ -30436,8 +30613,9 @@
     {
       "code": "ZWG",
       "decimal_places": 2,
-      "description": "Entidades usuárias: ZIMBABWE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
-      "name": "Zimbabwe Gold",
+      "description": "Nome oficial SIX: Zimbabwe Gold. Entidades usuárias: ZIMBABWE. Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).",
+      "minor_unit_applicable": true,
+      "name": "Ouro do Zimbábue",
       "numeric_code": "924",
       "symbol": ""
     }

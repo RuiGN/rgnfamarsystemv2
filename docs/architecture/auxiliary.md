@@ -40,6 +40,10 @@ do manifesto antes de gravar. Os nomes das moedas são localizados para
 português do Brasil com o catálogo CLDR fornecido por Babel. Códigos
 alfabéticos e numéricos, casas decimais, símbolos conhecidos e a referência à
 fonte ISO permanecem preservados.
+Os códigos ainda ausentes do CLDR usam uma tabela pt-BR explícita e revisável;
+o nome original da SIX permanece na descrição para proveniência. O campo
+`minor_unit_applicable` distingue moedas com casas decimais `0` da indicação
+ISO `N.A.` (unidade monetária menor não aplicável).
 
 A carga não remove cadastros adicionados pelo usuário. Localidades legadas são
 reconciliadas somente por nome exato e hierarquia exata; apenas códigos

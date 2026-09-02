@@ -121,9 +121,10 @@ class OfficialReferenceDataCommandTests(TestCase):
                     'name': 'Real brasileiro',
                     'numeric_code': '986',
                     'decimal_places': 2,
+                    'minor_unit_applicable': True,
                     'symbol': 'R$',
                     'description': (
-                        'Entidades usuárias: BRAZIL. '
+                        'Nome oficial SIX: Brazilian Real. Entidades usuárias: BRAZIL. '
                         'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
                     ),
                 },
@@ -132,8 +133,10 @@ class OfficialReferenceDataCommandTests(TestCase):
                     'name': 'Dólar americano',
                     'numeric_code': '840',
                     'decimal_places': 2,
+                    'minor_unit_applicable': True,
                     'symbol': 'US$',
                     'description': (
+                        'Nome oficial SIX: US Dollar. '
                         'Entidades usuárias: PUERTO RICO; UNITED STATES OF AMERICA. '
                         'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
                     ),
@@ -178,9 +181,11 @@ class OfficialReferenceDataCommandTests(TestCase):
         assert recife.state == pernambuco
         assert brl.name == 'Real brasileiro'
         assert brl.numeric_code == '986'
+        assert brl.minor_unit_applicable is True
         assert brl.symbol == 'R$'
         assert Currency.objects.get(code='USD').name == 'Dólar americano'
         assert Currency.objects.get(code='USD').description == (
+            'Nome oficial SIX: US Dollar. '
             'Entidades usuárias: PUERTO RICO; UNITED STATES OF AMERICA. '
             'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
         )
