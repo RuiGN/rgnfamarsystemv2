@@ -1,8 +1,9 @@
 import pytest
 from django.core.exceptions import ValidationError
+from django.db import connection
 
 from auxiliary.cosmetics_seed import seed_cosmetics_auxiliary_data
-from auxiliary.models import Department, OrganizationalRole
+from auxiliary.models import BusinessArea, BusinessProcess, Department, OrganizationalRole
 from costing.models import CostElement
 from crm.models import CustomerGroup, SalesChannel
 from finance.models import FinancialCategory
@@ -98,6 +99,39 @@ def test_job_positions_and_functions_derive_from_all_organizational_roles():
     assert not WorkFunction.objects.filter(process_ref__isnull=True).exists()
 
 
+def test_role_department_and_process_belong_to_the_same_area():
+    seed_cosmetics_auxiliary_data()
+    apply_catalogs()
+
+    for position in JobPosition.objects.select_related('area_ref', 'department_ref'):
+        assert position.department_ref.area_id == position.area_ref_id
+    for function in WorkFunction.objects.select_related('area_ref', 'process_ref'):
+        assert function.process_ref.area_id == function.area_ref_id
+
+    maintenance = WorkFunction.objects.get(code='WF-COS-MAN')
+    auditor = WorkFunction.objects.get(code='WF-COS-AUD')
+    assert maintenance.process_ref.code == 'BPC-COS-MAN'
+    assert maintenance.job_position.department_ref.code == 'DEP-COS-MAN'
+    assert auditor.process_ref.code == 'BPC-COS-AUD'
+    assert auditor.job_position.department_ref.code == 'DEP-COS-AUD'
+
+
+@pytest.mark.parametrize(
+    ('model', 'code'),
+    ((Department, 'DEP-COS-AUD'), (BusinessProcess, 'BPC-COS-MAN')),
+)
+def test_catalogs_reject_auxiliary_role_relation_from_another_area(model, code):
+    seed_cosmetics_auxiliary_data()
+    relation = model.objects.get(code=code)
+    relation.area = BusinessArea.objects.get(code='BA-COS-PROD')
+    relation.save(update_fields={'area'})
+
+    with pytest.raises(ValidationError, match='área incompatível'):
+        apply_catalogs()
+
+    assert UnitOfMeasure.objects.count() == 0
+
+
 def test_validation_happens_before_any_catalog_write(monkeypatch):
     from reference_data import cosmetics_catalogs
 
@@ -136,10 +170,14 @@ def test_catalogs_do_not_create_tax_determination_records():
 def test_catalogs_roll_back_when_a_late_record_fails_full_clean(monkeypatch):
     seed_cosmetics_auxiliary_data()
     original_full_clean = FiscalOperationCode.full_clean
+    target_calls = 0
 
     def reject_last_cfop(instance, *args, **kwargs):
+        nonlocal target_calls
         if instance.code == '6910':
-            raise ValidationError('CFOP inválido no fim da carga.')
+            target_calls += 1
+            if target_calls == 2:
+                raise ValidationError('CFOP inválido no fim da carga.')
         return original_full_clean(instance, *args, **kwargs)
 
     monkeypatch.setattr(FiscalOperationCode, 'full_clean', reject_last_cfop)
@@ -147,4 +185,29 @@ def test_catalogs_roll_back_when_a_late_record_fails_full_clean(monkeypatch):
     with pytest.raises(ValidationError, match='fim da carga'):
         apply_catalogs()
 
+    assert all(count == 0 for count in catalog_model_counts().values())
+
+
+def test_catalogs_finish_all_full_clean_calls_before_first_write(monkeypatch):
+    seed_cosmetics_auxiliary_data()
+    writes = []
+
+    def record_write(execute, sql, params, many, context):
+        if sql.lstrip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
+            writes.append(sql)
+        return execute(sql, params, many, context)
+
+    original_full_clean = FiscalOperationCode.full_clean
+
+    def reject_last_cfop(instance, *args, **kwargs):
+        if instance.code == '6910':
+            raise ValidationError('Falha tardia da pré-validação.')
+        return original_full_clean(instance, *args, **kwargs)
+
+    monkeypatch.setattr(FiscalOperationCode, 'full_clean', reject_last_cfop)
+    with connection.execute_wrapper(record_write):
+        with pytest.raises(ValidationError, match='pré-validação'):
+            apply_catalogs()
+
+    assert writes == []
     assert all(count == 0 for count in catalog_model_counts().values())

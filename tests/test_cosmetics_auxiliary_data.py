@@ -49,6 +49,11 @@ def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
     assert production.name == 'Produção'
     assert BusinessProcess.objects.get(code='BPC-COS-FAB').area == production
     assert Department.objects.get(code='DEP-COS-ENV').area == production
+    engineering = BusinessArea.objects.get(code='BA-COS-ENG')
+    quality_assurance = BusinessArea.objects.get(code='BA-COS-GQ')
+    assert BusinessProcess.objects.get(code='BPC-COS-MAN').area == engineering
+    assert BusinessProcess.objects.get(code='BPC-COS-AUD').area == quality_assurance
+    assert Department.objects.get(code='DEP-COS-AUD').area == quality_assurance
     assert CommercialTerm.objects.get(code='CTM-COS-PG30').days == 30
     assert ImpactLevel.objects.get(code='IL-COS-RISK-4').name == 'Crítico'
     material_type = CatalogType.objects.get(code='CTG-COS-MATERIAL')
@@ -58,6 +63,8 @@ def test_seed_creates_linked_cosmetics_catalogs_only_in_auxiliary():
     assert (
         result['business_areas'] == BusinessArea.objects.filter(code__startswith='BA-COS-').count()
     )
+    assert result['business_processes'] == 24
+    assert result['departments'] == 17
     assert Product.objects.count() == product_count
 
 

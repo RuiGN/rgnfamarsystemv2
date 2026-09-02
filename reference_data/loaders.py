@@ -99,22 +99,25 @@ def _validate_auxiliary_dependencies() -> None:
     required_areas = {record[1] for record in relations}
     required_departments = {record[2] for record in relations}
     required_processes = {record[3] for record in relations}
-    existing_areas = set(
-        BusinessArea.objects.filter(code__in=required_areas).values_list('code', flat=True)
-    )
-    existing_departments = set(
-        Department.objects.filter(code__in=required_departments).values_list('code', flat=True)
-    )
-    existing_processes = set(
-        BusinessProcess.objects.filter(code__in=required_processes).values_list('code', flat=True)
-    )
+    areas = BusinessArea.objects.in_bulk(required_areas, field_name='code')
+    departments = Department.objects.in_bulk(required_departments, field_name='code')
+    processes = BusinessProcess.objects.in_bulk(required_processes, field_name='code')
     missing = sorted(
-        (required_areas - existing_areas)
-        | (required_departments - existing_departments)
-        | (required_processes - existing_processes)
+        (required_areas - set(areas))
+        | (required_departments - set(departments))
+        | (required_processes - set(processes))
     )
     if missing:
         raise ValidationError(f'Dependência auxiliar inexistente: {", ".join(missing)}.')
+    incompatible = []
+    for role_code, area_code, department_code, process_code, _critical in relations:
+        area = areas[area_code]
+        if departments[department_code].area_id != area.pk:
+            incompatible.append(f'{role_code}/{department_code}')
+        if processes[process_code].area_id != area.pk:
+            incompatible.append(f'{role_code}/{process_code}')
+    if incompatible:
+        raise ValidationError(f'Relação auxiliar com área incompatível: {", ".join(incompatible)}.')
 
 
 def validate_catalogs() -> None:
@@ -242,6 +245,176 @@ def upsert_validated(
     return 'created' if created else ('updated' if changed else 'unchanged')
 
 
+def _prepare_instance(
+    model: type[models.Model],
+    lookup: Mapping[str, Any],
+    values: Mapping[str, Any],
+    *,
+    exclude: set[str] | None = None,
+) -> models.Model:
+    """Monta o estado final sem persistir e executa a validação do model."""
+
+    instance = model.objects.filter(**lookup).first() or model(**lookup)
+    for name, value in values.items():
+        setattr(instance, name, value)
+    if hasattr(instance, 'is_active'):
+        instance.is_active = True
+    instance.full_clean(exclude=exclude)
+    return instance
+
+
+def _prepare_flat(
+    model: type[models.Model], records: Iterable[tuple[Any, ...]], fields: tuple[str, ...]
+) -> list[models.Model]:
+    prepared = []
+    for record in records:
+        code, *raw_values = record
+        values = dict(zip(fields, raw_values, strict=True))
+        prepared.append(_prepare_instance(model, {'code': code}, values))
+    return prepared
+
+
+def _prepare_hierarchy(
+    model: type[models.Model],
+    records: Iterable[tuple[str, str, str, str | None]],
+    *,
+    type_field: str,
+) -> tuple[list[models.Model], dict[str, models.Model]]:
+    prepared = []
+    resolved: dict[str, models.Model] = {}
+    pending = list(records)
+    while pending:
+        progress = False
+        for record in pending[:]:
+            code, name, record_type, parent_code = record
+            if parent_code is not None and parent_code not in resolved:
+                continue
+            parent = resolved[parent_code] if parent_code is not None else None
+            instance = _prepare_instance(
+                model,
+                {'code': code},
+                {'name': name, type_field: record_type, 'parent': parent},
+            )
+            prepared.append(instance)
+            resolved[code] = instance
+            pending.remove(record)
+            progress = True
+        if not progress:
+            missing = ', '.join(record[0] for record in pending)
+            raise ValidationError(f'Hierarquia sem dependência resolvida: {missing}.')
+    return prepared, resolved
+
+
+def _prepare_training() -> list[models.Model]:
+    areas = {item.code: item for item in BusinessArea.objects.filter(code__startswith='BA-COS-')}
+    departments = {
+        item.code: item for item in Department.objects.filter(code__startswith='DEP-COS-')
+    }
+    processes = {
+        item.code: item for item in BusinessProcess.objects.filter(code__startswith='BPC-COS-')
+    }
+    prepared = []
+    positions: dict[str, models.Model] = {}
+    for code, title, area_code, department_code in cosmetics_catalogs.JOB_POSITIONS:
+        area = areas[area_code]
+        department = departments[department_code]
+        position = _prepare_instance(
+            JobPosition,
+            {'code': code},
+            {
+                'title': title,
+                'area': area.name,
+                'area_ref': area,
+                'department': department.name,
+                'department_ref': department,
+                'description': f'Cargo cosmético derivado da função organizacional {title}.',
+            },
+        )
+        prepared.append(position)
+        positions[code] = position
+
+    for (
+        code,
+        name,
+        position_code,
+        area_code,
+        process_code,
+        critical,
+    ) in cosmetics_catalogs.WORK_FUNCTIONS:
+        area = areas[area_code]
+        process = processes[process_code]
+        position = positions[position_code]
+        prepared.append(
+            _prepare_instance(
+                WorkFunction,
+                {'code': code},
+                {
+                    'name': name,
+                    'job_position': position,
+                    'area': area.name,
+                    'area_ref': area,
+                    'process': process.name,
+                    'process_ref': process,
+                    'is_critical': critical,
+                    'description': f'Função cosmética derivada da função organizacional {name}.',
+                },
+                exclude={'job_position'} if position.pk is None else None,
+            )
+        )
+    return prepared
+
+
+def _prepare_catalog_objects() -> list[models.Model]:
+    """Prepara e valida todo o lote sem emitir nenhuma escrita."""
+
+    prepared = []
+    prepared.extend(_prepare_flat(UnitOfMeasure, cosmetics_catalogs.UNITS, ('name', 'symbol')))
+    master_categories, _master_by_code = _prepare_hierarchy(
+        MasterCategory, cosmetics_catalogs.MASTER_CATEGORIES, type_field='kind'
+    )
+    prepared.extend(master_categories)
+    prepared.extend(
+        _prepare_flat(CostElement, cosmetics_catalogs.COST_ELEMENTS, ('name', 'category'))
+    )
+    prepared.extend(
+        _prepare_flat(CustomerGroup, cosmetics_catalogs.CUSTOMER_GROUPS, ('name', 'description'))
+    )
+    prepared.extend(
+        _prepare_flat(SalesChannel, cosmetics_catalogs.SALES_CHANNELS, ('name', 'channel_type'))
+    )
+    chart_accounts, chart_by_code = _prepare_hierarchy(
+        ChartOfAccount, cosmetics_catalogs.CHART_ACCOUNTS, type_field='account_type'
+    )
+    prepared.extend(chart_accounts)
+    for code, name, category_type, chart_code in cosmetics_catalogs.FINANCIAL_CATEGORIES:
+        chart_account = chart_by_code[chart_code]
+        prepared.append(
+            _prepare_instance(
+                FinancialCategory,
+                {'code': code},
+                {
+                    'name': name,
+                    'category_type': category_type,
+                    'chart_account': chart_account,
+                },
+                exclude={'chart_account'} if chart_account.pk is None else None,
+            )
+        )
+    prepared.extend(_prepare_training())
+    prepared.extend(
+        _prepare_flat(Competency, cosmetics_catalogs.COMPETENCIES, ('name', 'competency_type'))
+    )
+    prepared.extend(_prepare_flat(FiscalUnit, cosmetics_catalogs.FISCAL_UNITS, ('description',)))
+    prepared.extend(
+        _prepare_flat(
+            FiscalOperationCode,
+            cosmetics_catalogs.CFOPS,
+            ('description', 'direction'),
+        )
+    )
+    return prepared
+
+
 def _summary(managed: int, statuses: Counter[str]) -> dict[str, int]:
     return {
         'managed': managed,
@@ -364,6 +537,7 @@ def apply_catalogs() -> dict[str, dict[str, int]]:
     """Valida e aplica os catálogos curados em uma única transação."""
 
     validate_catalogs()
+    _prepare_catalog_objects()
     result = {
         UnitOfMeasure._meta.label: _load_flat(
             UnitOfMeasure, cosmetics_catalogs.UNITS, ('name', 'symbol')

@@ -16,6 +16,16 @@ persistente. A carga usa apenas o PostgreSQL isolado de testes provido por
   `transaction.atomic`, o teste tardio de `full_clean()` falhou porque as escritas
   anteriores permaneceram; restaurado o decorador, o mesmo teste passou e confirmou
   rollback integral.
+- RED da correção de review: os três cenários novos falharam como esperado. O seeder
+  não encontrava `BPC-COS-MAN`; a função de manutenção apontava para processo de outra
+  área; e uma falha de validação no último CFOP observou **168 sinais `pre_save`** antes
+  de abortar.
+- GREEN da correção: os processos/departamento dedicados foram adicionados, todas as
+  relações de cargo/função ficaram coerentes com a área e o lote inteiro passou por
+  `full_clean()` antes do primeiro `save`.
+- RED/GREEN adicional: corromper a área de `DEP-COS-AUD` ou `BPC-COS-MAN` inicialmente
+  não causava rejeição (**2 failed**); após validar a coerência auxiliar na fase
+  estrutural, os dois casos passaram (**2 passed**).
 - Gate requerido final: `bash scripts/test.sh tests/test_production_reference_catalogs.py
   tests/test_cosmetics_auxiliary_data.py --reuse-db -q`.
 - Regressões focadas: `bash scripts/test.sh tests/test_costing.py tests/test_crm.py
@@ -25,6 +35,8 @@ persistente. A carga usa apenas o PostgreSQL isolado de testes provido por
 
 - `reference_data/cosmetics_catalogs.py`: valores canônicos, relações derivadas dos 17
   `ORGANIZATIONAL_ROLES`, payload e `COSMETICS_CATALOG_MANIFEST`.
+- `auxiliary/cosmetics_seed.py`: processos dedicados de manutenção e auditoria e
+  departamento dedicado de auditoria interna.
 - `reference_data/loaders.py`: validação estrutural e relacional completa, upsert com
   `full_clean()`, loaders em ordem de dependência, transação única e contadores.
 - `tests/test_production_reference_catalogs.py`: conteúdo pt-BR, manifesto, relações,
@@ -70,15 +82,24 @@ dígito para validar o campo `direction`, sem acrescentar texto ao rótulo.
 Os 17 cargos e as 17 funções usam exatamente os nomes de `ORGANIZATIONAL_ROLES`.
 `area_ref`, `department_ref` e `process_ref` são procurados pelos códigos auxiliares
 `BA-COS-*`, `DEP-COS-*` e `BPC-COS-*`; qualquer ausência interrompe a carga antes da
-primeira escrita.
+primeira escrita. O catálogo auxiliar gerencia agora 14 áreas, 24 processos, 17
+departamentos e 17 papéis organizacionais. Todas as relações usadas pelos papéis
+satisfazem `department.area == role.area` e `process.area == role.area`.
 
 ## Comportamento e segurança da carga
 
 - `validate_catalogs()` confere duplicidade, prefixos reservados, `TextChoices`,
   parents, contas contábeis, cardinalidade/hash do manifesto, derivação das funções,
   estrutura/direção dos CFOPs e dependências auxiliares.
-- `apply_catalogs()` chama a validação antes do primeiro upsert e mantém toda a carga
-  em uma única transação.
+- `apply_catalogs()` executa duas fases dentro de uma única transação: primeiro monta
+  o estado final de todos os 169 candidatos e executa `full_clean()` em todos; somente
+  após concluir o lote inteiro inicia os upserts e escritas.
+- O teste da fronteira envolve a conexão do Django e registra qualquer SQL `INSERT`,
+  `UPDATE` ou `DELETE`; uma falha no último candidato encerra com lista de escritas vazia.
+- Candidatos de atualização reutilizam a instância existente, preservando `pk` e
+  `_state`, para que `validate_unique()` e `validate_constraints()` excluam corretamente
+  a própria linha. Relações para pais novos são validadas estruturalmente e excluídas
+  apenas da validação de FK enquanto o pai ainda não possui PK.
 - Cada registro, inclusive inalterado, passa por `full_clean()`.
 - Upserts só usam os códigos enumerados pelo catálogo; registros locais não listados
   são preservados.
@@ -96,7 +117,7 @@ primeira escrita.
 
 ## Verificações
 
-- Gate catálogos + seeder auxiliar: **12 passed**.
+- Gate catálogos + seeder auxiliar: **16 passed**.
 - Regressões `costing`, `crm`, `finance`, `training` e `fiscal`: **60 passed**.
 - Ruff lint: sem achados.
 - Ruff format: arquivos tocados formatados.
@@ -106,12 +127,7 @@ primeira escrita.
   `No changes detected`.
 - `git diff --check`: sem erros.
 
-## Preocupações e decisões de mapeamento
+## Limite mantido
 
-- O catálogo auxiliar não contém processos exclusivos de PCP, manutenção e auditoria.
-  Sem alterar o escopo auxiliar aprovado, essas funções foram ligadas aos processos
-  existentes mais próximos: fabricação para PCP/manutenção e gestão de desvios para
-  auditoria. Os vínculos permanecem explícitos em `ROLE_RELATIONS`, são validados e
-  podem ser refinados numa futura ampliação versionada do catálogo auxiliar.
 - A lista CFOP é deliberadamente pequena e descritiva. Ela não substitui parametrização
   fiscal por estabelecimento, UF, regime, produto ou operação.

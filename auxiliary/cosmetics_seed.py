@@ -93,6 +93,8 @@ BUSINESS_PROCESSES = (
     ('BPC-COS-REC-MAT', 'Recebimento de materiais', 'BA-COS-LOG'),
     ('BPC-COS-ARM', 'Armazenagem', 'BA-COS-LOG'),
     ('BPC-COS-EXP', 'Expedição', 'BA-COS-LOG'),
+    ('BPC-COS-MAN', 'Manutenção industrial', 'BA-COS-ENG'),
+    ('BPC-COS-AUD', 'Auditoria interna da qualidade', 'BA-COS-GQ'),
 )
 
 DEPARTMENTS = (
@@ -112,6 +114,7 @@ DEPARTMENTS = (
     ('DEP-COS-EXP', 'Expedição', 'BA-COS-LOG'),
     ('DEP-COS-MAN', 'Manutenção', 'BA-COS-ENG'),
     ('DEP-COS-TI', 'Sistemas e Infraestrutura', 'BA-COS-TI'),
+    ('DEP-COS-AUD', 'Auditoria Interna', 'BA-COS-GQ'),
 )
 
 ORGANIZATIONAL_ROLES = (
