@@ -1,9 +1,14 @@
+from io import StringIO
+from unittest.mock import patch
+
 import pytest
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.db import connection
 
-from auxiliary.cosmetics_seed import seed_cosmetics_auxiliary_data
-from auxiliary.models import BusinessArea, BusinessProcess, Department, OrganizationalRole
+from auxiliary.reference_snapshots import load_official_snapshot
+from auxiliary.cosmetics_seed import BUSINESS_AREAS, DEPARTMENTS, seed_cosmetics_auxiliary_data
+from auxiliary.models import BusinessArea, BusinessProcess, Country, Department, OrganizationalRole
 from costing.models import CostElement
 from crm.models import CustomerGroup, SalesChannel
 from finance.models import FinancialCategory
@@ -16,10 +21,149 @@ from reference_data.cosmetics_catalogs import (
     WORK_FUNCTIONS,
 )
 from reference_data.loaders import apply_catalogs, catalog_model_counts, validate_catalogs
+from reference_data.services import ReferenceDataResult, seed_production_reference_data
 from training.models import Competency, JobPosition, WorkFunction
 
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.mark.django_db(transaction=True)
+def test_global_reference_load_rolls_back_every_domain(monkeypatch):
+    original_full_clean = FiscalOperationCode.full_clean
+    target_calls = 0
+
+    def reject_last_cfop(instance, *args, **kwargs):
+        nonlocal target_calls
+        if instance.code == '6910':
+            target_calls += 1
+            if target_calls == 2:
+                raise ValidationError('CFOP inválido no fim da carga global.')
+        return original_full_clean(instance, *args, **kwargs)
+
+    monkeypatch.setattr(FiscalOperationCode, 'full_clean', reject_last_cfop)
+
+    with pytest.raises(ValidationError, match='fim da carga global'):
+        seed_production_reference_data()
+
+    assert Country.objects.count() == 0
+    assert BusinessArea.objects.count() == 0
+    assert UnitOfMeasure.objects.count() == 0
+    assert CostElement.objects.count() == 0
+    assert FiscalUnit.objects.count() == 0
+
+
+def test_production_reference_result_has_hashes_counts_and_reuses_transaction(monkeypatch):
+    from reference_data import services
+
+    official = load_official_snapshot()
+    transaction_flags = []
+    calls = []
+
+    def load_official():
+        calls.append('load_official')
+        return official
+
+    def apply_official(snapshot, *, use_current_transaction):
+        assert snapshot is official
+        calls.append('apply_official')
+        transaction_flags.append(use_current_transaction)
+        return {'states': 27, 'countries': 1}
+
+    def seed_auxiliary(*, use_current_transaction):
+        calls.append('seed_auxiliary')
+        transaction_flags.append(use_current_transaction)
+        return {'departments': 17, 'business_areas': 15}
+
+    def apply_domains(*, use_current_transaction):
+        calls.append('apply_domains')
+        transaction_flags.append(use_current_transaction)
+        return {'masters.UnitOfMeasure': {'managed': 21, 'created': 21}}
+
+    def validate_domains(*, include_auxiliary_dependencies):
+        assert include_auxiliary_dependencies is False
+        calls.append('validate_catalogs')
+
+    monkeypatch.setattr(services, 'load_official_snapshot', load_official)
+    monkeypatch.setattr(services, 'apply_official_snapshot', apply_official)
+    monkeypatch.setattr(services, 'seed_cosmetics_auxiliary_data', seed_auxiliary)
+    monkeypatch.setattr(services, 'validate_catalogs', validate_domains)
+    monkeypatch.setattr(services, 'apply_catalogs', apply_domains)
+
+    result = seed_production_reference_data()
+
+    assert isinstance(result, ReferenceDataResult)
+    assert result.manifest_hashes == {
+        official.manifest.identifier: official.manifest.sha256,
+        COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.sha256,
+    }
+    assert result.counts == {
+        'official': {'countries': 1, 'states': 27},
+        'auxiliary': {'business_areas': 15, 'departments': 17},
+        'masters.UnitOfMeasure': {'managed': 21, 'created': 21},
+    }
+    assert transaction_flags == [True, True, True]
+    assert calls == [
+        'load_official',
+        'validate_catalogs',
+        'apply_official',
+        'seed_auxiliary',
+        'apply_domains',
+    ]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_production_reference_result_matches_real_manifests_and_counts():
+    official = load_official_snapshot()
+
+    result = seed_production_reference_data()
+
+    assert result.manifest_hashes == {
+        official.manifest.identifier: official.manifest.sha256,
+        COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.sha256,
+    }
+    assert result.counts['official'] == official.manifest.expected_counts
+    assert result.counts['auxiliary']['business_areas'] == len(BUSINESS_AREAS)
+    assert result.counts['auxiliary']['departments'] == len(DEPARTMENTS)
+    for section, expected_count in COSMETICS_CATALOG_MANIFEST.expected_counts.items():
+        assert result.counts[section]['managed'] == expected_count
+        assert (
+            sum(result.counts[section][status] for status in ('created', 'updated', 'unchanged'))
+            == expected_count
+        )
+
+
+def test_command_production_catalogs_uses_unified_service_and_safe_summary():
+    stdout = StringIO()
+    result = ReferenceDataResult(
+        manifest_hashes={
+            'official-references-br': 'a' * 64,
+            'rgn-cosmetics-cross-app-catalogs': 'b' * 64,
+        },
+        counts={
+            'official': {'countries': 1},
+            'auxiliary': {'business_areas': 15},
+            'masters.UnitOfMeasure': {'managed': 21},
+        },
+    )
+
+    with patch(
+        'auxiliary.management.commands.load_cosmetics_auxiliary_data.seed_production_reference_data',
+        return_value=result,
+    ) as unified_seed:
+        call_command('load_cosmetics_auxiliary_data', production_catalogs=True, stdout=stdout)
+
+    output = stdout.getvalue()
+    unified_seed.assert_called_once_with()
+    assert 'versão=2026.08.31' in output
+    assert 'versão=2026.1' in output
+    assert 'sha256=aaaaaaaaaaaa' in output
+    assert 'sha256=bbbbbbbbbbbb' in output
+    assert 'official.countries=1' in output
+    assert 'auxiliary.business_areas=15' in output
+    assert 'masters.UnitOfMeasure.managed=21' in output
+    assert 'a' * 64 not in output
+    assert 'b' * 64 not in output
 
 
 def test_catalogs_create_real_pt_br_reference_data_without_transactions():

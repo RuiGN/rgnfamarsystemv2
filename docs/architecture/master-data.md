@@ -28,6 +28,34 @@ Endpoints REST devem usar `IsAuthenticated` e permissões Django de modelo. A UI
 operacional em `/app/` deve usar o shell, cards, tabelas, formulários, badges,
 modais, paginação e estados do design system.
 
+## Catálogos de referência de produção
+
+O bootstrap unificado carrega unidades de medida, categorias mestres, elementos
+de custo, grupos e canais comerciais, plano de contas, categorias financeiras,
+cargos, funções, competências, unidades fiscais e uma seleção descritiva de
+CFOPs:
+
+```bash
+.venv/bin/python manage.py load_cosmetics_auxiliary_data --production-catalogs
+```
+
+Os registros curados usam prefixos reservados como `UOM-`, `CAT-COS-`,
+`CE-COS-`, `CG-COS-`, `SC-COS-`, `COA-COS-`, `FC-COS-`, `JP-COS-`, `WF-COS-`
+e `CPT-COS-`. Unidades fiscais e CFOPs mantêm os códigos normativos. Registros
+fora desses namespaces são preservados; registros gerenciados são reativados e
+reconciliados de forma idempotente.
+
+As fontes documentais do catálogo são o Sistema Internacional de Unidades
+publicado pelo Inmetro/IPQ e a tabela CFOP do Convênio SINIEF. O CFOP incluído é
+referência descritiva e não substitui análise fiscal. O lote exclui deliberadamente
+produtos, parceiros, estoques, NCMs, situações tributárias e demais dados
+operacionais ou transacionais.
+
+O manifesto `rgn-cosmetics-cross-app-catalogs` fixa versão, data da fonte,
+namespaces, contagens e SHA-256. Alterações no conteúdo exigem atualização e
+revisão explícitas no repositório antes do deploy; o comando de produção não
+baixa nem renova fontes.
+
 ## Verificação mínima
 
 ```bash

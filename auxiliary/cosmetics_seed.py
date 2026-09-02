@@ -261,8 +261,7 @@ def _upsert(model, code, **values):
     return instance
 
 
-@transaction.atomic
-def seed_cosmetics_auxiliary_data():
+def _seed_cosmetics_auxiliary_data() -> dict[str, int]:
     counts = defaultdict(int)
     areas = {}
     for code, name, description in BUSINESS_AREAS:
@@ -380,3 +379,12 @@ def seed_cosmetics_auxiliary_data():
             counts['system_models'] += 1
 
     return dict(sorted(counts.items()))
+
+
+def seed_cosmetics_auxiliary_data(*, use_current_transaction: bool = False) -> dict[str, int]:
+    """Carrega auxiliares, reutilizando opcionalmente a transação coordenadora."""
+
+    if use_current_transaction:
+        return _seed_cosmetics_auxiliary_data()
+    with transaction.atomic():
+        return _seed_cosmetics_auxiliary_data()

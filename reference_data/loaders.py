@@ -120,8 +120,8 @@ def _validate_auxiliary_dependencies() -> None:
         raise ValidationError(f'Relação auxiliar com área incompatível: {", ".join(incompatible)}.')
 
 
-def validate_catalogs() -> None:
-    """Valida o manifesto completo e suas dependências antes de qualquer escrita."""
+def validate_catalogs(*, include_auxiliary_dependencies: bool = True) -> None:
+    """Valida o manifesto e, por padrão, suas dependências auxiliares."""
 
     payload = _current_payload()
     manifest = cosmetics_catalogs.COSMETICS_CATALOG_MANIFEST
@@ -207,11 +207,12 @@ def validate_catalogs() -> None:
     if invalid_cfops:
         raise ValidationError(f'CFOP incompatível com a direção: {", ".join(invalid_cfops)}.')
 
-    _validate_auxiliary_dependencies()
     if {section: len(records) for section, records in payload.items()} != manifest.expected_counts:
         raise ValidationError('As contagens dos catálogos divergem do manifesto.')
     if payload_hash(payload) != manifest.sha256:
         raise ValidationError('O conteúdo dos catálogos diverge do SHA-256 do manifesto.')
+    if include_auxiliary_dependencies:
+        _validate_auxiliary_dependencies()
 
 
 def upsert_validated(
@@ -532,8 +533,7 @@ def _load_training() -> dict[str, dict[str, int]]:
     }
 
 
-@transaction.atomic
-def apply_catalogs() -> dict[str, dict[str, int]]:
+def _apply_catalogs() -> dict[str, dict[str, int]]:
     """Valida e aplica os catálogos curados em uma única transação."""
 
     validate_catalogs()
@@ -588,6 +588,15 @@ def apply_catalogs() -> dict[str, dict[str, int]]:
         FiscalOperationCode, cosmetics_catalogs.CFOPS, ('description', 'direction')
     )
     return result
+
+
+def apply_catalogs(*, use_current_transaction: bool = False) -> dict[str, dict[str, int]]:
+    """Aplica catálogos, reutilizando opcionalmente a transação coordenadora."""
+
+    if use_current_transaction:
+        return _apply_catalogs()
+    with transaction.atomic():
+        return _apply_catalogs()
 
 
 def catalog_model_counts() -> dict[str, int]:

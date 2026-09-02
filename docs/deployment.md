@@ -33,6 +33,26 @@ Depois execute `migrate`, `check` e `runserver 127.0.0.1:8000` com o ambiente
 virtual. Os testes usam o PostgreSQL isolado de `docker-compose.test.yml` pelo
 perfil `core.settings.test`.
 
+## Catálogos no bootstrap de produção
+
+Após `migrate` e antes de liberar o tráfego da nova instalação, carregue os
+catálogos aprovados com:
+
+```bash
+.venv/bin/python manage.py load_cosmetics_auxiliary_data --production-catalogs
+```
+
+O comando opera somente sobre os snapshots versionados presentes no release e
+mantém o lote oficial, auxiliar e mestre em uma transação global. Falhas de
+manifesto, validação ou integridade provocam rollback completo. A saída registra
+versões, hashes abreviados e contagens, sem expor variáveis de ambiente.
+
+Não atualize fontes durante o deploy. A captura online de IBGE e SIX ISO 4217,
+assim como mudanças no catálogo curado de SI/CFOP, deve ocorrer antes da janela,
+em mudança separada, com revisão das fontes, exclusões operacionais, contagens e
+SHA-256. A carga preserva registros fora dos namespaces gerenciados e não cria
+produtos, parceiros, estoque, NCMs ou regras tributárias.
+
 ## Verificação da topologia
 
 ```bash

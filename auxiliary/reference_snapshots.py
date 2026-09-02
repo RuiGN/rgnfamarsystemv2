@@ -275,7 +275,7 @@ def _apply_currencies(records: list[dict[str, Any]]) -> None:
         obj.save()
 
 
-def apply_official_snapshot(snapshot: OfficialReferenceSnapshot) -> dict[str, int]:
+def _apply_official_snapshot(snapshot: OfficialReferenceSnapshot) -> dict[str, int]:
     counts = {section: len(snapshot.payload[section]) for section in REQUIRED_SECTIONS}
     ordered_counts = {
         'countries': counts['countries'],
@@ -283,9 +283,21 @@ def apply_official_snapshot(snapshot: OfficialReferenceSnapshot) -> dict[str, in
         'cities': counts['cities'],
         'currencies': counts['currencies'],
     }
-    with transaction.atomic():
-        country_refs = _apply_countries(snapshot.payload['countries'])
-        state_refs = _apply_states(snapshot.payload['states'], country_refs)
-        _apply_cities(snapshot.payload['cities'], state_refs)
-        _apply_currencies(snapshot.payload['currencies'])
+    country_refs = _apply_countries(snapshot.payload['countries'])
+    state_refs = _apply_states(snapshot.payload['states'], country_refs)
+    _apply_cities(snapshot.payload['cities'], state_refs)
+    _apply_currencies(snapshot.payload['currencies'])
     return ordered_counts
+
+
+def apply_official_snapshot(
+    snapshot: OfficialReferenceSnapshot,
+    *,
+    use_current_transaction: bool = False,
+) -> dict[str, int]:
+    """Aplica o snapshot, reutilizando opcionalmente a transação coordenadora."""
+
+    if use_current_transaction:
+        return _apply_official_snapshot(snapshot)
+    with transaction.atomic():
+        return _apply_official_snapshot(snapshot)

@@ -94,6 +94,30 @@ cosmética possuem transações próprias; qualquer erro de leitura, integridade
 validação do snapshot oficial interrompe a execução antes do catálogo
 cosmético.
 
+Para o bootstrap de produção, use o serviço unificado:
+
+```bash
+.venv/bin/python manage.py load_cosmetics_auxiliary_data --production-catalogs
+```
+
+Esse modo valida os manifestos locais e aplica, em uma única transação, o
+snapshot oficial, os auxiliares cosméticos e os catálogos mestres dos demais
+domínios. Qualquer erro desfaz o lote inteiro. A saída operacional contém apenas
+versões, hashes abreviados e contagens; nenhum valor de ambiente é lido ou
+impresso pelo comando.
+
+O namespace gerenciado é delimitado pelos códigos oficiais (IBGE e ISO 4217) e
+pelos prefixos estáveis `BA-COS-`, `BPC-COS-`, `DEP-COS-`, `ORG-COS-`,
+`CTM-COS-`, `IL-COS-`, `CTG-COS-`, `CV-COS-`, `SM-` e `SMD-`. Registros locais
+fora desse conjunto são preservados. A carga não cria produtos, parceiros,
+lotes, movimentos de estoque nem regras de determinação fiscal.
+
+Snapshots oficiais são atualizados pelo comando online de refresh, fora da
+janela de deploy, e só entram em produção após revisão do JSON, manifesto,
+fontes, contagens e SHA-256 versionados no repositório. O deploy consome apenas
+os snapshots locais já aprovados; não consulta IBGE, SIX ou outras fontes pela
+rede.
+
 ## UF e município normalizados
 
 `StateProvince` e `City` são a fonte da verdade para UF e cidade nos cadastros
