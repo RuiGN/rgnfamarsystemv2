@@ -48,21 +48,21 @@ class OrganizationalRoleAdmin(AutomaticGeneratedFieldsAdminMixin, AuxiliaryCatal
 
 @admin.register(Country)
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ('name',)
+    list_display = ('id', 'name', 'iso_alpha2', 'iso_alpha3', 'numeric_code')
+    search_fields = ('name', 'iso_alpha2', 'iso_alpha3', 'numeric_code')
 
 
 @admin.register(StateProvince)
 class StateProvinceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'country')
-    search_fields = ('name', 'country__name')
+    list_display = ('id', 'name', 'abbreviation', 'ibge_code', 'country')
+    search_fields = ('name', 'abbreviation', 'ibge_code', 'country__name')
     list_filter = ('country',)
 
 
 @admin.register(City)
 class CityAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'state')
-    search_fields = ('name', 'state__name')
+    list_display = ('id', 'name', 'ibge_code', 'state')
+    search_fields = ('name', 'ibge_code', 'state__name')
     list_filter = ('state',)
 
 

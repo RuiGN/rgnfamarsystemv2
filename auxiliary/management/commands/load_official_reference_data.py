@@ -145,14 +145,20 @@ class Command(BaseCommand):
             name = str(item.get('nome') or '').strip() if isinstance(item, dict) else ''
             if not name:
                 raise CommandError('País com identificação inválida recebido do IBGE.')
-            if name in countries:
-                pass
-            countries[name] = {'name': name}
+            identifier = item.get('id') or {}
+            alpha2 = str(identifier.get('ISO-ALPHA-2') or '').strip().upper()
+            alpha3 = str(identifier.get('ISO-ALPHA-3') or '').strip().upper()
+            numeric = str(identifier.get('M49') or '').strip()
+            countries[name] = {
+                'name': name,
+                'iso_alpha2': alpha2,
+                'iso_alpha3': alpha3,
+                'numeric_code': numeric.zfill(3) if numeric else '',
+            }
         if 'Brasil' not in countries:
             raise CommandError('Fonte IBGE sem o registro do Brasil.')
         return countries
 
-    @staticmethod
     @staticmethod
     def _parse_states(payload):
         states = {}
@@ -192,7 +198,11 @@ class Command(BaseCommand):
                 raise CommandError('Município com identificação inválida recebido do IBGE.')
             if ibge_code in cities:
                 raise CommandError(f'Município duplicado na fonte do IBGE: {ibge_code}.')
-            cities[ibge_code] = {'name': name, 'state': abbreviation}
+            cities[ibge_code] = {
+                'name': name,
+                'state': abbreviation,
+                'ibge_code': ibge_code,
+            }
         return cities
 
     @staticmethod
@@ -273,7 +283,18 @@ class Command(BaseCommand):
     def _upsert_countries(self, countries):
         refs = {}
         for name, data in countries.items():
-            obj, _ = Country.objects.update_or_create(name=name, defaults={'name': name})
+            obj = self._single_or_none(
+                Country.objects.filter(
+                    Q(name=name)
+                    | Q(iso_alpha2=data['iso_alpha2'])
+                    | Q(iso_alpha3=data['iso_alpha3'])
+                    | Q(numeric_code=data['numeric_code'])
+                ),
+                f'país {name}',
+            )
+            if obj is None:
+                obj = Country()
+            self._save_location_fields(obj, data)
             refs[name] = obj
         return refs
 
@@ -281,8 +302,24 @@ class Command(BaseCommand):
         refs = {}
         for code, data in states.items():
             name = data['name']
-            obj, _ = StateProvince.objects.update_or_create(
-                name=name, defaults={'name': name, 'country': country_obj}
+            obj = self._single_or_none(
+                StateProvince.objects.filter(
+                    Q(name=name)
+                    | Q(ibge_code=data['numeric_code'])
+                    | Q(country=country_obj, abbreviation=data['abbreviation'])
+                ),
+                f'UF {data["abbreviation"]}',
+            )
+            if obj is None:
+                obj = StateProvince()
+            self._save_location_fields(
+                obj,
+                {
+                    'name': name,
+                    'country': country_obj,
+                    'abbreviation': data['abbreviation'],
+                    'ibge_code': data['numeric_code'],
+                },
             )
             refs[code] = obj
         return refs
@@ -291,11 +328,19 @@ class Command(BaseCommand):
         for code, data in cities.items():
             name = data['name']
             state_obj = state_refs[data['state']]
-            # Since city names aren't unique globally, but are unique within a state ideally (though not always),
-            # we'll use name and state for update_or_create. The old code used ibge_code/code.
-            # But the models only have name and state.
-            City.objects.update_or_create(
-                name=name, state=state_obj, defaults={'name': name, 'state': state_obj}
+            obj = self._single_or_none(
+                City.objects.filter(Q(ibge_code=data['ibge_code']) | Q(name=name, state=state_obj)),
+                f'município {data["ibge_code"]}',
+            )
+            if obj is None:
+                obj = City()
+            self._save_location_fields(
+                obj,
+                {
+                    'name': name,
+                    'state': state_obj,
+                    'ibge_code': data['ibge_code'],
+                },
             )
 
     def _upsert_currencies(self, currencies):
@@ -314,5 +359,12 @@ class Command(BaseCommand):
             if field != 'code' or not obj.pk:
                 setattr(obj, field, value)
         obj.is_active = True
+        obj.full_clean(validate_unique=False, validate_constraints=False)
+        obj.save()
+
+    @staticmethod
+    def _save_location_fields(obj, fields):
+        for field, value in fields.items():
+            setattr(obj, field, value)
         obj.full_clean(validate_unique=False, validate_constraints=False)
         obj.save()

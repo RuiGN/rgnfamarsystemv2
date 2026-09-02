@@ -96,11 +96,31 @@ class OrganizationalRole(AuxiliaryCatalog):
 
 class Country(models.Model):
     name = models.CharField('nome', max_length=180, unique=True)
+    iso_alpha2 = models.CharField('ISO alfa-2', max_length=2, blank=True)
+    iso_alpha3 = models.CharField('ISO alfa-3', max_length=3, blank=True)
+    numeric_code = models.CharField('código numérico', max_length=3, blank=True)
 
     class Meta:
         verbose_name = 'país'
         verbose_name_plural = 'países'
         ordering = ['name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['iso_alpha2'],
+                condition=~models.Q(iso_alpha2=''),
+                name='unique_country_iso_alpha2',
+            ),
+            models.UniqueConstraint(
+                fields=['iso_alpha3'],
+                condition=~models.Q(iso_alpha3=''),
+                name='unique_country_iso_alpha3',
+            ),
+            models.UniqueConstraint(
+                fields=['numeric_code'],
+                condition=~models.Q(numeric_code=''),
+                name='unique_country_numeric_code',
+            ),
+        ]
 
     def __str__(self):
         return self.name
@@ -108,6 +128,8 @@ class Country(models.Model):
 
 class StateProvince(models.Model):
     name = models.CharField('nome', max_length=180)
+    abbreviation = models.CharField('sigla', max_length=2, blank=True)
+    ibge_code = models.CharField('código IBGE', max_length=2, blank=True)
     country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,
@@ -124,6 +146,18 @@ class StateProvince(models.Model):
         indexes = [
             models.Index(fields=['name']),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['country', 'abbreviation'],
+                condition=~models.Q(abbreviation=''),
+                name='unique_state_country_abbreviation',
+            ),
+            models.UniqueConstraint(
+                fields=['ibge_code'],
+                condition=~models.Q(ibge_code=''),
+                name='unique_state_ibge_code',
+            ),
+        ]
 
     def __str__(self):
         return self.name
@@ -131,6 +165,7 @@ class StateProvince(models.Model):
 
 class City(models.Model):
     name = models.CharField('nome', max_length=180)
+    ibge_code = models.CharField('código IBGE', max_length=7, blank=True)
     state = models.ForeignKey(
         StateProvince,
         on_delete=models.PROTECT,
@@ -147,6 +182,13 @@ class City(models.Model):
         indexes = [
             models.Index(fields=['state']),
             models.Index(fields=['name']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ibge_code'],
+                condition=~models.Q(ibge_code=''),
+                name='unique_city_ibge_code',
+            ),
         ]
 
     def __str__(self):

@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import IntegrityError
 from django.test import TestCase
 
 from auxiliary.models import City, Country, Currency, StateProvince
@@ -87,6 +88,12 @@ class OfficialReferenceDataCommandTests(TestCase):
         brl = Currency.objects.get(code='BRL')
 
         assert brazil.name == 'Brasil'
+        assert brazil.iso_alpha2 == 'BR'
+        assert brazil.iso_alpha3 == 'BRA'
+        assert brazil.numeric_code == '076'
+        assert pernambuco.abbreviation == 'PE'
+        assert pernambuco.ibge_code == '26'
+        assert recife.ibge_code == '2611606'
 
         assert recife.state == pernambuco
         assert brl.name == 'Real brasileiro'
@@ -138,3 +145,13 @@ class OfficialReferenceDataCommandTests(TestCase):
         assert StateProvince.objects.count() == 0
         assert City.objects.count() == 0
         assert Currency.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_official_location_codes_are_unique_when_present():
+    Country.objects.create(
+        name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076'
+    )
+
+    with pytest.raises(IntegrityError):
+        Country.objects.create(name='Brasil duplicado', iso_alpha2='BR')
