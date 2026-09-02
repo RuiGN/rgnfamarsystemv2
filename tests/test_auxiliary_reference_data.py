@@ -1,13 +1,16 @@
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
+import requests
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import IntegrityError
 from django.test import TestCase
 
 from auxiliary.models import City, Country, Currency, StateProvince
+from auxiliary.reference_snapshots import OfficialReferenceSnapshot
+from reference_data.manifest import build_manifest
 
 
 COUNTRIES = [
@@ -61,22 +64,99 @@ CURRENCIES_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 
 class OfficialReferenceDataCommandTests(TestCase):
     def run_command(self, *, cities=CITIES):
+        def city_state_abbreviation(item):
+            immediate = item.get('regiao-imediata') or {}
+            intermediate = immediate.get('regiao-intermediaria') or {}
+            state = intermediate.get('UF') or {}
+            if state.get('sigla'):
+                return state['sigla']
+            microregion = item.get('microrregiao') or {}
+            mesoregion = microregion.get('mesorregiao') or {}
+            return (mesoregion.get('UF') or {}).get('sigla', '')
+
+        payload = {
+            'countries': [
+                {
+                    'name': 'Brasil',
+                    'iso_alpha2': 'BR',
+                    'iso_alpha3': 'BRA',
+                    'numeric_code': '076',
+                }
+            ],
+            'states': [
+                {
+                    'name': 'Pernambuco',
+                    'abbreviation': 'PE',
+                    'ibge_code': '26',
+                    'country_iso_alpha2': 'BR',
+                }
+            ],
+            'cities': [
+                {
+                    'name': city['nome'],
+                    'ibge_code': str(city['id']),
+                    'state_ibge_code': (
+                        str(
+                            (city.get('regiao-imediata') or {})
+                            .get('regiao-intermediaria', {})
+                            .get('UF', {})
+                            .get('id')
+                            or ''
+                        )
+                        or str(
+                            (city.get('microrregiao') or {})
+                            .get('mesorregiao', {})
+                            .get('UF', {})
+                            .get('id')
+                            or ''
+                        )
+                        or ({'PE': '26'}.get(city_state_abbreviation(city), ''))
+                    ),
+                }
+                for city in cities
+            ],
+            'currencies': [
+                {
+                    'code': 'BRL',
+                    'name': 'Real brasileiro',
+                    'numeric_code': '986',
+                    'decimal_places': 2,
+                    'symbol': 'R$',
+                    'description': (
+                        'Entidades usuárias: BRAZIL. '
+                        'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
+                    ),
+                },
+                {
+                    'code': 'USD',
+                    'name': 'Dólar americano',
+                    'numeric_code': '840',
+                    'decimal_places': 2,
+                    'symbol': 'US$',
+                    'description': (
+                        'Entidades usuárias: PUERTO RICO; UNITED STATES OF AMERICA. '
+                        'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
+                    ),
+                },
+            ],
+        }
+        manifest = build_manifest(
+            identifier='official-references-br',
+            version='test',
+            source_date='2026-08-31',
+            source_urls=('https://example.test',),
+            namespaces=('ISO-3166', 'IBGE-LOCALIDADES', 'ISO-4217'),
+            payload=payload,
+        )
         stdout = StringIO()
         with (
             patch(
-                'auxiliary.management.commands.load_official_reference_data.Command._download_json',
-                side_effect=[COUNTRIES, STATES, cities],
+                'auxiliary.management.commands.load_official_reference_data.load_official_snapshot',
+                return_value=OfficialReferenceSnapshot(manifest=manifest, payload=payload),
             ),
-            patch(
-                'auxiliary.management.commands.load_official_reference_data.Command._download_bytes',
-                return_value=CURRENCIES_XML,
-            ),
+            patch.object(requests, 'get', Mock(side_effect=AssertionError('rede proibida'))),
         ):
-            call_command(
-                'load_official_reference_data',
-                allow_partial=True,
-                stdout=stdout,
-            )
+            call_command('load_official_reference_data', stdout=stdout)
         return stdout.getvalue()
 
     def test_loads_official_catalogs_and_is_idempotent(self):
@@ -104,7 +184,7 @@ class OfficialReferenceDataCommandTests(TestCase):
             'Entidades usuárias: PUERTO RICO; UNITED STATES OF AMERICA. '
             'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
         )
-        assert 'países=1, UFs=1, municípios=2, moedas=2' in output
+        assert 'countries=1, states=1, cities=2, currencies=2' in output
 
         self.run_command()
 
@@ -246,7 +326,7 @@ class OfficialReferenceDataCommandTests(TestCase):
             }
         ]
 
-        with pytest.raises(CommandError, match='UF XX não encontrada'):
+        with pytest.raises(CommandError, match='UF 99 não encontrada'):
             self.run_command(cities=invalid_cities)
 
         assert Country.objects.count() == 0
@@ -257,9 +337,7 @@ class OfficialReferenceDataCommandTests(TestCase):
 
 @pytest.mark.django_db
 def test_official_location_codes_are_unique_when_present():
-    Country.objects.create(
-        name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076'
-    )
+    Country.objects.create(name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076')
 
     with pytest.raises(IntegrityError):
         Country.objects.create(name='Brasil duplicado', iso_alpha2='BR')

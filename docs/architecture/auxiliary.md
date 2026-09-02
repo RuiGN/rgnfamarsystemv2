@@ -28,32 +28,44 @@ modais, paginação e estados do design system.
 
 ## Dados oficiais de referência
 
-O comando abaixo carrega, de forma transacional e idempotente, os catálogos
-geográficos do IBGE e a lista vigente de moedas ISO 4217 mantida pela SIX:
+O comando de produção abaixo carrega, de forma transacional e idempotente, o
+snapshot versionado incluído no repositório. Ele não acessa a rede:
 
 ```bash
-python manage.py load_official_reference_data
+.venv/bin/python manage.py load_official_reference_data
 ```
 
-Os nomes das moedas são localizados para português do Brasil com o catálogo
-CLDR fornecido por Babel. Códigos alfabéticos e numéricos, casas decimais,
-símbolos conhecidos e a referência à fonte ISO permanecem preservados.
+O loader valida o SHA-256 canônico, as quatro seções permitidas e as contagens
+do manifesto antes de gravar. Os nomes das moedas são localizados para
+português do Brasil com o catálogo CLDR fornecido por Babel. Códigos
+alfabéticos e numéricos, casas decimais, símbolos conhecidos e a referência à
+fonte ISO permanecem preservados.
 
-A carga valida a cardinalidade mínima esperada antes de gravar e não remove
-cadastros adicionados pelo usuário. Registros preexistentes são reconciliados
-pelos identificadores oficiais (`ISO alfa-2/alfa-3`, sigla da UF, código IBGE
-do município e código alfabético/numérico da moeda), preservando códigos
-internos legados e chaves estrangeiras. Toda a gravação ocorre em uma única
-transação; erro de fonte, relacionamento ou validação provoca rollback.
+A carga não remove cadastros adicionados pelo usuário. Localidades legadas são
+reconciliadas somente por nome exato e hierarquia exata; apenas códigos
+oficiais vazios são preenchidos. Código divergente, código já pertencente a
+outro cadastro ou correspondência ambígua aborta sem sobrescrever dados. Toda
+a gravação ocorre em uma única transação; erro de integridade, relacionamento
+ou validação provoca rollback.
 
 Fontes oficiais:
 
 - IBGE API de Localidades: países, UFs e municípios brasileiros;
 - SIX ISO 4217 List One: moedas e fundos correntes.
 
-`--timeout` configura o limite de cada requisição HTTPS entre 1 e 300 segundos.
-`--allow-partial` desativa somente a verificação de cardinalidade e deve ser
-usado exclusivamente em testes automatizados ou cargas controladas.
+A atualização das fontes é uma operação online explícita, separada da carga:
+
+```bash
+.venv/bin/python manage.py refresh_official_reference_snapshots \
+  --version 2026.08.31 \
+  --source-date 2026-08-31 \
+  --output-dir reference_data/snapshots
+```
+
+Somente esse comando possui `--timeout` (entre 1 e 300 segundos). Ele exige
+versão, data de corte e diretório de saída, rejeita fontes abaixo das
+cardinalidades esperadas e grava JSON UTF-8 determinístico com manifesto e
+SHA-256 para revisão antes do commit.
 
 ## Referências para indústria cosmética
 
@@ -74,8 +86,8 @@ cosmético, execute:
 
 A carga é idempotente e identifica o conjunto gerenciado por códigos estáveis.
 Ela não apaga registros locais nem grava em outros apps. A carga oficial e a
-cosmética possuem transações próprias; qualquer erro
-de obtenção ou validação oficial interrompe a execução antes do catálogo
+cosmética possuem transações próprias; qualquer erro de leitura, integridade ou
+validação do snapshot oficial interrompe a execução antes do catálogo
 cosmético.
 
 ## UF e município normalizados

@@ -95,9 +95,8 @@ def test_command_can_run_official_references_before_cosmetics_catalog():
         call_command(
             'load_cosmetics_auxiliary_data',
             with_official_references=True,
-            timeout=45,
             stdout=stdout,
         )
 
-    nested_call.assert_called_once_with('load_official_reference_data', timeout=45)
+    nested_call.assert_called_once_with('load_official_reference_data')
     assert 'Carga auxiliar cosmética concluída' in stdout.getvalue()
