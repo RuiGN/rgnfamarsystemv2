@@ -109,6 +109,12 @@ class Command(BaseCommand):
             source_date=source_date,
             source_urls=SOURCE_URLS,
             namespaces=('ISO-3166', 'IBGE-LOCALIDADES', 'ISO-4217'),
+            provenance=(
+                'Países, UFs e municípios extraídos da API de Localidades do IBGE.',
+                'Moedas extraídas da List One ISO 4217 publicada pela SIX Group.',
+            ),
+            license_name='Dados oficiais de acesso público das fontes citadas',
+            license_url='https://servicodados.ibge.gov.br/api/docs/localidades',
             payload=payload,
         )
         output_dir = Path(options['output_dir'])
@@ -264,7 +270,6 @@ class Command(BaseCommand):
             root = ElementTree.fromstring(payload)
         except (ElementTree.ParseError, ValueError) as error:
             raise CommandError('XML inválido recebido da ISO 4217/SIX.') from error
-        published_at = str(root.attrib.get('Pblshd') or 'data não informada')
         currencies = {}
         entities = defaultdict(set)
         for item in root.findall('.//CcyNtry'):
@@ -296,6 +301,19 @@ class Command(BaseCommand):
             currencies[code] = values
             if entity:
                 entities[code].add(entity)
+        duplicated_numeric = defaultdict(list)
+        for code, values in currencies.items():
+            duplicated_numeric[values[1]].append(code)
+        conflicts = sorted(
+            (numeric, sorted(codes))
+            for numeric, codes in duplicated_numeric.items()
+            if len(codes) > 1
+        )
+        if conflicts:
+            details = '; '.join(
+                f'numeric_code={numeric!r}: {", ".join(codes)}' for numeric, codes in conflicts
+            )
+            raise CommandError(f'Código numérico duplicado na fonte ISO 4217: {details}.')
 
         records = []
         for code, values in currencies.items():
@@ -313,11 +331,9 @@ class Command(BaseCommand):
                     'decimal_places': values[2],
                     'minor_unit_applicable': values[3],
                     'symbol': CURRENCY_SYMBOLS.get(code, ''),
-                    'description': (
-                        f'Nome oficial SIX: {values[0]}. '
-                        f'Entidades usuárias: {"; ".join(sorted(entities[code]))}. '
-                        f'Fonte: ISO 4217/SIX (lista vigente em {published_at}).'
-                    ),
+                    'source_name': values[0],
+                    'source_entities': sorted(entities[code]),
+                    'description': 'Moeda ISO 4217 com nome localizado para português do Brasil.',
                 }
             )
         return sorted(records, key=lambda item: item['code'])

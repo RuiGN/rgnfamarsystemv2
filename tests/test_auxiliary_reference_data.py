@@ -149,6 +149,9 @@ class OfficialReferenceDataCommandTests(TestCase):
             source_date='2026-08-31',
             source_urls=('https://example.test',),
             namespaces=('ISO-3166', 'IBGE-LOCALIDADES', 'ISO-4217'),
+            provenance=('Fonte oficial de referência.',),
+            license_name='Dados oficiais de acesso público',
+            license_url='https://example.test/license',
             payload=payload,
         )
         stdout = StringIO()
@@ -243,7 +246,7 @@ class OfficialReferenceDataCommandTests(TestCase):
     def test_rejects_divergent_country_code_without_overwriting_or_partial_writes(self):
         brazil = Country.objects.create(name='Brasil', iso_alpha2='XX')
 
-        with pytest.raises(CommandError, match='Código oficial divergente para país Brasil'):
+        with pytest.raises(CommandError, match='Código oficial divergente no fallback legado de país Brasil'):
             self.run_command()
 
         brazil.refresh_from_db()
@@ -277,7 +280,7 @@ class OfficialReferenceDataCommandTests(TestCase):
         )
         recife = City.objects.create(name='Recife', state=pernambuco, ibge_code='9999999')
 
-        with pytest.raises(CommandError, match='Código oficial divergente para município 2611606'):
+        with pytest.raises(CommandError, match='Código oficial divergente no fallback legado de município 2611606'):
             self.run_command()
 
         recife.refresh_from_db()

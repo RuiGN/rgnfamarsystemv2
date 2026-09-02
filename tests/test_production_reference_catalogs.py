@@ -7,7 +7,12 @@ from django.core.management import call_command
 from django.db import connection
 
 from auxiliary.reference_snapshots import load_official_snapshot
-from auxiliary.cosmetics_seed import BUSINESS_AREAS, DEPARTMENTS, seed_cosmetics_auxiliary_data
+from auxiliary.cosmetics_seed import (
+    AUXILIARY_CATALOG_MANIFEST,
+    BUSINESS_AREAS,
+    DEPARTMENTS,
+    seed_cosmetics_auxiliary_data,
+)
 from auxiliary.models import BusinessArea, BusinessProcess, Country, Department, OrganizationalRole
 from costing.models import CostElement
 from crm.models import CustomerGroup, SalesChannel
@@ -21,6 +26,7 @@ from reference_data.cosmetics_catalogs import (
     WORK_FUNCTIONS,
 )
 from reference_data.loaders import apply_catalogs, catalog_model_counts, validate_catalogs
+from reference_data.manifest import payload_hash
 from reference_data.services import ReferenceDataResult, seed_production_reference_data
 from training.models import Competency, JobPosition, WorkFunction
 
@@ -84,18 +90,23 @@ def test_production_reference_result_has_hashes_counts_and_reuses_transaction(mo
         assert include_auxiliary_dependencies is False
         calls.append('validate_catalogs')
 
+    def validate_auxiliary():
+        calls.append('validate_auxiliary')
+
     monkeypatch.setattr(services, 'load_official_snapshot', load_official)
     monkeypatch.setattr(services, 'apply_official_snapshot', apply_official)
     monkeypatch.setattr(services, 'seed_cosmetics_auxiliary_data', seed_auxiliary)
     monkeypatch.setattr(services, 'validate_catalogs', validate_domains)
+    monkeypatch.setattr(services, 'validate_cosmetics_auxiliary_data', validate_auxiliary)
     monkeypatch.setattr(services, 'apply_catalogs', apply_domains)
 
     result = seed_production_reference_data()
 
     assert isinstance(result, ReferenceDataResult)
     assert result.manifest_hashes == {
-        official.manifest.identifier: official.manifest.sha256,
-        COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.sha256,
+        official.manifest.identifier: official.manifest.canonical_hash(),
+        AUXILIARY_CATALOG_MANIFEST.identifier: AUXILIARY_CATALOG_MANIFEST.canonical_hash(),
+        COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.canonical_hash(),
     }
     assert result.counts == {
         'official': {'countries': 1, 'states': 27},
@@ -106,6 +117,7 @@ def test_production_reference_result_has_hashes_counts_and_reuses_transaction(mo
     assert calls == [
         'load_official',
         'validate_catalogs',
+        'validate_auxiliary',
         'apply_official',
         'seed_auxiliary',
         'apply_domains',
@@ -119,8 +131,9 @@ def test_production_reference_result_matches_real_manifests_and_counts():
     result = seed_production_reference_data()
 
     assert result.manifest_hashes == {
-        official.manifest.identifier: official.manifest.sha256,
-        COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.sha256,
+        official.manifest.identifier: official.manifest.canonical_hash(),
+        AUXILIARY_CATALOG_MANIFEST.identifier: AUXILIARY_CATALOG_MANIFEST.canonical_hash(),
+        COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.canonical_hash(),
     }
     assert result.counts['official'] == official.manifest.expected_counts
     assert result.counts['auxiliary']['business_areas'] == len(BUSINESS_AREAS)
@@ -226,7 +239,30 @@ def test_catalog_manifest_records_counts_sources_and_fiscal_boundary():
     assert any('si_versao_final.pdf' in url for url in COSMETICS_CATALOG_MANIFEST.source_urls)
     assert any('anexo-ecf-cfop' in url for url in COSMETICS_CATALOG_MANIFEST.source_urls)
     assert any('SINIEF' in namespace for namespace in COSMETICS_CATALOG_MANIFEST.namespaces)
-    assert any('análise fiscal' in namespace for namespace in COSMETICS_CATALOG_MANIFEST.namespaces)
+    assert any(
+        'análise fiscal' in provenance for provenance in COSMETICS_CATALOG_MANIFEST.provenance
+    )
+    assert COSMETICS_CATALOG_MANIFEST.license_name
+    assert COSMETICS_CATALOG_MANIFEST.license_url.startswith('https://')
+    assert COSMETICS_CATALOG_MANIFEST.sha256 == (
+        'f57b994b72e311cd6ac5e477c596463cd35e8ab5401891c649bc7d914031a4f4'
+    )
+
+
+def test_catalog_manifest_rejects_same_size_payload_mutation_without_version_bump(monkeypatch):
+    from reference_data import cosmetics_catalogs
+
+    changed = list(cosmetics_catalogs.UNITS)
+    code, _name, symbol = changed[0]
+    changed[0] = (code, 'Nome adulterado', symbol)
+    monkeypatch.setattr(cosmetics_catalogs, 'UNITS', tuple(changed))
+
+    with pytest.raises(ValidationError, match='SHA-256'):
+        validate_catalogs(include_auxiliary_dependencies=False)
+
+    assert payload_hash(cosmetics_catalogs.COSMETICS_CATALOG_PAYLOAD) == (
+        COSMETICS_CATALOG_MANIFEST.sha256
+    )
 
 
 def test_job_positions_and_functions_derive_from_all_organizational_roles():

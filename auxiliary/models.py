@@ -209,6 +209,13 @@ class Currency(AuxiliaryCatalog):
         indexes = AuxiliaryCatalog.Meta.indexes + [
             models.Index(fields=['numeric_code']),
         ]
+        constraints = AuxiliaryCatalog.Meta.constraints + [
+            models.UniqueConstraint(
+                fields=['numeric_code'],
+                condition=~models.Q(numeric_code=''),
+                name='unique_currency_numeric_code',
+            ),
+        ]
 
     def clean(self):
         super().clean()

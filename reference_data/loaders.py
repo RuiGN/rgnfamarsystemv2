@@ -293,7 +293,7 @@ def _prepare_hierarchy(
             parent = resolved[parent_code] if parent_code is not None else None
             instance = _prepare_instance(
                 model,
-                {'code': code},
+                {'code': code, type_field: record_type},
                 {'name': name, type_field: record_type, 'parent': parent},
             )
             prepared.append(instance)
@@ -456,11 +456,11 @@ def _load_hierarchy(
             parent = resolved[parent_code] if parent_code is not None else None
             status = upsert_validated(
                 model,
-                {'code': code},
+                {'code': code, type_field: record_type},
                 {'name': name, type_field: record_type, 'parent': parent},
             )
             statuses[status] += 1
-            resolved[code] = model.objects.get(code=code)
+            resolved[code] = model.objects.get(code=code, **{type_field: record_type})
             pending.remove(record)
             progress = True
         if not progress:

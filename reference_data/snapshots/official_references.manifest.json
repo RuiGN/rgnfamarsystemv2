@@ -6,10 +6,16 @@
     "states": 27
   },
   "identifier": "official-references-br",
+  "license_name": "Dados oficiais de acesso público das fontes citadas",
+  "license_url": "https://servicodados.ibge.gov.br/api/docs/localidades",
   "namespaces": [
     "ISO-3166",
     "IBGE-LOCALIDADES",
     "ISO-4217"
+  ],
+  "provenance": [
+    "Países, UFs e municípios extraídos da API de Localidades do IBGE.",
+    "Moedas extraídas da List One ISO 4217 publicada pela SIX Group."
   ],
   "sha256": "965c4260e8d6963d80e695edadaa23fc45e1adee0924aa5043211514cf31c658",
   "source_date": "2026-08-31",

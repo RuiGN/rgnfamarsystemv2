@@ -2005,7 +2005,12 @@ class CepLookupView(LoginRequiredMixin, View):
         uf = str(data.get('uf', '')).upper().strip()
         localidade = str(data.get('localidade', '')).strip()
 
-        city_record, state_record, country_record = self._ensure_city(request, localidade, uf)
+        city_record, state_record, country_record = self._ensure_city(
+            request,
+            localidade,
+            uf,
+            str(data.get('ibge', '')).strip(),
+        )
 
         return JsonResponse(
             {
@@ -2021,7 +2026,7 @@ class CepLookupView(LoginRequiredMixin, View):
         )
 
     @staticmethod
-    def _ensure_city(request, name, uf):
+    def _ensure_city(request, name, uf, ibge_code=''):
         if not name or not uf:
             return None, None, None
 
@@ -2058,7 +2063,12 @@ class CepLookupView(LoginRequiredMixin, View):
         state = StateProvince.objects.filter(name__iexact=state_name).first()
         country = state.country if state else None
 
-        city = City.objects.filter(name__iexact=name).first()
+        city = City.objects.filter(ibge_code=ibge_code).first() if ibge_code else None
+
+        if city:
+            return city, state, country
+
+        city = City.objects.filter(name__iexact=name, state=state).first()
 
         if city:
             if not city.state and state:

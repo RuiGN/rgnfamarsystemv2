@@ -75,7 +75,13 @@ def _manifest_dict(payload=MINIMAL_PAYLOAD):
     return {
         'expected_counts': {key: len(value) for key, value in payload.items()},
         'identifier': 'official-references-br',
+        'license_name': 'Dados oficiais de acesso público das fontes citadas',
+        'license_url': 'https://servicodados.ibge.gov.br/api/docs/localidades',
         'namespaces': ['ISO-3166', 'IBGE-LOCALIDADES', 'ISO-4217'],
+        'provenance': [
+            'Países, UFs e municípios extraídos da API de Localidades do IBGE.',
+            'Moedas extraídas da List One ISO 4217 publicada pela SIX Group.',
+        ],
         'sha256': hashlib.sha256(canonical_payload.encode()).hexdigest(),
         'source_date': '2026-08-31',
         'source_urls': [
@@ -111,11 +117,17 @@ def test_catalog_manifest_has_deterministic_canonical_hash():
         namespaces=('ISO-3166',),
         expected_counts={'countries': 1},
         sha256='a' * 64,
+        provenance=('Catálogo oficial de referência.',),
+        license_name='Dados oficiais de acesso público',
+        license_url='https://example.test/license',
     )
     expected_payload = {
         'expected_counts': {'countries': 1},
         'identifier': 'official-references-br',
+        'license_name': 'Dados oficiais de acesso público',
+        'license_url': 'https://example.test/license',
         'namespaces': ['ISO-3166'],
+        'provenance': ['Catálogo oficial de referência.'],
         'sha256': 'a' * 64,
         'source_date': '2026-08-31',
         'source_urls': ['https://example.test/catalog'],
@@ -178,7 +190,7 @@ def test_snapshot_rejects_invalid_sections_and_counts(tmp_path, payload, message
 
 
 @pytest.mark.django_db
-def test_loader_does_not_adopt_a_location_only_because_official_code_matches(tmp_path):
+def test_loader_refreshes_official_name_for_record_identified_by_codes(tmp_path):
     local = Country.objects.create(
         name='País local',
         iso_alpha2='BR',
@@ -187,19 +199,15 @@ def test_loader_does_not_adopt_a_location_only_because_official_code_matches(tmp
     )
     snapshot_path, manifest_path = write_minimal_snapshot(tmp_path)
 
-    with pytest.raises(CommandError, match='Código oficial já pertence a outro país'):
-        apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
+    apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
 
     local.refresh_from_db()
-    assert local.name == 'País local'
+    assert local.name == 'Brasil'
     assert Country.objects.count() == 1
-    assert StateProvince.objects.count() == 0
-    assert City.objects.count() == 0
-    assert Currency.objects.count() == 0
 
 
 @pytest.mark.django_db
-def test_loader_does_not_adopt_state_or_city_only_because_ibge_code_matches(tmp_path):
+def test_loader_refreshes_state_and_city_names_identified_by_codes(tmp_path):
     brazil = Country.objects.create(
         name='Brasil',
         iso_alpha2='BR',
@@ -212,26 +220,17 @@ def test_loader_does_not_adopt_state_or_city_only_because_ibge_code_matches(tmp_
         abbreviation='PE',
         ibge_code='26',
     )
+    local_city = City.objects.create(name='Cidade local', state=local_state, ibge_code='2611606')
     snapshot_path, manifest_path = write_minimal_snapshot(tmp_path)
 
-    with pytest.raises(CommandError, match='Código oficial já pertence a outro cadastro de UF'):
-        apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
+    apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
 
     local_state.refresh_from_db()
-    assert local_state.name == 'Estado local'
+    local_city.refresh_from_db()
+    assert local_state.name == 'Pernambuco'
+    assert local_city.name == 'Recife'
     assert StateProvince.objects.count() == 1
-    assert City.objects.count() == 0
-
-    local_state.name = 'Pernambuco'
-    local_state.save(update_fields=['name'])
-    City.objects.create(name='Cidade local', state=local_state, ibge_code='2611606')
-
-    with pytest.raises(CommandError, match='Código oficial já pertence a outro município'):
-        apply_official_snapshot(load_official_snapshot(snapshot_path, manifest_path))
-
-    assert City.objects.get(ibge_code='2611606').name == 'Cidade local'
-    assert City.objects.count() == 1
-    assert Currency.objects.count() == 0
+    assert City.objects.count() == 2
 
 
 @pytest.mark.django_db
@@ -345,10 +344,9 @@ def test_refresh_fetch_and_parse_normalizes_the_four_official_sources():
                 'decimal_places': 2,
                 'minor_unit_applicable': True,
                 'symbol': 'R$',
-                'description': (
-                    'Nome oficial SIX: Brazilian Real. Entidades usuárias: BRAZIL. '
-                    'Fonte: ISO 4217/SIX (lista vigente em 2026-01-01).'
-                ),
+                'source_name': 'Brazilian Real',
+                'source_entities': ['BRAZIL'],
+                'description': 'Moeda ISO 4217 com nome localizado para português do Brasil.',
             }
         ],
     }
@@ -368,7 +366,7 @@ def test_currency_parser_uses_explicit_pt_br_name_when_cldr_has_no_translation()
         currencies = RefreshCommand._parse_currencies(xml)
 
     assert currencies[0]['name'] == 'Unidade previdenciária'
-    assert 'Nome oficial SIX: Unidad Previsional.' in currencies[0]['description']
+    assert currencies[0]['source_name'] == 'Unidad Previsional'
 
 
 PT_BR_CURRENCY_NAMES = {
@@ -409,7 +407,7 @@ def test_currency_parser_uses_versioned_pt_br_names_and_preserves_six_provenance
 
     assert {row['code']: row['name'] for row in currencies} == PT_BR_CURRENCY_NAMES
     for row in currencies:
-        assert f'Nome oficial SIX: {SIX_CURRENCY_NAMES[row["code"]]}.' in row['description']
+        assert row['source_name'] == SIX_CURRENCY_NAMES[row['code']]
 
 
 def test_every_committed_currency_name_is_pt_br_and_has_stable_explicit_overrides():

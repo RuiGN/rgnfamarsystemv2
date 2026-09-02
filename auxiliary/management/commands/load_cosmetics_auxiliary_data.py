@@ -21,6 +21,12 @@ class Command(BaseCommand):
             action='store_true',
             help='Carrega atomicamente todos os catálogos versionados de produção.',
         )
+        parser.add_argument(
+            '--timeout',
+            type=int,
+            default=None,
+            help='Opção legada aceita por compatibilidade; não tem efeito.',
+        )
 
     def handle(self, *args, **options):
         if options['production_catalogs']:

@@ -1,7 +1,7 @@
 """Catálogos mestres curados para a operação cosmética single-instance."""
 
 from auxiliary.cosmetics_seed import ORGANIZATIONAL_ROLES
-from reference_data.manifest import build_manifest
+from reference_data.manifest import CatalogManifest
 
 
 UNITS = (
@@ -227,7 +227,7 @@ COSMETICS_CATALOG_PAYLOAD = {
     'fiscal.FiscalOperationCode': CFOPS,
 }
 
-COSMETICS_CATALOG_MANIFEST = build_manifest(
+COSMETICS_CATALOG_MANIFEST = CatalogManifest(
     identifier='rgn-cosmetics-cross-app-catalogs',
     version='2026.1',
     source_date='2026-09-02',
@@ -237,10 +237,39 @@ COSMETICS_CATALOG_MANIFEST = build_manifest(
         'https://legislacao.fazenda.sp.gov.br/Paginas/art597.aspx',
     ),
     namespaces=(
-        'Sistema Internacional de Unidades (SI), Inmetro/IPQ, 2ª edição da tradução luso-brasileira, 2025',
-        'RGN Cosmetics Catalog 2026.1',
-        'CFOP, Convênio SINIEF s/nº, de 15 de dezembro de 1970',
-        'Referência descritiva; a seleção do CFOP depende da análise fiscal aplicável',
+        'UOM-',
+        'CAT-COS-',
+        'CE-COS-',
+        'CG-COS-',
+        'SC-COS-',
+        'COA-COS-',
+        'FC-COS-',
+        'JP-COS-',
+        'WF-COS-',
+        'CPT-COS-',
+        'FiscalUnit',
+        'CFOP-SINIEF',
     ),
-    payload=COSMETICS_CATALOG_PAYLOAD,
+    expected_counts={
+        'masters.UnitOfMeasure': 21,
+        'masters.MasterCategory': 42,
+        'costing.CostElement': 10,
+        'crm.CustomerGroup': 5,
+        'crm.SalesChannel': 5,
+        'finance.ChartOfAccount': 12,
+        'finance.FinancialCategory': 6,
+        'training.JobPosition': 17,
+        'training.WorkFunction': 17,
+        'training.Competency': 11,
+        'fiscal.FiscalUnit': 11,
+        'fiscal.FiscalOperationCode': 12,
+    },
+    sha256='f57b994b72e311cd6ac5e477c596463cd35e8ab5401891c649bc7d914031a4f4',
+    provenance=(
+        'Unidades derivadas do Sistema Internacional de Unidades, tradução luso-brasileira Inmetro/IPQ, 2ª edição, 2025.',
+        'Taxonomias cosméticas e organizacionais curadas no RGN Cosmetics Catalog 2026.1.',
+        'CFOPs descritivos derivados do Anexo ECF/CFOP da Receita Federal e do Convênio SINIEF s/nº de 15 de dezembro de 1970; a seleção exige análise fiscal aplicável.',
+    ),
+    license_name='Fontes oficiais de acesso público e conteúdo interno proprietário; consultar proveniência',
+    license_url='https://github.com/RuiGN/rgnfamarsystemv2',
 )

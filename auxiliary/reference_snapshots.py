@@ -98,6 +98,7 @@ def _ensure_location_codes(
     code_fields: tuple[str, ...],
     label: str,
 ) -> None:
+    changed = obj.pk is None
     for field in code_fields:
         existing_value = getattr(obj, field)
         official_value = fields[field]
@@ -106,15 +107,24 @@ def _ensure_location_codes(
                 f'Código oficial divergente para {label}: '
                 f'{field} local={existing_value!r}, fonte={official_value!r}.'
             )
-    if obj.pk:
-        for field in code_fields:
-            if not getattr(obj, field):
-                setattr(obj, field, fields[field])
-    else:
-        for field, value in fields.items():
+    for field, value in fields.items():
+        model_field = obj._meta.get_field(field)
+        current_value = (
+            getattr(obj, model_field.attname)
+            if model_field.is_relation and model_field.many_to_one
+            else getattr(obj, field)
+        )
+        expected_value = (
+            value.pk
+            if model_field.is_relation and model_field.many_to_one and value is not None
+            else value
+        )
+        if current_value != expected_value:
             setattr(obj, field, value)
+            changed = True
     obj.full_clean()
-    obj.save()
+    if changed:
+        obj.save()
 
 
 def _ensure_code_available(queryset, *, field: str, value: str, obj, label: str) -> None:
@@ -123,6 +133,41 @@ def _ensure_code_available(queryset, *, field: str, value: str, obj, label: str)
         conflicting = conflicting.exclude(pk=obj.pk)
     if conflicting.exists():
         raise CommandError(f'Código oficial já pertence a outro {label}: {field}={value!r}.')
+
+
+def _official_identity_candidate(
+    lookups: tuple[tuple[Any, dict[str, str]], ...],
+    *,
+    label: str,
+):
+    """Resolve códigos oficiais e recusa quando eles apontam para linhas distintas."""
+
+    candidates = {}
+    for queryset, lookup in lookups:
+        candidate = _single_or_none(queryset.filter(**lookup), label)
+        if candidate is not None:
+            candidates[candidate.pk] = candidate
+    if len(candidates) > 1:
+        raise CommandError(f'Conflito entre códigos oficiais para {label}.')
+    return next(iter(candidates.values()), None)
+
+
+def _legacy_identity_candidate(queryset, *, code_fields: tuple[str, ...], label: str):
+    candidate = _single_or_none(queryset, label)
+    if candidate is None:
+        return None
+    populated = [field for field in code_fields if getattr(candidate, field)]
+    if populated:
+        raise CommandError(
+            f'Código oficial divergente no fallback legado de {label}: {", ".join(populated)}.'
+        )
+    return candidate
+
+
+def _ensure_name_not_owned_by_another(queryset, *, obj, label: str) -> None:
+    conflict = queryset.exclude(pk=obj.pk).order_by('pk').first()
+    if conflict is not None:
+        raise CommandError(f'Conflito entre código oficial e nome/hierarquia para {label}.')
 
 
 def _apply_countries(records: list[dict[str, Any]]) -> dict[str, Country]:
@@ -135,7 +180,28 @@ def _apply_countries(records: list[dict[str, Any]]) -> dict[str, Country]:
             'iso_alpha3': _text(record, 'iso_alpha3', f'País {name}').upper(),
             'numeric_code': _text(record, 'numeric_code', f'País {name}'),
         }
-        obj = _single_or_none(Country.objects.filter(name=name), f'país {name}') or Country()
+        label = f'país {name}'
+        obj = _official_identity_candidate(
+            (
+                (Country.objects, {'iso_alpha2': fields['iso_alpha2']}),
+                (Country.objects, {'iso_alpha3': fields['iso_alpha3']}),
+                (Country.objects, {'numeric_code': fields['numeric_code']}),
+            ),
+            label=label,
+        )
+        if obj is None:
+            obj = (
+                _legacy_identity_candidate(
+                    Country.objects.filter(name=name),
+                    code_fields=('iso_alpha2', 'iso_alpha3', 'numeric_code'),
+                    label=label,
+                )
+                or Country()
+            )
+        else:
+            _ensure_name_not_owned_by_another(
+                Country.objects.filter(name=name), obj=obj, label=label
+            )
         for field in ('iso_alpha2', 'iso_alpha3', 'numeric_code'):
             _ensure_code_available(
                 Country.objects,
@@ -167,13 +233,34 @@ def _apply_states(
         country = country_refs.get(country_code)
         if country is None:
             raise CommandError(f'País {country_code} não encontrado para a UF {abbreviation}.')
-        obj = (
-            _single_or_none(
-                StateProvince.objects.filter(country=country, name=name),
-                f'UF {abbreviation}',
-            )
-            or StateProvince()
+        label = f'UF {abbreviation}'
+        obj = _official_identity_candidate(
+            (
+                (StateProvince.objects, {'ibge_code': ibge_code}),
+                (
+                    StateProvince.objects.filter(country=country),
+                    {'abbreviation': abbreviation},
+                ),
+            ),
+            label=label,
         )
+        if obj is None:
+            obj = (
+                _legacy_identity_candidate(
+                    StateProvince.objects.filter(country=country, name=name),
+                    code_fields=('abbreviation', 'ibge_code'),
+                    label=label,
+                )
+                or StateProvince()
+            )
+        else:
+            if obj.country_id not in (None, country.pk):
+                raise CommandError(f'Hierarquia oficial divergente para {label}.')
+            _ensure_name_not_owned_by_another(
+                StateProvince.objects.filter(country=country, name=name),
+                obj=obj,
+                label=label,
+            )
         _ensure_code_available(
             StateProvince.objects.filter(country=country),
             field='abbreviation',
@@ -214,13 +301,28 @@ def _apply_cities(
         state = state_refs.get(state_code)
         if state is None:
             raise CommandError(f'UF {state_code} não encontrada para o município {ibge_code}.')
-        obj = (
-            _single_or_none(
-                City.objects.filter(state=state, name=name),
-                f'município {ibge_code}',
-            )
-            or City()
+        label = f'município {ibge_code}'
+        obj = _official_identity_candidate(
+            ((City.objects, {'ibge_code': ibge_code}),),
+            label=label,
         )
+        if obj is None:
+            obj = (
+                _legacy_identity_candidate(
+                    City.objects.filter(state=state, name=name),
+                    code_fields=('ibge_code',),
+                    label=label,
+                )
+                or City()
+            )
+        else:
+            if obj.state_id not in (None, state.pk):
+                raise CommandError(f'Hierarquia oficial divergente para {label}.')
+            _ensure_name_not_owned_by_another(
+                City.objects.filter(state=state, name=name),
+                obj=obj,
+                label=label,
+            )
         _ensure_code_available(
             City.objects,
             field='ibge_code',
@@ -267,12 +369,26 @@ def _apply_currencies(records: list[dict[str, Any]]) -> None:
             )
         if obj is None:
             obj = Currency(code=code)
-        for field, value in fields.items():
-            if field != 'code' or not obj.pk:
-                setattr(obj, field, value)
-        obj.is_active = True
-        obj.full_clean()
-        obj.save()
+            for field, value in fields.items():
+                if field != 'code' or not obj.pk:
+                    setattr(obj, field, value)
+            obj.is_active = True
+            obj.full_clean()
+            obj.save()
+        elif (
+            not all(
+                getattr(obj, field) == value for field, value in fields.items() if field != 'code'
+            )
+            or not obj.is_active
+        ):
+            for field, value in fields.items():
+                if field != 'code' or not obj.pk:
+                    setattr(obj, field, value)
+            obj.is_active = True
+            obj.full_clean()
+            obj.save()
+        else:
+            obj.full_clean()
 
 
 def _apply_official_snapshot(snapshot: OfficialReferenceSnapshot) -> dict[str, int]:
