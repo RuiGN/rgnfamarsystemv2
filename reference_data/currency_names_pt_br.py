@@ -11,6 +11,6 @@ CURRENCY_NAMES_PT_BR = {
     'XAD': 'Dinar contábil árabe',
     'XCG': 'Guilda caribenha',
     'XSU': 'Sucre',
-    'XUA': 'Unidade de conta do Banco Asiático de Desenvolvimento',
+    'XUA': 'Unidade de conta do Banco Africano de Desenvolvimento',
     'ZWG': 'Ouro do Zimbábue',
 }
