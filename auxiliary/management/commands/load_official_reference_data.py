@@ -284,17 +284,17 @@ class Command(BaseCommand):
         refs = {}
         for name, data in countries.items():
             obj = self._single_or_none(
-                Country.objects.filter(
-                    Q(name=name)
-                    | Q(iso_alpha2=data['iso_alpha2'])
-                    | Q(iso_alpha3=data['iso_alpha3'])
-                    | Q(numeric_code=data['numeric_code'])
-                ),
+                Country.objects.filter(name=name),
                 f'país {name}',
             )
             if obj is None:
                 obj = Country()
-            self._save_location_fields(obj, data)
+            self._save_location_fields(
+                obj,
+                data,
+                code_fields=('iso_alpha2', 'iso_alpha3', 'numeric_code'),
+                label=f'país {name}',
+            )
             refs[name] = obj
         return refs
 
@@ -303,11 +303,7 @@ class Command(BaseCommand):
         for code, data in states.items():
             name = data['name']
             obj = self._single_or_none(
-                StateProvince.objects.filter(
-                    Q(name=name)
-                    | Q(ibge_code=data['numeric_code'])
-                    | Q(country=country_obj, abbreviation=data['abbreviation'])
-                ),
+                StateProvince.objects.filter(country=country_obj, name=name),
                 f'UF {data["abbreviation"]}',
             )
             if obj is None:
@@ -320,6 +316,8 @@ class Command(BaseCommand):
                     'abbreviation': data['abbreviation'],
                     'ibge_code': data['numeric_code'],
                 },
+                code_fields=('abbreviation', 'ibge_code'),
+                label=f'UF {data["abbreviation"]}',
             )
             refs[code] = obj
         return refs
@@ -329,7 +327,7 @@ class Command(BaseCommand):
             name = data['name']
             state_obj = state_refs[data['state']]
             obj = self._single_or_none(
-                City.objects.filter(Q(ibge_code=data['ibge_code']) | Q(name=name, state=state_obj)),
+                City.objects.filter(state=state_obj, name=name),
                 f'município {data["ibge_code"]}',
             )
             if obj is None:
@@ -341,6 +339,8 @@ class Command(BaseCommand):
                     'state': state_obj,
                     'ibge_code': data['ibge_code'],
                 },
+                code_fields=('ibge_code',),
+                label=f'município {data["ibge_code"]}',
             )
 
     def _upsert_currencies(self, currencies):
@@ -359,12 +359,26 @@ class Command(BaseCommand):
             if field != 'code' or not obj.pk:
                 setattr(obj, field, value)
         obj.is_active = True
-        obj.full_clean(validate_unique=False, validate_constraints=False)
+        obj.full_clean()
         obj.save()
 
     @staticmethod
-    def _save_location_fields(obj, fields):
-        for field, value in fields.items():
-            setattr(obj, field, value)
-        obj.full_clean(validate_unique=False, validate_constraints=False)
+    def _save_location_fields(obj, fields, *, code_fields, label):
+        for field in code_fields:
+            existing_value = getattr(obj, field)
+            official_value = fields[field]
+            if existing_value and existing_value != official_value:
+                raise CommandError(
+                    f'Código oficial divergente para {label}: '
+                    f'{field} local={existing_value!r}, fonte={official_value!r}.'
+                )
+
+        if obj.pk:
+            for field in code_fields:
+                if not getattr(obj, field):
+                    setattr(obj, field, fields[field])
+        else:
+            for field, value in fields.items():
+                setattr(obj, field, value)
+        obj.full_clean()
         obj.save()

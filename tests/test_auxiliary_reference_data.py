@@ -115,7 +115,7 @@ class OfficialReferenceDataCommandTests(TestCase):
 
     def test_reuses_existing_normalized_location_records(self):
         brazil = Country.objects.create(name='Brasil')
-        pernambuco = StateProvince.objects.create(name='Pernambuco')
+        pernambuco = StateProvince.objects.create(name='Pernambuco', country=brazil)
         existing_city = City.objects.create(name='Recife', state=pernambuco)
 
         self.run_command()
@@ -125,9 +125,117 @@ class OfficialReferenceDataCommandTests(TestCase):
 
         assert City.objects.get(name='Recife').pk == existing_city.pk
         assert City.objects.filter(name='Recife').count() == 1
-        assert Country.objects.get(pk=brazil.pk).name == 'Brasil'
-        assert StateProvince.objects.get(pk=pernambuco.pk).name == 'Pernambuco'
+        brazil.refresh_from_db()
+        pernambuco.refresh_from_db()
+
+        assert brazil.name == 'Brasil'
+        assert brazil.iso_alpha2 == 'BR'
+        assert brazil.iso_alpha3 == 'BRA'
+        assert brazil.numeric_code == '076'
+        assert pernambuco.name == 'Pernambuco'
         assert pernambuco.country == brazil
+        assert pernambuco.abbreviation == 'PE'
+        assert pernambuco.ibge_code == '26'
+        assert existing_city.ibge_code == '2611606'
+
+    def test_leaves_nonmatching_legacy_locations_intact(self):
+        legacy_state = StateProvince.objects.create(name='Pernambuco')
+        legacy_city = City.objects.create(name='Recife', state=legacy_state)
+
+        self.run_command()
+
+        legacy_state.refresh_from_db()
+        legacy_city.refresh_from_db()
+
+        assert legacy_state.country is None
+        assert legacy_state.abbreviation == ''
+        assert legacy_state.ibge_code == ''
+        assert legacy_city.state == legacy_state
+        assert legacy_city.ibge_code == ''
+        assert StateProvince.objects.count() == 2
+        assert City.objects.count() == 3
+
+    def test_rejects_divergent_country_code_without_overwriting_or_partial_writes(self):
+        brazil = Country.objects.create(name='Brasil', iso_alpha2='XX')
+
+        with pytest.raises(CommandError, match='Código oficial divergente para país Brasil'):
+            self.run_command()
+
+        brazil.refresh_from_db()
+        assert brazil.iso_alpha2 == 'XX'
+        assert StateProvince.objects.count() == 0
+        assert City.objects.count() == 0
+        assert Currency.objects.count() == 0
+
+    def test_rejects_divergent_state_code_without_overwriting_or_partial_writes(self):
+        brazil = Country.objects.create(
+            name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076'
+        )
+        pernambuco = StateProvince.objects.create(
+            name='Pernambuco', country=brazil, abbreviation='PE', ibge_code='99'
+        )
+
+        with pytest.raises(CommandError, match='Código oficial divergente para UF PE'):
+            self.run_command()
+
+        pernambuco.refresh_from_db()
+        assert pernambuco.ibge_code == '99'
+        assert City.objects.count() == 0
+        assert Currency.objects.count() == 0
+
+    def test_rejects_divergent_city_code_without_overwriting_or_partial_writes(self):
+        brazil = Country.objects.create(
+            name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076'
+        )
+        pernambuco = StateProvince.objects.create(
+            name='Pernambuco', country=brazil, abbreviation='PE', ibge_code='26'
+        )
+        recife = City.objects.create(name='Recife', state=pernambuco, ibge_code='9999999')
+
+        with pytest.raises(CommandError, match='Código oficial divergente para município 2611606'):
+            self.run_command()
+
+        recife.refresh_from_db()
+        assert recife.ibge_code == '9999999'
+        assert Currency.objects.count() == 0
+
+    def test_rejects_ambiguous_legacy_state_match_without_partial_writes(self):
+        brazil = Country.objects.create(
+            name='Brasil', iso_alpha2='BR', iso_alpha3='BRA', numeric_code='076'
+        )
+        StateProvince.objects.create(name='Pernambuco', country=brazil)
+        StateProvince.objects.create(name='Pernambuco', country=brazil)
+
+        with pytest.raises(CommandError, match='Mais de um cadastro local corresponde a UF PE'):
+            self.run_command()
+
+        assert City.objects.count() == 0
+        assert Currency.objects.count() == 0
+
+    def test_runs_complete_location_validation_before_persisting(self):
+        original_country_clean = Country.full_clean
+        original_state_clean = StateProvince.full_clean
+        original_city_clean = City.full_clean
+        original_currency_clean = Currency.full_clean
+
+        def full_clean(instance, *args, **kwargs):
+            assert not args
+            assert not kwargs
+            return originals[type(instance)](instance, *args, **kwargs)
+
+        originals = {
+            Country: original_country_clean,
+            StateProvince: original_state_clean,
+            City: original_city_clean,
+            Currency: original_currency_clean,
+        }
+        with (
+            patch.object(Country, 'full_clean', autospec=True, side_effect=full_clean),
+            patch.object(StateProvince, 'full_clean', autospec=True, side_effect=full_clean),
+            patch.object(City, 'full_clean', autospec=True, side_effect=full_clean),
+            patch.object(Currency, 'full_clean', autospec=True, side_effect=full_clean),
+        ):
+            self.run_command()
 
     def test_rejects_city_with_unknown_state_without_partial_writes(self):
         invalid_cities = [
