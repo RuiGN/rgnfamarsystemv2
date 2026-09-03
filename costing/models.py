@@ -30,7 +30,7 @@ def _percent_factor(value):
 
 
 class CostElement(AutoCodeMixin, SingleInstanceModel):
-    NUMERIC_CODE = True
+    CODE_PREFIX = 'CE'
 
     class Category(models.TextChoices):
         MATERIAL = 'material', 'Material'
@@ -62,7 +62,7 @@ class CostElement(AutoCodeMixin, SingleInstanceModel):
         verbose_name_plural = 'elementos de custo'
 
     def __str__(self):
-        return self.name
+        return f'{self.code} - {self.name}'
 
 
 class StandardCost(SingleInstanceModel):

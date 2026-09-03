@@ -184,12 +184,12 @@ def test_catalogs_create_real_pt_br_reference_data_without_transactions():
 
     result = apply_catalogs()
 
-    assert UnitOfMeasure.objects.get(code='1').name == 'KG'
-    assert UnitOfMeasure.objects.get(code='6').symbol == 'mL'
-    assert MasterCategory.objects.get(code='13').name == 'Emulsão'
-    assert CostElement.objects.get(code='10').name == 'Custo da não qualidade'
-    assert SalesChannel.objects.get(code='3').name == 'E-commerce'
-    assert FinancialCategory.objects.get(code='3').name == 'Controle da Qualidade'
+    assert UnitOfMeasure.objects.get(code='UOM-KG').name == 'Kilograma'
+    assert UnitOfMeasure.objects.get(code='UOM-ML').symbol == 'mL'
+    assert MasterCategory.objects.get(code='CAT-COS-FORM-EMULSAO').name == 'Emulsão'
+    assert CostElement.objects.get(code='CE-COS-NQ').name == 'Custo da não qualidade'
+    assert SalesChannel.objects.get(code='SC-COS-ECOM').name == 'E-commerce'
+    assert FinancialCategory.objects.get(code='FC-COS-CQ').name == 'Controle da Qualidade'
     assert Competency.objects.get(code='CPT-COS-BPF').name == 'Boas Práticas de Fabricação'
     assert FiscalUnit.objects.get(code='KG').description == 'Kilograma'
     assert FiscalOperationCode.objects.get(code='5101').direction == 'outbound'
@@ -202,7 +202,7 @@ def test_catalogs_create_real_pt_br_reference_data_without_transactions():
 
 def test_catalogs_overwrite_managed_and_preserve_local_records():
     seed_cosmetics_auxiliary_data()
-    UnitOfMeasure.objects.create(code='1', name='Nome incorreto', symbol='x')
+    UnitOfMeasure.objects.create(code='UOM-KG', name='Nome incorreto', symbol='x')
     UnitOfMeasure.objects.create(code='LOCAL-BOMBONA', name='Bombona local', symbol='bb')
     CustomerGroup.objects.create(code='CG-LOCAL', name='Grupo local')
 
@@ -210,7 +210,7 @@ def test_catalogs_overwrite_managed_and_preserve_local_records():
     first_counts = catalog_model_counts()
     second_result = apply_catalogs()
 
-    assert UnitOfMeasure.objects.get(code='1').name == 'KG'
+    assert UnitOfMeasure.objects.get(code='UOM-KG').name == 'Kilograma'
     assert UnitOfMeasure.objects.get(code='LOCAL-BOMBONA').name == 'Bombona local'
     assert CustomerGroup.objects.get(code='CG-LOCAL').name == 'Grupo local'
     assert catalog_model_counts() == first_counts
@@ -224,7 +224,7 @@ def test_catalog_manifest_records_counts_sources_and_fiscal_boundary():
 
     assert COSMETICS_CATALOG_MANIFEST.expected_counts == {
         'masters.UnitOfMeasure': 21,
-        'masters.MasterCategory': 32,
+        'masters.MasterCategory': 42,
         'costing.CostElement': 10,
         'crm.CustomerGroup': 5,
         'crm.SalesChannel': 5,
@@ -245,7 +245,7 @@ def test_catalog_manifest_records_counts_sources_and_fiscal_boundary():
     assert COSMETICS_CATALOG_MANIFEST.license_name
     assert COSMETICS_CATALOG_MANIFEST.license_url.startswith('https://')
     assert COSMETICS_CATALOG_MANIFEST.sha256 == (
-        'fed9715c1c008c26a8190b445149e6591d541ce5149a1f708ed80d29a1d5a252'
+        'f57b994b72e311cd6ac5e477c596463cd35e8ab5401891c649bc7d914031a4f4'
     )
 
 

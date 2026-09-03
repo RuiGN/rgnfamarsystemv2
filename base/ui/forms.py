@@ -341,18 +341,6 @@ def _apply_widget_metadata(name, field):
     address_target = _address_target(name, field)
     _apply_field_size_metadata(name, field, mask, address_target)
 
-    if isinstance(field, (forms.ModelChoiceField, forms.ModelMultipleChoiceField)):
-        original_label_func = field.label_from_instance
-
-        def _name_only_label(obj):
-            for attr in ('name', 'title', 'description'):
-                val = getattr(obj, attr, None)
-                if val:
-                    return str(val)
-            return original_label_func(obj)
-
-        field.label_from_instance = _name_only_label
-
     if isinstance(widget, (forms.Select, forms.SelectMultiple)):
         _append_widget_class(widget, 'form-select')
     elif isinstance(widget, forms.CheckboxInput):

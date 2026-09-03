@@ -141,40 +141,21 @@ def generate_code(
     )
 
 
-def generate_numeric_code(model: type[models.Model], field_name: str = 'code') -> str:
-    """Gera o próximo código numérico sequencial (1, 2, 3...) para o modelo."""
-    highest = 0
-    values = model.objects.values_list(field_name, flat=True)
-    for val in values.iterator():
-        try:
-            num = int(val)
-            if num > highest:
-                highest = num
-        except (TypeError, ValueError):
-            continue
-    return str(highest + 1)
-
-
 class AutoCodeMixin:
     """Mixin que gera ``code`` automaticamente no ``save()`` quando vazio.
 
-    O modelo pode definir ``NUMERIC_CODE = True`` para código sequencial numérico
-    ou ``CODE_PREFIX`` (str). Se ``code`` já vier preenchido, é preservado.
+    O modelo deve definir ``CODE_PREFIX`` (str). Se ``code`` já vier preenchido,
+    é preservado.
     """
 
     CODE_PREFIX: ClassVar[str | None] = None
-    NUMERIC_CODE: ClassVar[bool] = False
     code: str
 
     def save(self, *args, **kwargs):
         generated = False
-        if not self.code:
-            if getattr(self, 'NUMERIC_CODE', False):
-                self.code = generate_numeric_code(type(self))
-                generated = True
-            elif self.CODE_PREFIX:
-                self.code = generate_code(type(self), self.CODE_PREFIX)
-                generated = True
+        if not self.code and self.CODE_PREFIX:
+            self.code = generate_code(type(self), self.CODE_PREFIX)
+            generated = True
         if generated and kwargs.get('update_fields') is not None:
             kwargs['update_fields'] = set(kwargs['update_fields']) | {'code'}
         parent_save = getattr(super(), 'save')

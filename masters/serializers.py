@@ -82,6 +82,7 @@ class ProductSerializer(SingleInstanceSerializerMixin, serializers.ModelSerializ
             'category',
             'product_line',
             'cosmetic_form',
+            'application_area',
             'status',
             'storage_condition',
             'shelf_life_days',
@@ -106,11 +107,15 @@ class ProductSerializer(SingleInstanceSerializerMixin, serializers.ModelSerializ
             'category',
             'product_line',
             'cosmetic_form',
+            'application_area',
         ):
             pass
         self._validate_category_kind(attrs, 'category', MasterCategory.Kind.CATEGORY)
         self._validate_category_kind(attrs, 'product_line', MasterCategory.Kind.PRODUCT_LINE)
         self._validate_category_kind(attrs, 'cosmetic_form', MasterCategory.Kind.COSMETIC_FORM)
+        self._validate_category_kind(
+            attrs, 'application_area', MasterCategory.Kind.APPLICATION_AREA
+        )
         return attrs
 
 

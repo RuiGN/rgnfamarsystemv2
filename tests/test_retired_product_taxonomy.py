@@ -15,14 +15,6 @@ def test_product_model_does_not_expose_retired_route_taxonomy():
     assert retired_kind not in MasterCategory.Kind.values
 
 
-def test_product_model_does_not_expose_retired_application_area_taxonomy():
-    retired_field = 'application' + '_area'
-    retired_kind = retired_field
-
-    assert retired_field not in {field.name for field in Product._meta.fields}
-    assert retired_kind not in MasterCategory.Kind.values
-
-
 def test_versioned_files_do_not_reference_retired_route_taxonomy():
     retired_terms = (
         b'administration' + b'_route',

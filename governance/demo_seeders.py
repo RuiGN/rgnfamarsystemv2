@@ -326,6 +326,15 @@ class DemoSeeder:
             },
             {'name': 'Emulsão'},
         )
+        application_area = self._upsert(
+            MasterCategory,
+            'masters.categories',
+            {
+                'kind': MasterCategory.Kind.APPLICATION_AREA,
+                'code': 'DEMO-CORPO',
+            },
+            {'name': 'Corpo'},
+        )
         products = {}
         product_specs = [
             (
@@ -385,6 +394,9 @@ class DemoSeeder:
                     if item_type == Product.ItemType.FINISHED_PRODUCT
                     else None,
                     'cosmetic_form': form
+                    if item_type == Product.ItemType.FINISHED_PRODUCT
+                    else None,
+                    'application_area': application_area
                     if item_type == Product.ItemType.FINISHED_PRODUCT
                     else None,
                     'status': Product.Status.APPROVED,
