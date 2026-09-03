@@ -26,11 +26,11 @@
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
     <nav class="nxl-navigation" aria-label="Navegação principal">
         <div class="navbar-wrapper">
-            <div class="m-header">
+            <div class="m-header" style="height: 88px; padding: 0 16px;">
                 {% static 'vendor/duralux/images/logo_farm_system.png' as default_brand_logo %}
-                <a href="{% url 'home' %}" class="b-brand" aria-label="Início {{ institution_name|default:'RGN Farma System' }}" title="Início {{ institution_name|default:'RGN Farma System' }}">
-                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-lg app-brand-logo">
-                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-sm app-brand-logo">
+                <a href="{% url 'home' %}" class="b-brand" aria-label="Início {{ institution_name|default:'RGN Farma System' }}" title="Início {{ institution_name|default:'RGN Farma System' }}" style="height: 84px; max-width: 100%;">
+                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-lg app-brand-logo" style="max-height: 80px !important; width: auto !important;">
+                    <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-sm app-brand-logo" style="max-height: 60px !important; width: auto !important;">
                 </a>
             </div>
             <div class="navbar-content">
