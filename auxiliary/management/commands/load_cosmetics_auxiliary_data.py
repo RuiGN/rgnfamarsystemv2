@@ -1,7 +1,10 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from auxiliary.cosmetics_seed import seed_cosmetics_auxiliary_data
+from auxiliary.cosmetics_seed import (
+    AUXILIARY_CATALOG_MANIFEST,
+    seed_cosmetics_auxiliary_data,
+)
 from auxiliary.reference_snapshots import load_official_snapshot
 from reference_data.cosmetics_catalogs import COSMETICS_CATALOG_MANIFEST
 from reference_data.services import seed_production_reference_data
@@ -34,10 +37,11 @@ class Command(BaseCommand):
             result = seed_production_reference_data()
             versions = {
                 official_manifest.identifier: official_manifest.version,
+                AUXILIARY_CATALOG_MANIFEST.identifier: AUXILIARY_CATALOG_MANIFEST.version,
                 COSMETICS_CATALOG_MANIFEST.identifier: COSMETICS_CATALOG_MANIFEST.version,
             }
             manifests = ', '.join(
-                f'{identifier}: versão={versions[identifier]}; sha256={sha256[:12]}'
+                f'{identifier}: versão={versions.get(identifier, "desconhecida")}; sha256={sha256[:12]}'
                 for identifier, sha256 in sorted(result.manifest_hashes.items())
             )
             count_summary = ', '.join(
