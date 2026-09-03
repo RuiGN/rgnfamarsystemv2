@@ -36,7 +36,6 @@ class ProductAdmin(AutomaticGeneratedFieldsAdminMixin, admin.ModelAdmin):
         'category',
         'product_line',
         'cosmetic_form',
-        'application_area',
     )
 
 

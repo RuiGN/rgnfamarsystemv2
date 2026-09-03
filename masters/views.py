@@ -55,7 +55,6 @@ class ProductViewSet(SingleInstanceMasterViewSet):
         'category',
         'product_line',
         'cosmetic_form',
-        'application_area',
     )
     serializer_class = ProductSerializer
     filterset_fields = (

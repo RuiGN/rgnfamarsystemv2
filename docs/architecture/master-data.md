@@ -13,7 +13,7 @@ usam o mesmo conjunto global de dados da instância.
 ## Regras de implementação
 
 - Preservar as regras de negócio da indústria de cosméticos do módulo.
-- Classificar produtos por linha, forma cosmética e área de aplicação, com
+- Classificar produtos por linha e forma cosmética, com
   categorias do tipo correspondente em cada relacionamento.
 - Validar relacionamentos pelo contexto funcional do domínio, não por escopo
   SaaS herdado.

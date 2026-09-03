@@ -70,6 +70,14 @@ def _validate_prefix(section: str, codes: Iterable[str], prefix: str) -> None:
         )
 
 
+def _validate_numeric_codes(section: str, codes: Iterable[str]) -> None:
+    invalid_codes = sorted(code for code in codes if not code.isdigit())
+    if invalid_codes:
+        raise ValidationError(
+            f'{section}: código fora do padrão numérico: {", ".join(invalid_codes)}.'
+        )
+
+
 def _validate_choice(
     section: str,
     records: Iterable[tuple[Any, ...]],
@@ -128,14 +136,19 @@ def validate_catalogs(*, include_auxiliary_dependencies: bool = True) -> None:
     codes_by_section = {
         section: _validate_unique_codes(section, records) for section, records in payload.items()
     }
+    numeric_sections = (
+        'masters.UnitOfMeasure',
+        'masters.MasterCategory',
+        'costing.CostElement',
+        'crm.CustomerGroup',
+        'crm.SalesChannel',
+        'finance.FinancialCategory',
+    )
+    for section in numeric_sections:
+        _validate_numeric_codes(section, codes_by_section[section])
+
     prefix_by_section = {
-        'masters.UnitOfMeasure': 'UOM-',
-        'masters.MasterCategory': 'CAT-COS-',
-        'costing.CostElement': 'CE-COS-',
-        'crm.CustomerGroup': 'CG-COS-',
-        'crm.SalesChannel': 'SC-COS-',
         'finance.ChartOfAccount': 'COA-COS-',
-        'finance.FinancialCategory': 'FC-COS-',
         'training.JobPosition': 'JP-COS-',
         'training.WorkFunction': 'WF-COS-',
         'training.Competency': 'CPT-COS-',

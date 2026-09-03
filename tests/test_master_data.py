@@ -336,8 +336,8 @@ class TestMasterDataApi:
 
         assert MasterCategory.Kind.PRODUCT_LINE == 'product_line'
         assert MasterCategory.Kind.COSMETIC_FORM == 'cosmetic_form'
-        assert MasterCategory.Kind.APPLICATION_AREA == 'application_area'
         assert 'pharmaceutical_form' not in {field.name for field in Product._meta.fields}
-        assert {'product_line', 'cosmetic_form', 'application_area'} <= {
+        assert 'application_area' not in {field.name for field in Product._meta.fields}
+        assert {'product_line', 'cosmetic_form'} <= {
             field.name for field in Product._meta.fields
         }

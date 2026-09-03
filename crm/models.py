@@ -61,7 +61,7 @@ def _validate_percent(errors, field, value):
 
 
 class CustomerGroup(AutoCodeMixin, SingleInstanceModel):
-    CODE_PREFIX = 'CG'
+    NUMERIC_CODE = True
     code = models.CharField('código', max_length=40, blank=True)
     name = models.CharField('nome', max_length=160)
     description = models.TextField('descrição', blank=True)
@@ -80,11 +80,11 @@ class CustomerGroup(AutoCodeMixin, SingleInstanceModel):
         verbose_name_plural = 'grupos econômicos'
 
     def __str__(self):
-        return f'{self.code} - {self.name}'
+        return self.name
 
 
 class SalesChannel(AutoCodeMixin, SingleInstanceModel):
-    CODE_PREFIX = 'SC'
+    NUMERIC_CODE = True
 
     class ChannelType(models.TextChoices):
         DIRECT = 'direct', 'Venda direta'
@@ -113,7 +113,7 @@ class SalesChannel(AutoCodeMixin, SingleInstanceModel):
         verbose_name_plural = 'canais de venda'
 
     def __str__(self):
-        return f'{self.code} - {self.name}'
+        return self.name
 
 
 class SalesRepresentative(AutoCodeMixin, SingleInstanceModel):

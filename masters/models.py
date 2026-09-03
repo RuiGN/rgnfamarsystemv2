@@ -7,8 +7,9 @@ from base.sequences import AutoCodeMixin
 from base.normalized_locations import validate_normalized_location
 
 
-class UnitOfMeasure(SingleInstanceModel):
-    code = models.CharField('código', max_length=20)
+class UnitOfMeasure(AutoCodeMixin, SingleInstanceModel):
+    NUMERIC_CODE = True
+    code = models.CharField('código', max_length=20, blank=True)
     name = models.CharField('nome', max_length=120)
     symbol = models.CharField('símbolo', max_length=20)
     is_active = models.BooleanField('ativo', default=True)
@@ -26,11 +27,11 @@ class UnitOfMeasure(SingleInstanceModel):
         verbose_name_plural = 'unidades de medida'
 
     def __str__(self):
-        return f'{self.code} - {self.name}'
+        return self.name
 
 
 class MasterCategory(AutoCodeMixin, SingleInstanceModel):
-    CODE_PREFIX = 'CAT'
+    NUMERIC_CODE = True
 
     class Kind(models.TextChoices):
         FAMILY = 'family', 'Família'
@@ -40,7 +41,6 @@ class MasterCategory(AutoCodeMixin, SingleInstanceModel):
         COSMETIC_FORM = 'cosmetic_form', 'Forma cosmética'
         PRESENTATION = 'presentation', 'Apresentação'
         CONCENTRATION = 'concentration', 'Concentração'
-        APPLICATION_AREA = 'application_area', 'Área de aplicação'
 
     code = models.CharField('código', max_length=40, blank=True)
     name = models.CharField('nome', max_length=160)
@@ -73,7 +73,7 @@ class MasterCategory(AutoCodeMixin, SingleInstanceModel):
             raise ValidationError({'parent': 'A categoria superior é incompatível com o registro.'})
 
     def __str__(self):
-        return f'{self.name} ({self.get_kind_display()})'
+        return self.name
 
 
 class Product(AutoCodeMixin, SingleInstanceModel):
@@ -130,14 +130,6 @@ class Product(AutoCodeMixin, SingleInstanceModel):
         blank=True,
         verbose_name='forma cosmética',
     )
-    application_area = models.ForeignKey(
-        MasterCategory,
-        on_delete=models.PROTECT,
-        related_name='application_area_products',
-        null=True,
-        blank=True,
-        verbose_name='área de aplicação',
-    )
     status = models.CharField('status', max_length=24, choices=Status.choices, default=Status.DRAFT)
     storage_condition = models.CharField('condição de armazenamento', max_length=255, blank=True)
     shelf_life_days = models.PositiveIntegerField('vida útil em dias', null=True, blank=True)
@@ -185,12 +177,6 @@ class Product(AutoCodeMixin, SingleInstanceModel):
             'cosmetic_form',
             self.cosmetic_form,
             MasterCategory.Kind.COSMETIC_FORM,
-        )
-        self._validate_category(
-            errors,
-            'application_area',
-            self.application_area,
-            MasterCategory.Kind.APPLICATION_AREA,
         )
         if errors:
             raise ValidationError(errors)

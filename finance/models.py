@@ -72,11 +72,11 @@ class ChartOfAccount(AutoCodeMixin, SingleInstanceModel):
             raise ValidationError({'parent': 'A conta superior é incompatível com o registro.'})
 
     def __str__(self):
-        return f'{self.code} - {self.name}'
+        return self.name
 
 
 class FinancialCategory(AutoCodeMixin, SingleInstanceModel):
-    CODE_PREFIX = 'FC'
+    NUMERIC_CODE = True
 
     class CategoryType(models.TextChoices):
         PAYABLE = 'payable', 'Pagar'
@@ -114,7 +114,7 @@ class FinancialCategory(AutoCodeMixin, SingleInstanceModel):
             )
 
     def __str__(self):
-        return f'{self.code} - {self.name}'
+        return self.name
 
 
 class FinancialAccount(AutoCodeMixin, SingleInstanceModel):
