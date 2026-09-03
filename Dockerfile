@@ -11,6 +11,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     postgresql-client \
     curl \
+    pkg-config \
+    libcairo2-dev \
+    libicu-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libpango1.0-dev \
+    libgdk-pixbuf-2.0-dev \
+    libffi-dev \
+    libjpeg62-turbo-dev \
+    zlib1g-dev \
+    libfreetype6-dev \
+    gfortran \
+    libopenblas-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/
