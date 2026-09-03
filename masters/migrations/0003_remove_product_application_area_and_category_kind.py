@@ -13,12 +13,13 @@ def noop(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
+
     dependencies = [
         ('masters', '0002_cosmetics_product_taxonomy'),
     ]
 
     operations = [
-        migrations.RunPython(remove_application_area_categories, noop),
         migrations.RemoveField(
             model_name='product',
             name='application_area',
@@ -45,4 +46,5 @@ class Migration(migrations.Migration):
             name='code',
             field=models.CharField(blank=True, max_length=20, verbose_name='código'),
         ),
+        migrations.RunPython(remove_application_area_categories, noop),
     ]
