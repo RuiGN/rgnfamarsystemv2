@@ -6,7 +6,7 @@
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}RGN Farma System{% endblock %}</title>
-    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+    <link rel="icon" href="{% static 'vendor/duralux/images/favicon.svg' %}" type="image/svg+xml">
     <link rel="stylesheet" href="{% static 'vendor/duralux/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/duralux/css/vendors.min.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/duralux/css/theme.min.css' %}">
@@ -27,7 +27,7 @@
     <nav class="nxl-navigation" aria-label="Navegação principal">
         <div class="navbar-wrapper">
             <div class="m-header" style="height: 88px; padding: 0 16px;">
-                {% static 'vendor/duralux/images/logo_farm_system.png' as default_brand_logo %}
+                {% static 'vendor/duralux/images/logo_header.webp' as default_brand_logo %}
                 <a href="{% url 'home' %}" class="b-brand" aria-label="Início {{ institution_name|default:'RGN Farma System' }}" title="Início {{ institution_name|default:'RGN Farma System' }}" style="height: 84px; max-width: 100%;">
                     <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-lg app-brand-logo" style="max-height: 80px !important; width: auto !important;">
                     <img src="{{ institution_logo_url|default:default_brand_logo }}" alt="{{ institution_name|default:'RGN Farma System' }}" class="logo logo-sm app-brand-logo" style="max-height: 60px !important; width: auto !important;">

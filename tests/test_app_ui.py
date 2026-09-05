@@ -180,7 +180,7 @@ class AppUiFoundationTests(TestCase):
         assert response.status_code == 200
         content = response.content.decode()
         assert 'vendor/duralux/css/bootstrap.min.css' in content
-        assert 'favicon.svg' in content
+        assert 'vendor/duralux/images/favicon.svg' in content
         assert 'data-ui="auth-login"' in content
         assert 'class="form-control"' in content
         assert 'resource-input-group' not in content
@@ -196,7 +196,7 @@ class AppUiFoundationTests(TestCase):
         assert 'data-auth-trace' in content
         for label in ('Formulação', 'Produção', 'Qualidade', 'NF-e'):
             assert label in content
-        assert 'logo_farm_system.png' in content
+        assert 'vendor/duralux/images/logo_login.webp' in content
         assert content.count('name="username"') == 1
         assert content.count('name="password"') == 1
         assert content.count('<button type="submit"') == 1
@@ -1864,6 +1864,8 @@ class AppUiSprint43ReadinessTests(TestCase):
         content = response.content.decode()
         assert 'class="skip-link" href="#main-content"' in content
         assert 'class="nxl-navigation" aria-label="Navegação principal"' in content
+        assert 'vendor/duralux/images/logo_header.webp' in content
+        assert 'vendor/duralux/images/favicon.svg' in content
         assert 'id="main-content" class="nxl-container app-shell" tabindex="-1"' in content
         assert 'role="status" aria-live="polite"' in Path('templates/base.html').read_text()
 
@@ -1939,7 +1941,7 @@ class AppUiSprint43ReadinessTests(TestCase):
         assert 'static/vendor/duralux/css/bootstrap.min.css' in content
         assert 'static/vendor/duralux/css/theme.min.css' in content
         assert 'static/vendor/duralux/js/vendors.min.js' in content
-        assert 'static/favicon.svg' in content
+        assert 'static/vendor/duralux/images/favicon.svg' in content
 
     def test_app_css_preserves_duralux_feather_icon_mapping(self):
         css = Path('static/css/app.css').read_text()
